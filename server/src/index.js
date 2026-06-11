@@ -9,6 +9,7 @@ import settingsRouter from './routes/settings.js'
 import ordersRouter from './routes/orders.js'
 import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
+import { migrate } from './db/migrate.js'
 
 dotenv.config()
 
@@ -33,6 +34,15 @@ app.use((err, req, res, next) => {
 })
 
 const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+
+async function start() {
+  await migrate()
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`)
+  })
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
 })
