@@ -81,13 +81,13 @@ export default function Checkout() {
 
   if (success) {
     function handleContactSeller() {
-      const ownerId = settings.owner_telegram_id
-      if (!ownerId) return
+      const botUsername = settings.bot_username
+      if (!botUsername) return
       const tg = getTelegramWebApp()
       if (tg?.openTelegramLink) {
-        tg.openTelegramLink(`tg://user?id=${ownerId}`)
+        tg.openTelegramLink(`https://t.me/${botUsername}`)
       } else {
-        window.open(`tg://user?id=${ownerId}`, '_blank', 'noopener,noreferrer')
+        window.open(`https://t.me/${botUsername}`, '_blank', 'noopener,noreferrer')
       }
     }
 
@@ -99,7 +99,7 @@ export default function Checkout() {
         <h2 className="text-lg font-bold">Заказ оформлен!</h2>
         <p className="mt-1 text-sm text-muted">Мы свяжемся с вами для подтверждения оплаты</p>
 
-        {settings.owner_telegram_id && (
+        {settings.bot_username && (
           <>
             <p className="mt-4 text-sm text-muted">
               Отправьте фото чека об оплате продавцу

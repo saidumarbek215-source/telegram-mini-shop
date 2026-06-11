@@ -163,6 +163,7 @@ const shop = {
   currency: 'сум',
   owner_telegram_id: process.env.OWNER_TELEGRAM_ID || null,
   bot_token: process.env.BOT_TOKEN || null,
+  bot_username: 'finexia_admin_bot',
 }
 
 async function seed() {
@@ -176,14 +177,15 @@ async function seed() {
 
     const shopResult = await client.query(
       `INSERT INTO shops
-        (name, description, owner_telegram_id, bot_token, card_number, card_holder, click_number, currency)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (name, description, owner_telegram_id, bot_token, bot_username, card_number, card_holder, click_number, currency)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
       [
         shop.name,
         shop.description,
         shop.owner_telegram_id,
         shop.bot_token,
+        shop.bot_username,
         shop.card_number,
         shop.card_holder,
         shop.click_number,
