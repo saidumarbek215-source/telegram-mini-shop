@@ -1,6 +1,17 @@
 import { getTelegramInitData } from './telegram.js'
+import { SHOP_ID } from './shop.js'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
+
+// Appends `shop_id` (the shop selected via `?shop=ID`) to every request, so
+// the server can scope the response to the right shop.
+function withShopId(path) {
+  if (SHOP_ID == null) return path
+  const [base, qs = ''] = path.split('?')
+  const params = new URLSearchParams(qs)
+  params.set('shop_id', SHOP_ID)
+  return `${base}?${params.toString()}`
+}
 
 async function request(path, { admin, ...options } = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
@@ -9,7 +20,7 @@ async function request(path, { admin, ...options } = {}) {
     headers['X-Telegram-Init-Data'] = getTelegramInitData()
   }
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers })
+  const res = await fetch(`${API_URL}${withShopId(path)}`, { ...options, headers })
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))

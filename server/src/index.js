@@ -8,6 +8,7 @@ import bannersRouter from './routes/banners.js'
 import settingsRouter from './routes/settings.js'
 import ordersRouter from './routes/orders.js'
 import adminRouter from './routes/admin.js'
+import shopsRouter from './routes/shops.js'
 
 dotenv.config()
 
@@ -24,6 +25,7 @@ app.use('/api/banners', bannersRouter)
 app.use('/api/settings', settingsRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api/shops', shopsRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)

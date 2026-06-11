@@ -2,10 +2,13 @@ import { Router } from 'express'
 import { pool, query } from '../db/index.js'
 import { notifyOwnerNewOrder } from '../telegram.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { requireShopId } from '../middleware/shop.js'
 
 const router = Router()
 
-// POST /api/orders - place a new order
+router.use(requireShopId)
+
+// POST /api/orders?shop_id=1 - place a new order
 router.post(
   '/',
   asyncHandler(async (req, res) => {
@@ -34,10 +37,11 @@ router.post(
 
       const orderResult = await client.query(
         `INSERT INTO orders
-          (telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'new')
+          (shop_id, telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'new')
          RETURNING *`,
         [
+          req.shopId,
           telegram_user_id || null,
           telegram_username || null,
           customer_name,
@@ -68,11 +72,30 @@ router.post(
           ]
         )
         insertedItems.push(itemResult.rows[0])
+
+        if (item.product_id && item.size) {
+          const productResult = await client.query(
+            'SELECT sizes_stock FROM products WHERE id = $1 FOR UPDATE',
+            [item.product_id]
+          )
+          const sizesStock = productResult.rows[0]?.sizes_stock
+          if (sizesStock && Object.prototype.hasOwnProperty.call(sizesStock, item.size)) {
+            sizesStock[item.size] = Math.max(
+              0,
+              Number(sizesStock[item.size] || 0) - Number(item.quantity || 1)
+            )
+            await client.query('UPDATE products SET sizes_stock = $1 WHERE id = $2', [
+              sizesStock,
+              item.product_id,
+            ])
+          }
+        }
       }
 
       await client.query('COMMIT')
 
-      notifyOwnerNewOrder(order, insertedItems).catch((err) =>
+      const shopResult = await client.query('SELECT * FROM shops WHERE id = $1', [req.shopId])
+      notifyOwnerNewOrder(order, insertedItems, shopResult.rows[0]).catch((err) =>
         console.error('Owner notification failed:', err)
       )
 
@@ -86,14 +109,14 @@ router.post(
   })
 )
 
-// GET /api/orders/user/:telegramUserId - order history for a customer
+// GET /api/orders/user/:telegramUserId?shop_id=1 - order history for a customer
 router.get(
   '/user/:telegramUserId',
   asyncHandler(async (req, res) => {
     const { telegramUserId } = req.params
     const ordersResult = await query(
-      'SELECT * FROM orders WHERE telegram_user_id = $1 ORDER BY created_at DESC',
-      [telegramUserId]
+      'SELECT * FROM orders WHERE telegram_user_id = $1 AND shop_id = $2 ORDER BY created_at DESC',
+      [telegramUserId, req.shopId]
     )
     const orders = ordersResult.rows
 

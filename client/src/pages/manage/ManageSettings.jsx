@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
+import { SHOP_ID } from '../../shop.js'
+
+const MINI_APP_BASE_URL =
+  import.meta.env.VITE_MINI_APP_URL || 'https://telegram-mini-shop.netlify.app'
+const MINI_APP_URL = `${MINI_APP_BASE_URL}?shop=${SHOP_ID}`
 
 const FIELDS = [
   { key: 'store_name', label: 'Название магазина' },
@@ -15,6 +20,7 @@ export default function ManageSettings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
     adminApi
@@ -26,6 +32,16 @@ export default function ManageSettings() {
   function handleChange(e) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
     setSaved(false)
+  }
+
+  async function handleCopyLink() {
+    try {
+      await navigator.clipboard.writeText(MINI_APP_URL)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch {
+      /* clipboard not available */
+    }
   }
 
   async function handleSubmit(e) {
@@ -45,6 +61,27 @@ export default function ManageSettings() {
   return (
     <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-3 pb-4">
       <h2 className="mb-1 text-base font-bold">Реквизиты и настройки магазина</h2>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">
+          Ссылка на Mini App (для BotFather)
+        </label>
+        <div className="flex gap-2">
+          <input
+            readOnly
+            value={MINI_APP_URL}
+            onFocus={(e) => e.target.select()}
+            className="w-full truncate rounded-xl bg-surface px-3 py-2.5 text-sm text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="flex-shrink-0 rounded-xl bg-surface px-3 py-2.5 text-sm font-medium text-accent"
+          >
+            {linkCopied ? 'Скопировано ✓' : 'Копировать'}
+          </button>
+        </div>
+      </div>
 
       {FIELDS.map(({ key, label }) => (
         <div key={key}>

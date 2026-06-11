@@ -13,7 +13,7 @@ const tabs = [
 ]
 
 export default function ManageLayout() {
-  const { isOwner, loading } = useOwner()
+  const { isOwner, loading, shop } = useOwner()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -29,7 +29,9 @@ export default function ManageLayout() {
   return (
     <div>
       <header className="px-4 pb-3 pt-5">
-        <h1 className="text-lg font-bold">Управление магазином</h1>
+        <h1 className="text-lg font-bold">
+          Управление магазином{shop?.name ? ` «${shop.name}»` : ''}
+        </h1>
       </header>
 
       <nav className="flex gap-2 overflow-x-auto px-4 pb-3 no-scrollbar">

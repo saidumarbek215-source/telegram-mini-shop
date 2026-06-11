@@ -4,8 +4,7 @@ const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60
 
 // Validates Telegram WebApp initData per https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
 // Returns the parsed `user` object if the signature is valid and fresh, otherwise null.
-export function parseInitData(initData) {
-  const botToken = process.env.BOT_TOKEN
+export function parseInitData(initData, botToken) {
   if (!initData || !botToken) return null
 
   const params = new URLSearchParams(initData)

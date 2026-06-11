@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useShop } from './context/ShopContext.jsx'
+import ShopNotFound from './pages/ShopNotFound.jsx'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Catalog from './pages/Catalog.jsx'
@@ -15,6 +17,11 @@ import ManageSettings from './pages/manage/ManageSettings.jsx'
 import ManageAI from './pages/manage/ManageAI.jsx'
 
 export default function App() {
+  const { status } = useShop()
+
+  if (status === 'loading') return null
+  if (status === 'not-found') return <ShopNotFound />
+
   return (
     <Routes>
       <Route element={<Layout />}>

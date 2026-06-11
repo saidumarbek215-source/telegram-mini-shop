@@ -5,6 +5,7 @@ import { formatPrice } from '../utils/format.js'
 import { useCart } from '../context/CartContext.jsx'
 import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
+import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
 
 export default function Product() {
   const { id } = useParams()
@@ -24,7 +25,8 @@ export default function Product() {
       .getProduct(id)
       .then((p) => {
         setProduct(p)
-        setSize(p.sizes?.[0] || null)
+        const sizes = p.sizes || []
+        setSize(sizes.find((s) => isSizeAvailable(p, s)) || sizes[0] || null)
         setColor(p.colors?.[0] || null)
       })
       .finally(() => setLoading(false))
@@ -37,6 +39,9 @@ export default function Product() {
   const discountPct = hasDiscount
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
     : 0
+
+  const available = isProductAvailable(product)
+  const canAddToCart = available && (!size || isSizeAvailable(product, size))
 
   function handleAddToCart() {
     addItem(product, { size, color, quantity: 1 })
@@ -73,7 +78,7 @@ export default function Product() {
           )}
         </div>
 
-        {!product.in_stock && (
+        {!available && (
           <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400">
             Нет в наличии
           </div>
@@ -90,17 +95,25 @@ export default function Product() {
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Размер</h2>
             <div className="flex flex-wrap gap-2">
-              {product.sizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSize(s)}
-                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
-                    size === s ? 'bg-accent text-bg' : 'bg-surface text-white'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+              {product.sizes.map((s) => {
+                const sizeAvailable = isSizeAvailable(product, s)
+                return (
+                  <button
+                    key={s}
+                    onClick={() => sizeAvailable && setSize(s)}
+                    disabled={!sizeAvailable}
+                    className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
+                      !sizeAvailable
+                        ? 'cursor-not-allowed bg-surface text-muted line-through opacity-50'
+                        : size === s
+                          ? 'bg-accent text-bg'
+                          : 'bg-surface text-white'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -128,14 +141,14 @@ export default function Product() {
       <div className="sticky bottom-0 mt-6 border-t border-white/5 bg-bg/95 px-4 py-3 backdrop-blur">
         <button
           onClick={handleAddToCart}
-          disabled={!product.in_stock}
+          disabled={!canAddToCart}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
         >
           {added ? (
             <>
               <CheckIcon className="h-5 w-5" /> Добавлено
             </>
-          ) : product.in_stock ? (
+          ) : canAddToCart ? (
             'В корзину'
           ) : (
             'Нет в наличии'

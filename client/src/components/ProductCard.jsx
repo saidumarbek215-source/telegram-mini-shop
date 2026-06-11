@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../utils/format.js'
+import { isProductAvailable } from '../utils/stock.js'
 
 export default function ProductCard({ product }) {
   const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
     : 0
+  const available = isProductAvailable(product)
 
   return (
     <Link
@@ -24,7 +26,7 @@ export default function ProductCard({ product }) {
             -{discountPct}%
           </span>
         )}
-        {!product.in_stock && (
+        {!available && (
           <div className="absolute inset-0 flex items-center justify-center bg-bg/60">
             <span className="rounded-full bg-bg/80 px-3 py-1 text-[11px] text-muted">
               Нет в наличии

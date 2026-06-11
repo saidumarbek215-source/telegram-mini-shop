@@ -2,12 +2,11 @@ import { ORDER_STATUS_LABELS, formatPrice } from './constants.js'
 
 const API_BASE = 'https://api.telegram.org/bot'
 
-export async function sendTelegramMessage(chatId, text) {
-  const token = process.env.BOT_TOKEN
-  if (!token || !chatId) return null
+export async function sendTelegramMessage(chatId, text, botToken) {
+  if (!botToken || !chatId) return null
 
   try {
-    const res = await fetch(`${API_BASE}${token}/sendMessage`, {
+    const res = await fetch(`${API_BASE}${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -27,42 +26,45 @@ export async function sendTelegramMessage(chatId, text) {
   }
 }
 
-export async function notifyOwnerNewOrder(order, items) {
-  const ownerId = process.env.OWNER_TELEGRAM_ID
-  if (!ownerId) return
+export async function notifyOwnerNewOrder(order, items, shop) {
+  if (!shop?.bot_token || !shop?.owner_telegram_id) return
 
   const itemsText = items
     .map((item) => {
       const parts = [item.product_name]
       if (item.size) parts.push(`размер ${item.size}`)
       if (item.color) parts.push(item.color)
-      return `• ${parts.join(', ')} × ${item.quantity} — ${formatPrice(item.price * item.quantity)}`
+      parts.push(`${item.quantity} шт.`)
+      return `• ${parts.join(', ')}`
     })
     .join('\n')
 
   const text = [
-    `🆕 <b>Новый заказ #${order.id}</b>`,
+    `🛍 <b>Новый заказ #${order.id}</b>`,
     '',
-    `👤 ${order.customer_name}`,
-    `📞 ${order.phone}`,
-    `📍 ${order.address}`,
-    order.comment ? `💬 ${order.comment}` : null,
+    `👤 Имя: ${order.customer_name}`,
+    `📱 Телефон: ${order.phone}`,
+    `📍 Адрес: ${order.address}`,
+    order.comment ? `💬 Комментарий: ${order.comment}` : null,
     '',
+    `🛒 Товары:`,
     itemsText,
     '',
     `💰 Итого: <b>${formatPrice(order.total)}</b>`,
+    '',
+    `💳 Реквизиты отправлены клиенту`,
   ]
     .filter((line) => line !== null)
     .join('\n')
 
-  return sendTelegramMessage(ownerId, text)
+  return sendTelegramMessage(shop.owner_telegram_id, text, shop.bot_token)
 }
 
-export async function notifyCustomerStatusChange(order) {
-  if (!order.telegram_user_id) return
+export async function notifyCustomerStatusChange(order, shop) {
+  if (!order.telegram_user_id || !shop?.bot_token) return
 
   const label = ORDER_STATUS_LABELS[order.status] || order.status
   const text = `📦 Статус вашего заказа <b>#${order.id}</b> изменён:\n<b>${label}</b>`
 
-  return sendTelegramMessage(order.telegram_user_id, text)
+  return sendTelegramMessage(order.telegram_user_id, text, shop.bot_token)
 }

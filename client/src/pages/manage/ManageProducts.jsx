@@ -59,6 +59,7 @@ export default function ManageProducts() {
         category_id: product.category_id,
         sizes: product.sizes,
         colors: product.colors,
+        sizes_stock: product.sizes_stock,
         in_stock: !product.in_stock,
         sort_order: product.sort_order,
       })

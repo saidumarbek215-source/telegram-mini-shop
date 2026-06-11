@@ -1,14 +1,14 @@
-import { getTelegramWebApp } from '../../telegram.js'
-
-const FINEXIA_URL = 'https://finexia.uz?ref=miniapp'
+import { getTelegramUser, getTelegramWebApp } from '../../telegram.js'
 
 export default function ManageAI() {
   function handleConnect() {
+    const ownerId = getTelegramUser()?.id
+    const url = `https://finexia.uz?ref=miniapp${ownerId ? `&shop_id=${ownerId}` : ''}`
     const tg = getTelegramWebApp()
     if (tg?.openLink) {
-      tg.openLink(FINEXIA_URL)
+      tg.openLink(url)
     } else {
-      window.open(FINEXIA_URL, '_blank', 'noopener,noreferrer')
+      window.open(url, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -30,15 +30,16 @@ export default function ManageAI() {
           </div>
         </div>
 
-        <p className="mb-4 text-sm text-white/80">
-          Подключите AI который будет отвечать вашим клиентам 24/7. Первые 10 дней бесплатно.
+        <p className="mb-4 text-sm leading-relaxed text-white/80">
+          Подключите Finexia AI — ваш бот будет отвечать клиентам 24/7, консультировать по
+          товарам и направлять в каталог. Первые 10 дней бесплатно.
         </p>
 
         <button
           onClick={handleConnect}
           className="w-full rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98]"
         >
-          Подключить Finexia AI
+          Подключить
         </button>
       </div>
     </div>

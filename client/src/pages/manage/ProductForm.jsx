@@ -13,12 +13,22 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
     in_stock: product?.in_stock ?? true,
     sort_order: product?.sort_order ?? 0,
   })
+  const [sizesStock, setSizesStock] = useState(product?.sizes_stock || {})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const sizesList = form.sizes
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
     setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  function handleSizeStockChange(size, value) {
+    setSizesStock((s) => ({ ...s, [size]: value }))
   }
 
   async function handleSubmit(e) {
@@ -37,14 +47,14 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
         old_price: form.old_price ? Number(form.old_price) : null,
         image_url: form.image_url.trim(),
         category_id: form.category_id ? Number(form.category_id) : null,
-        sizes: form.sizes
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean),
+        sizes: sizesList,
         colors: form.colors
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean),
+        sizes_stock: Object.fromEntries(
+          sizesList.map((size) => [size, Math.max(0, Number(sizesStock[size]) || 0)])
+        ),
         in_stock: form.in_stock,
         sort_order: Number(form.sort_order) || 0,
       })
@@ -101,7 +111,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Ссылка на фото *</label>
+        <label className="mb-1 block text-xs font-medium text-muted">Ссылка на фото (URL) *</label>
         <input
           name="image_url"
           value={form.image_url}
@@ -109,6 +119,21 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
           placeholder="https://..."
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
+        {form.image_url.trim() && (
+          <div className="mt-2 h-32 w-32 overflow-hidden rounded-xl bg-surface2">
+            <img
+              src={form.image_url.trim()}
+              alt="Превью"
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+              onLoad={(e) => {
+                e.currentTarget.style.display = 'block'
+              }}
+            />
+          </div>
+        )}
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">Категория</label>
@@ -138,6 +163,37 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
+
+      {sizesList.length > 0 && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">
+            Количество по размерам
+          </label>
+          <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
+            {sizesList.map((size) => {
+              const qty = Math.max(0, Number(sizesStock[size]) || 0)
+              return (
+                <div key={size} className="flex items-center justify-between gap-3">
+                  <span className={`text-sm ${qty === 0 ? 'text-muted' : ''}`}>
+                    Размер {size}
+                    {qty === 0 && <span className="ml-1.5 text-xs">— нет в наличии</span>}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={sizesStock[size] ?? 0}
+                    onChange={(e) => handleSizeStockChange(size, e.target.value)}
+                    className="w-20 rounded-lg bg-surface px-2 py-1.5 text-right text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-1 text-xs text-muted">
+            Если для всех размеров указано 0, товар будет показан как «Нет в наличии»
+          </p>
+        </div>
+      )}
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">
           Цвета (через запятую)

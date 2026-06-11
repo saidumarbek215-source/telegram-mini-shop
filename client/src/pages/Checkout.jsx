@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
-import { getTelegramUser, hapticFeedback } from '../telegram.js'
+import { getTelegramUser, getTelegramWebApp, hapticFeedback } from '../telegram.js'
 import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 
 export default function Checkout() {
@@ -80,6 +80,17 @@ export default function Checkout() {
   }
 
   if (success) {
+    function handleContactSeller() {
+      const ownerId = settings.owner_telegram_id
+      if (!ownerId) return
+      const tg = getTelegramWebApp()
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(`tg://user?id=${ownerId}`)
+      } else {
+        window.open(`tg://user?id=${ownerId}`, '_blank', 'noopener,noreferrer')
+      }
+    }
+
     return (
       <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
@@ -87,9 +98,24 @@ export default function Checkout() {
         </div>
         <h2 className="text-lg font-bold">Заказ оформлен!</h2>
         <p className="mt-1 text-sm text-muted">Мы свяжемся с вами для подтверждения оплаты</p>
+
+        {settings.owner_telegram_id && (
+          <>
+            <p className="mt-4 text-sm text-muted">
+              Отправьте фото чека об оплате продавцу
+            </p>
+            <button
+              onClick={handleContactSeller}
+              className="mt-3 rounded-2xl bg-accent px-6 py-3 text-sm font-bold text-bg"
+            >
+              Написать продавцу
+            </button>
+          </>
+        )}
+
         <button
           onClick={() => navigate('/profile')}
-          className="mt-5 rounded-2xl bg-accent px-6 py-3 text-sm font-bold text-bg"
+          className="mt-3 rounded-2xl bg-surface px-6 py-3 text-sm font-bold text-white"
         >
           Мои заказы
         </button>
