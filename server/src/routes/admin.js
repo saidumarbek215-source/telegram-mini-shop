@@ -1,32 +1,18 @@
 import { Router } from 'express'
-import jwt from 'jsonwebtoken'
 import { pool, query } from '../db/index.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireOwner } from '../middleware/auth.js'
 import { ORDER_STATUSES } from '../constants.js'
 import { notifyCustomerStatusChange } from '../telegram.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// POST /api/admin/login
-router.post('/login', (req, res) => {
-  const { password } = req.body
+router.use(requireOwner)
 
-  if (!process.env.ADMIN_PASSWORD) {
-    return res.status(500).json({ error: 'ADMIN_PASSWORD не настроен на сервере' })
-  }
-
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Неверный пароль' })
-  }
-
-  const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET || 'dev-secret', {
-    expiresIn: '7d',
-  })
-  res.json({ token })
+// GET /api/admin/check - used by the Mini App to decide whether to show the admin UI
+router.get('/check', (req, res) => {
+  res.json({ isOwner: true })
 })
-
-router.use(requireAdmin)
 
 /* ---------------------------- Products ---------------------------- */
 

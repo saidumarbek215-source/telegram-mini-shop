@@ -1,4 +1,4 @@
-import { XIcon } from '../Icons.jsx'
+import { XIcon } from './Icons.jsx'
 
 export default function Modal({ title, onClose, children }) {
   return (

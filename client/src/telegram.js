@@ -23,6 +23,10 @@ export function getTelegramUser() {
   return getTelegramWebApp()?.initDataUnsafe?.user || null
 }
 
+export function getTelegramInitData() {
+  return getTelegramWebApp()?.initData || ''
+}
+
 export function hapticFeedback(style = 'light') {
   try {
     getTelegramWebApp()?.HapticFeedback?.impactOccurred(style)

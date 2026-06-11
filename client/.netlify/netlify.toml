@@ -10,6 +10,7 @@ redirects = []
 publish = "/Users/saidumarbek215.com/telegram-mini-shop/client/dist"
 publishOrigin = "ui"
 commandOrigin = "ui"
+base = "/Users/saidumarbek215.com/telegram-mini-shop/client"
 command = "npm run build"
 
 [build.environment]

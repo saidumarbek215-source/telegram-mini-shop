@@ -3,7 +3,7 @@ import { adminApi } from '../../api.js'
 import { formatPrice } from '../../utils/format.js'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUSES } from '../../constants.js'
 
-export default function AdminOrders() {
+export default function ManageOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState(null)
@@ -39,7 +39,7 @@ export default function AdminOrders() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 pb-4">
       <h2 className="text-base font-bold">Заказы ({orders.length})</h2>
 
       {orders.map((order) => (

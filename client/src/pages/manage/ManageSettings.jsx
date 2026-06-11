@@ -10,7 +10,7 @@ const FIELDS = [
   { key: 'currency', label: 'Валюта' },
 ]
 
-export default function AdminSettings() {
+export default function ManageSettings() {
   const [form, setForm] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -43,8 +43,8 @@ export default function AdminSettings() {
   if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-3">
-      <h2 className="mb-1 text-base font-bold">Настройки магазина</h2>
+    <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-3 pb-4">
+      <h2 className="mb-1 text-base font-bold">Реквизиты и настройки магазина</h2>
 
       {FIELDS.map(({ key, label }) => (
         <div key={key}>

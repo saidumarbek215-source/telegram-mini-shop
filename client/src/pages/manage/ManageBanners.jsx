@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
-import Modal from '../../components/admin/Modal.jsx'
+import Modal from '../../components/Modal.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
 
 function BannerForm({ banner, onSave, onCancel }) {
@@ -118,7 +118,7 @@ function BannerForm({ banner, onSave, onCancel }) {
   )
 }
 
-export default function AdminBanners() {
+export default function ManageBanners() {
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
@@ -155,7 +155,7 @@ export default function AdminBanners() {
   if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
 
   return (
-    <div>
+    <div className="pb-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-bold">Баннеры ({banners.length})</h2>
         <button

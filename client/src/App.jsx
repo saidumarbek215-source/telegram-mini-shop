@@ -6,13 +6,13 @@ import Product from './pages/Product.jsx'
 import Cart from './pages/Cart.jsx'
 import Checkout from './pages/Checkout.jsx'
 import Profile from './pages/Profile.jsx'
-import AdminLogin from './pages/admin/AdminLogin.jsx'
-import AdminLayout from './pages/admin/AdminLayout.jsx'
-import AdminProducts from './pages/admin/AdminProducts.jsx'
-import AdminCategories from './pages/admin/AdminCategories.jsx'
-import AdminOrders from './pages/admin/AdminOrders.jsx'
-import AdminBanners from './pages/admin/AdminBanners.jsx'
-import AdminSettings from './pages/admin/AdminSettings.jsx'
+import ManageLayout from './pages/manage/ManageLayout.jsx'
+import ManageOrders from './pages/manage/ManageOrders.jsx'
+import ManageProducts from './pages/manage/ManageProducts.jsx'
+import ManageCategories from './pages/manage/ManageCategories.jsx'
+import ManageBanners from './pages/manage/ManageBanners.jsx'
+import ManageSettings from './pages/manage/ManageSettings.jsx'
+import ManageAI from './pages/manage/ManageAI.jsx'
 
 export default function App() {
   return (
@@ -24,16 +24,16 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />
-      </Route>
 
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="orders" replace />} />
-        <Route path="orders" element={<AdminOrders />} />
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="banners" element={<AdminBanners />} />
-        <Route path="settings" element={<AdminSettings />} />
+        <Route path="/manage" element={<ManageLayout />}>
+          <Route index element={<Navigate to="orders" replace />} />
+          <Route path="orders" element={<ManageOrders />} />
+          <Route path="products" element={<ManageProducts />} />
+          <Route path="categories" element={<ManageCategories />} />
+          <Route path="banners" element={<ManageBanners />} />
+          <Route path="settings" element={<ManageSettings />} />
+          <Route path="ai" element={<ManageAI />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

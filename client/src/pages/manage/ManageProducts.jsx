@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import { formatPrice } from '../../utils/format.js'
-import Modal from '../../components/admin/Modal.jsx'
+import Modal from '../../components/Modal.jsx'
 import ProductForm from './ProductForm.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
 
-export default function AdminProducts() {
+export default function ManageProducts() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null) // null | 'new' | product
+  const [togglingId, setTogglingId] = useState(null)
 
   useEffect(() => {
     load()
@@ -46,10 +47,31 @@ export default function AdminProducts() {
     setProducts((prev) => prev.filter((p) => p.id !== id))
   }
 
+  async function handleToggleStock(product) {
+    setTogglingId(product.id)
+    try {
+      const updated = await adminApi.updateProduct(product.id, {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        old_price: product.old_price,
+        image_url: product.image_url,
+        category_id: product.category_id,
+        sizes: product.sizes,
+        colors: product.colors,
+        in_stock: !product.in_stock,
+        sort_order: product.sort_order,
+      })
+      setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
   if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
 
   return (
-    <div>
+    <div className="pb-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-bold">Товары ({products.length})</h2>
         <button
@@ -79,26 +101,37 @@ export default function AdminProducts() {
                 <span className="text-sm font-bold text-accent">
                   {formatPrice(product.price)}
                 </span>
-                {!product.in_stock && (
-                  <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-400">
-                    Нет в наличии
-                  </span>
-                )}
               </div>
             </div>
-            <div className="flex flex-shrink-0 flex-col gap-2">
+            <div className="flex flex-shrink-0 flex-col items-center gap-2">
               <button
-                onClick={() => setEditing(product)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface2 text-white"
+                onClick={() => handleToggleStock(product)}
+                disabled={togglingId === product.id}
+                title={product.in_stock ? 'В наличии' : 'Нет в наличии'}
+                className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-60 ${
+                  product.in_stock ? 'bg-accent' : 'bg-surface2'
+                }`}
               >
-                <PencilIcon className="h-4 w-4" />
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                    product.in_stock ? 'translate-x-5' : 'translate-x-0.5'
+                  }`}
+                />
               </button>
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface2 text-red-400"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditing(product)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface2 text-white"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface2 text-red-400"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}

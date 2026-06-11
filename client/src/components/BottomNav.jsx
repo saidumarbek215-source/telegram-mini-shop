@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
-import { HomeIcon, GridIcon, BagIcon, UserIcon } from './Icons.jsx'
+import { HomeIcon, GridIcon, BagIcon, UserIcon, SlidersIcon } from './Icons.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import { useOwner } from '../context/OwnerContext.jsx'
 
 const items = [
   { to: '/', label: 'Главная', icon: HomeIcon, end: true },
@@ -11,11 +12,16 @@ const items = [
 
 export default function BottomNav() {
   const { count } = useCart()
+  const { isOwner } = useOwner()
+
+  const navItems = isOwner
+    ? [...items, { to: '/manage', label: 'Управление', icon: SlidersIcon }]
+    : items
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/5 bg-surface/90 backdrop-blur-lg">
       <div className="mx-auto flex max-w-md items-stretch justify-around">
-        {items.map(({ to, label, icon: Icon, end, badge }) => (
+        {navItems.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
             to={to}
