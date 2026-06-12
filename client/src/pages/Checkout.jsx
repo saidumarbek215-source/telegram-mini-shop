@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
@@ -8,6 +8,7 @@ import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 
 export default function Checkout() {
   const navigate = useNavigate()
+  const { setHideContact } = useOutletContext() ?? {}
   const { items, total, clearCart } = useCart()
 
   const [settings, setSettings] = useState({})
@@ -16,6 +17,8 @@ export default function Checkout() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [orderId, setOrderId] = useState(null)
+  const [orderItems, setOrderItems] = useState([])
+  const [orderTotal, setOrderTotal] = useState(0)
 
   useEffect(() => {
     api.getSettings().then(setSettings)
@@ -34,6 +37,10 @@ export default function Checkout() {
       navigate('/cart', { replace: true })
     }
   }, [items.length, success, navigate])
+
+  useEffect(() => {
+    setHideContact?.(success)
+  }, [success, setHideContact])
 
   if (items.length === 0 && !success) return null
 
@@ -71,6 +78,8 @@ export default function Checkout() {
         })),
       })
       hapticFeedback('heavy')
+      setOrderItems(items)
+      setOrderTotal(total)
       clearCart()
       setOrderId(order.id)
       setSuccess(true)
@@ -83,40 +92,71 @@ export default function Checkout() {
 
   if (success) {
     function handleContactSeller() {
-      if (!settings.admin_username || !orderId) return
+      if (!settings.admin_username) return
+
+      const orderText = encodeURIComponent(
+        `Заказ #${orderId}\n` +
+          orderItems
+            .map(
+              (i) =>
+                `${i.product_name}${i.size ? `, размер ${i.size}` : ''}, ${i.quantity} шт.`
+            )
+            .join('\n') +
+          '\n' +
+          `Сумма: ${formatPrice(orderTotal)}\n` +
+          `Отправляю фото чека об оплате`
+      )
+
+      const url = `https://t.me/${settings.admin_username}?text=${orderText}`
       const tg = getTelegramWebApp()
-      if (tg?.openLink) {
-        tg.openLink('https://t.me/' + settings.admin_username + '?start=order_' + orderId)
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(url)
       } else {
-        window.open('https://t.me/' + settings.admin_username, '_blank')
+        window.open(url, '_blank')
       }
     }
 
     return (
-      <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+      <div className="flex flex-col items-center px-4 py-12 text-center">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
           <CheckIcon className="h-8 w-8 text-accent" />
         </div>
-        <h2 className="text-lg font-bold">Заказ оформлен!</h2>
-        <p className="mt-1 text-sm text-muted">Мы свяжемся с вами для подтверждения оплаты</p>
+        <h2 className="text-lg font-bold">✅ Заказ #{orderId} оформлен!</h2>
+
+        {settings.card_number && (
+          <div className="mt-4 w-full rounded-2xl bg-surface p-4 text-left">
+            <h3 className="mb-2 text-sm font-semibold">💳 Оплатите на карту:</h3>
+            <div className="flex items-center justify-between py-1 text-sm">
+              <span className="text-muted">Номер</span>
+              <span className="font-mono font-medium">{settings.card_number}</span>
+            </div>
+            {settings.card_holder && (
+              <div className="flex items-center justify-between py-1 text-sm">
+                <span className="text-muted">Владелец</span>
+                <span className="font-medium">{settings.card_holder}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between py-1 text-sm">
+              <span className="text-muted">Сумма</span>
+              <span className="font-bold text-accent">{formatPrice(orderTotal)}</span>
+            </div>
+          </div>
+        )}
+
+        <p className="mt-4 text-sm text-muted">📦 Детали доставки уточните у продавца.</p>
 
         {settings.admin_username && (
-          <>
-            <p className="mt-4 text-sm text-muted">
-              Отправьте фото чека об оплате продавцу
-            </p>
-            <button
-              onClick={handleContactSeller}
-              className="mt-3 rounded-2xl bg-accent px-6 py-3 text-sm font-bold text-bg"
-            >
-              Написать продавцу
-            </button>
-          </>
+          <button
+            onClick={handleContactSeller}
+            className="mt-4 w-full rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg"
+          >
+            💬 Написать продавцу
+          </button>
         )}
 
         <button
           onClick={() => navigate('/profile')}
-          className="mt-3 rounded-2xl bg-surface px-6 py-3 text-sm font-bold text-white"
+          className="mt-3 w-full rounded-2xl bg-surface py-3.5 text-sm font-bold text-white"
         >
           Мои заказы
         </button>

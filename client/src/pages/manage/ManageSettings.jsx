@@ -13,7 +13,7 @@ const FIELDS = [
   { key: 'card_holder', label: 'Получатель платежа (ФИО)' },
   { key: 'click_number', label: 'Номер Click' },
   { key: 'currency', label: 'Валюта' },
-  { key: 'admin_username', label: 'Ваш Telegram username (без @)' },
+  { key: 'admin_username', label: 'Ваш Telegram username (без @)', placeholder: 'example: finexia_admin' },
 ]
 
 export default function ManageSettings() {
@@ -84,13 +84,14 @@ export default function ManageSettings() {
         </div>
       </div>
 
-      {FIELDS.map(({ key, label }) => (
+      {FIELDS.map(({ key, label, placeholder }) => (
         <div key={key}>
           <label className="mb-1 block text-xs font-medium text-muted">{label}</label>
           <input
             name={key}
             value={form[key] || ''}
             onChange={handleChange}
+            placeholder={placeholder}
             className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
