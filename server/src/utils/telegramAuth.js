@@ -34,3 +34,10 @@ export function parseInitData(initData, botToken) {
     return null
   }
 }
+
+// Derives a per-bot secret token used to verify that webhook requests really
+// come from Telegram (passed to setWebhook's `secret_token` param and checked
+// against the `X-Telegram-Bot-Api-Secret-Token` header on each update).
+export function getWebhookSecretToken(botToken) {
+  return crypto.createHash('sha256').update(botToken).digest('hex')
+}

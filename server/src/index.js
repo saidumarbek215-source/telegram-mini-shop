@@ -9,7 +9,9 @@ import settingsRouter from './routes/settings.js'
 import ordersRouter from './routes/orders.js'
 import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
+import telegramRouter from './routes/telegram.js'
 import { migrate } from './db/migrate.js'
+import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 
 dotenv.config()
 
@@ -27,6 +29,7 @@ app.use('/api/settings', settingsRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/shops', shopsRouter)
+app.use('/api/telegram', telegramRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
@@ -37,6 +40,7 @@ const PORT = process.env.PORT || 3001
 
 async function start() {
   await migrate()
+  startAutoCancelJob()
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
   })

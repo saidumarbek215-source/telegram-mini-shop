@@ -1,4 +1,4 @@
-export const ORDER_STATUSES = ['new', 'accepted', 'shipped', 'delivered', 'cancelled']
+export const ORDER_STATUSES = ['new', 'accepted', 'shipped', 'delivered', 'cancelled', 'expired']
 
 export const ORDER_STATUS_LABELS = {
   new: 'Новый',
@@ -6,6 +6,7 @@ export const ORDER_STATUS_LABELS = {
   shipped: 'Отправлен',
   delivered: 'Доставлен',
   cancelled: 'Отменён',
+  expired: 'Истёк',
 }
 
 export function formatPrice(value) {

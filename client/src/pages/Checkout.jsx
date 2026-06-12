@@ -15,6 +15,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [orderId, setOrderId] = useState(null)
 
   useEffect(() => {
     api.getSettings().then(setSettings)
@@ -52,7 +53,7 @@ export default function Checkout() {
     const tgUser = getTelegramUser()
 
     try {
-      await api.createOrder({
+      const order = await api.createOrder({
         telegram_user_id: tgUser?.id,
         telegram_username: tgUser?.username,
         customer_name: form.name.trim(),
@@ -71,6 +72,7 @@ export default function Checkout() {
       })
       hapticFeedback('heavy')
       clearCart()
+      setOrderId(order.id)
       setSuccess(true)
     } catch (err) {
       setError(err.message)
@@ -82,12 +84,13 @@ export default function Checkout() {
   if (success) {
     function handleContactSeller() {
       const botUsername = settings.bot_username
-      if (!botUsername) return
+      if (!botUsername || !orderId) return
+      const url = `https://t.me/${botUsername}?start=order_${orderId}`
       const tg = getTelegramWebApp()
       if (tg?.openTelegramLink) {
-        tg.openTelegramLink(`https://t.me/${botUsername}`)
+        tg.openTelegramLink(url)
       } else {
-        window.open(`https://t.me/${botUsername}`, '_blank', 'noopener,noreferrer')
+        window.open(url, '_blank', 'noopener,noreferrer')
       }
     }
 
