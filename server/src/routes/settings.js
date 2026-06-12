@@ -26,6 +26,7 @@ router.get(
       currency: shop.currency || '',
       owner_telegram_id: shop.owner_telegram_id || '',
       bot_username: shop.bot_username || '',
+      admin_username: shop.admin_username || '',
     })
   })
 )

@@ -13,6 +13,7 @@ const FIELDS = [
   { key: 'card_holder', label: 'Получатель платежа (ФИО)' },
   { key: 'click_number', label: 'Номер Click' },
   { key: 'currency', label: 'Валюта' },
+  { key: 'admin_username', label: 'Ваш Telegram username (без @)' },
 ]
 
 export default function ManageSettings() {

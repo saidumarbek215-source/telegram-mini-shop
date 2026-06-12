@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS shops (
   owner_telegram_id  BIGINT UNIQUE,
   bot_token          VARCHAR(255),
   bot_username       VARCHAR(100),
+  admin_username     VARCHAR(100),
   card_number        VARCHAR(50),
   card_holder        VARCHAR(100),
   click_number       VARCHAR(50),
@@ -17,6 +18,7 @@ CREATE TABLE IF NOT EXISTS shops (
 
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS bot_username VARCHAR(100);
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS ai_connected BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100);
 
 CREATE TABLE IF NOT EXISTS categories (
   id          SERIAL PRIMARY KEY,

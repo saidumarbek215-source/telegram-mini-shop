@@ -270,6 +270,7 @@ function shopToSettings(shop) {
     card_holder: shop.card_holder || '',
     click_number: shop.click_number || '',
     currency: shop.currency || '',
+    admin_username: shop.admin_username || '',
   }
 }
 
@@ -280,13 +281,20 @@ router.get('/settings', (req, res) => {
 router.put(
   '/settings',
   asyncHandler(async (req, res) => {
-    const { store_name, store_description, card_number, card_holder, click_number, currency } =
-      req.body || {}
+    const {
+      store_name,
+      store_description,
+      card_number,
+      card_holder,
+      click_number,
+      currency,
+      admin_username,
+    } = req.body || {}
 
     const result = await query(
       `UPDATE shops
-       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5, currency = $6
-       WHERE id = $7
+       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5, currency = $6, admin_username = $7
+       WHERE id = $8
        RETURNING *`,
       [
         store_name ?? '',
@@ -295,6 +303,7 @@ router.put(
         card_holder ?? '',
         click_number ?? '',
         currency ?? '',
+        admin_username ?? '',
         req.shop.id,
       ]
     )
