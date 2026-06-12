@@ -178,17 +178,11 @@ POST /api/shops/register
 
 Для работы уведомлений у магазина должен быть заполнен `bot_token` (для демо-магазина id=1 — `BOT_TOKEN`/`OWNER_TELEGRAM_ID` в `server/.env`).
 
-### Webhook бота (кнопки «Подтвердить»/«Отменить» и «Написать продавцу»)
+### Боты магазинов (long polling)
 
-Кнопки и команда `/start order_<id>` обрабатываются через `POST /api/telegram/webhook/:shopId` — для каждого магазина нужно один раз подписать его бота на этот адрес:
+Сообщения и кнопки (`/start`, `/start order_<id>`, «✅ Подтвердить» / «❌ Отменить», AI-ассистент, фото товара от владельца) обрабатываются через **long polling** — для каждого магазина с заполненным `bot_token` (и `is_active = true`) сервер при старте автоматически создаёт отдельный экземпляр бота (`server/src/services/botManager.js`). Никакой ручной настройки `setWebhook` не требуется.
 
-```bash
-curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
-  -d "url=<API_URL>/api/telegram/webhook/<SHOP_ID>" \
-  -d "secret_token=$(node -e "console.log(require('crypto').createHash('sha256').update('<BOT_TOKEN>').digest('hex'))")"
-```
-
-`<API_URL>` — публичный HTTPS-адрес сервера (`server`), `<SHOP_ID>` — id магазина из таблицы `shops`. `secret_token` сервер проверяет в заголовке `X-Telegram-Bot-Api-Secret-Token` (см. `getWebhookSecretToken` в `server/src/utils/telegramAuth.js`), запросы без правильного секрета отклоняются.
+При вызове `POST /api/shops/register` бот нового (или обновлённого) магазина запускается сразу же, без перезапуска сервера.
 
 ## Подключение как Telegram Mini App
 

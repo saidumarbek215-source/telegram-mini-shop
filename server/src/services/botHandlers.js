@@ -1,10 +1,7 @@
-import { Router } from 'express'
 import { pool, query } from '../db/index.js'
-import { asyncHandler } from '../utils/asyncHandler.js'
-import { getWebhookSecretToken } from '../utils/telegramAuth.js'
-import { restoreOrderStock } from '../services/orderStock.js'
-import { uploadImageToImgbb } from '../services/imgbb.js'
-import { analyzeProductImage, getShopAssistantReply } from '../services/anthropic.js'
+import { restoreOrderStock } from './orderStock.js'
+import { uploadImageToImgbb } from './imgbb.js'
+import { analyzeProductImage, getShopAssistantReply } from './anthropic.js'
 import { formatPrice, getMiniAppUrl } from '../constants.js'
 import {
   answerCallbackQuery,
@@ -17,8 +14,6 @@ import {
   sendTelegramPhoto,
 } from '../telegram.js'
 
-const router = Router()
-
 // Telegram user id -> { shopId, orderId, expiresAt }. Set when a customer
 // opens a chat via the "Написать продавцу" deep link (/start order_<id>), so
 // the next photo they send (the payment receipt) can be forwarded to the
@@ -26,33 +21,7 @@ const router = Router()
 const pendingReceipts = new Map()
 const PENDING_RECEIPT_TTL_MS = 60 * 60 * 1000
 
-// POST /api/telegram/webhook/:shopId - Telegram Bot API webhook for a shop's bot.
-// Configure with: setWebhook(url=".../api/telegram/webhook/<shopId>", secret_token=getWebhookSecretToken(bot_token))
-router.post(
-  '/webhook/:shopId',
-  asyncHandler(async (req, res) => {
-    const shopId = Number(req.params.shopId)
-    const shopResult = await query('SELECT * FROM shops WHERE id = $1', [shopId])
-    const shop = shopResult.rows[0]
-
-    if (!shop?.bot_token) return res.sendStatus(200)
-
-    const secret = req.headers['x-telegram-bot-api-secret-token']
-    if (secret !== getWebhookSecretToken(shop.bot_token)) return res.sendStatus(401)
-
-    const update = req.body || {}
-
-    if (update.callback_query) {
-      await handleCallbackQuery(update.callback_query, shop)
-    } else if (update.message) {
-      await handleMessage(update.message, shop)
-    }
-
-    res.sendStatus(200)
-  })
-)
-
-async function handleCallbackQuery(callbackQuery, shop) {
+export async function handleCallbackQuery(callbackQuery, shop) {
   const match = (callbackQuery.data || '').match(/^(confirm|cancel)_order_(\d+)$/)
   if (!match) {
     await answerCallbackQuery(callbackQuery.id, shop.bot_token)
@@ -114,7 +83,7 @@ async function handleCallbackQuery(callbackQuery, shop) {
   await editMessageText(chatId, messageId, `${originalText}\n\n❌ Отменён`, shop.bot_token)
 }
 
-async function handleMessage(message, shop) {
+export async function handleMessage(message, shop) {
   const fromId = message.from?.id
   const text = message.text || ''
   const startMatch = text.match(/^\/start(?:@\w+)?(?:\s+order_(\d+))?/)
@@ -338,5 +307,3 @@ async function forwardOrderContact(orderId, message, shop) {
     expiresAt: Date.now() + PENDING_RECEIPT_TTL_MS,
   })
 }
-
-export default router

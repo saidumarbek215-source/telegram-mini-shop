@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { query } from '../db/index.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { restartBotForShop } from '../services/botManager.js'
 
 const router = Router()
 
@@ -30,6 +31,12 @@ router.post(
 
     const shopId = result.rows[0].id
     const baseUrl = process.env.WEBAPP_URL || 'https://telegram-mini-shop.netlify.app'
+
+    try {
+      await restartBotForShop(shopId)
+    } catch (err) {
+      console.error(`Failed to start bot for shop ${shopId}:`, err.message)
+    }
 
     res.status(201).json({ shop_id: shopId, mini_app_url: `${baseUrl}?shop=${shopId}` })
   })
