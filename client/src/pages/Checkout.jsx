@@ -99,12 +99,12 @@ export default function Checkout() {
           orderItems
             .map(
               (i) =>
-                `${i.product_name}${i.size ? `, размер ${i.size}` : ''}, ${i.quantity} шт.`
+                `• ${i.product_name}${i.size ? `, размер ${i.size}` : ''}, ${i.quantity} шт.`
             )
             .join('\n') +
           '\n' +
           `Сумма: ${formatPrice(orderTotal)}\n` +
-          `Отправляю фото чека об оплате`
+          `Прикрепляю фото чека`
       )
 
       const url = `https://t.me/${settings.admin_username}?text=${orderText}`

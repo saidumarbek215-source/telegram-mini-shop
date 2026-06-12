@@ -42,13 +42,18 @@ export default function Layout() {
       </div>
       {showNav && <BottomNav />}
       {!hideContact && shop?.admin_username && (
-        <button
-          onClick={handleContactSeller}
-          style={{ position: 'fixed', bottom: '80px', right: '16px' }}
-          className="z-40 rounded-full bg-accent px-4 py-3 text-sm font-bold text-white shadow-lg"
-        >
-          💬 Связаться с продавцом
-        </button>
+        <div className="group" style={{ position: 'fixed', bottom: '90px', right: '16px', zIndex: 40 }}>
+          <button
+            onClick={handleContactSeller}
+            aria-label="Связаться с продавцом"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-2xl shadow-lg transition-transform active:scale-95"
+          >
+            💬
+          </button>
+          <span className="pointer-events-none absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-surface px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+            Связаться с продавцом
+          </span>
+        </div>
       )}
     </div>
   )

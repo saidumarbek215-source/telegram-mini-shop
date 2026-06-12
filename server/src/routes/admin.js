@@ -13,7 +13,12 @@ router.use(asyncHandler(requireOwner))
 router.get('/check', (req, res) => {
   res.json({
     isOwner: true,
-    shop: { id: req.shop.id, name: req.shop.name, currency: req.shop.currency },
+    shop: {
+      id: req.shop.id,
+      name: req.shop.name,
+      currency: req.shop.currency,
+      ai_connected: req.shop.ai_connected,
+    },
   })
 })
 
