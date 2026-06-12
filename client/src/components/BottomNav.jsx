@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { HomeIcon, GridIcon, BagIcon, UserIcon, SlidersIcon } from './Icons.jsx'
+import { HomeIcon, GridIcon, BagIcon, UserIcon, SlidersIcon, HelpIcon } from './Icons.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useOwner } from '../context/OwnerContext.jsx'
 
@@ -8,6 +8,7 @@ const items = [
   { to: '/catalog', label: 'Каталог', icon: GridIcon },
   { to: '/cart', label: 'Корзина', icon: BagIcon, badge: true },
   { to: '/profile', label: 'Профиль', icon: UserIcon },
+  { to: '/faq', label: 'Помощь', icon: HelpIcon },
 ]
 
 export default function BottomNav() {

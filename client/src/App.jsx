@@ -8,6 +8,7 @@ import Product from './pages/Product.jsx'
 import Cart from './pages/Cart.jsx'
 import Checkout from './pages/Checkout.jsx'
 import Profile from './pages/Profile.jsx'
+import Faq from './pages/Faq.jsx'
 import ManageLayout from './pages/manage/ManageLayout.jsx'
 import ManageOrders from './pages/manage/ManageOrders.jsx'
 import ManageProducts from './pages/manage/ManageProducts.jsx'
@@ -15,6 +16,7 @@ import ManageCategories from './pages/manage/ManageCategories.jsx'
 import ManageBanners from './pages/manage/ManageBanners.jsx'
 import ManageSettings from './pages/manage/ManageSettings.jsx'
 import ManageAI from './pages/manage/ManageAI.jsx'
+import ManageHelp from './pages/manage/ManageHelp.jsx'
 
 export default function App() {
   const { status } = useShop()
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/faq" element={<Faq />} />
 
         <Route path="/manage" element={<ManageLayout />}>
           <Route index element={<Navigate to="orders" replace />} />
@@ -40,6 +43,7 @@ export default function App() {
           <Route path="banners" element={<ManageBanners />} />
           <Route path="settings" element={<ManageSettings />} />
           <Route path="ai" element={<ManageAI />} />
+          <Route path="help" element={<ManageHelp />} />
         </Route>
       </Route>
 

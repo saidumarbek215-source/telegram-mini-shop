@@ -3,9 +3,12 @@ import { pool, query } from '../db/index.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { getWebhookSecretToken } from '../utils/telegramAuth.js'
 import { restoreOrderStock } from '../services/orderStock.js'
-import { formatPrice } from '../constants.js'
+import { uploadImageToImgbb } from '../services/imgbb.js'
+import { analyzeProductImage, getShopAssistantReply } from '../services/anthropic.js'
+import { formatPrice, getMiniAppUrl } from '../constants.js'
 import {
   answerCallbackQuery,
+  downloadTelegramFile,
   editMessageText,
   escapeHtml,
   notifyCustomerOrderCancelled,
@@ -121,7 +124,16 @@ async function handleMessage(message, shop) {
     return
   }
 
-  if (message.photo?.length && fromId) {
+  if (!fromId) return
+
+  const isOwner = shop.owner_telegram_id != null && Number(fromId) === Number(shop.owner_telegram_id)
+
+  if (message.photo?.length) {
+    if (isOwner) {
+      await handleOwnerProductPhoto(message, shop)
+      return
+    }
+
     const pending = pendingReceipts.get(fromId)
     if (pending && pending.shopId === shop.id && pending.expiresAt > Date.now()) {
       const fileId = message.photo[message.photo.length - 1].file_id
@@ -133,6 +145,108 @@ async function handleMessage(message, shop) {
       )
       await sendTelegramMessage(fromId, 'Спасибо! Чек отправлен продавцу.', shop.bot_token)
     }
+    return
+  }
+
+  if (text && !isOwner) {
+    await handleCustomerChatMessage(text, fromId, shop)
+  }
+}
+
+const CATEGORY_ICONS = {
+  Одежда: '👕',
+  Обувь: '👟',
+  Аксессуары: '👜',
+  Электроника: '📱',
+  Другое: '📦',
+}
+
+// Resolves an AI-suggested category name to a category id for the shop,
+// creating the category if it doesn't exist yet.
+async function getOrCreateCategory(shopId, categoryName) {
+  const name = CATEGORY_ICONS[categoryName] ? categoryName : 'Другое'
+
+  const existing = await query('SELECT id FROM categories WHERE shop_id = $1 AND name = $2', [
+    shopId,
+    name,
+  ])
+  if (existing.rows.length) return existing.rows[0].id
+
+  const created = await query(
+    'INSERT INTO categories (shop_id, name, icon) VALUES ($1, $2, $3) RETURNING id',
+    [shopId, name, CATEGORY_ICONS[name]]
+  )
+  return created.rows[0].id
+}
+
+// Handles a product photo sent by the shop owner: uploads it to ImgBB, asks
+// Claude to describe the product, and adds it to the catalog.
+async function handleOwnerProductPhoto(message, shop) {
+  const fromId = message.from.id
+  const fileId = message.photo[message.photo.length - 1].file_id
+
+  await sendTelegramMessage(fromId, '⏳ Распознаю товар на фото...', shop.bot_token)
+
+  try {
+    const { base64, mimeType } = await downloadTelegramFile(fileId, shop.bot_token)
+    const imageUrl = await uploadImageToImgbb(base64)
+    const product = await analyzeProductImage(base64, mimeType)
+
+    const categoryId = await getOrCreateCategory(shop.id, product.category)
+    const price = Math.max(0, Math.round(Number(product.price_hint)) || 0)
+    const colors = Array.isArray(product.colors) ? product.colors : []
+    const sizes = Array.isArray(product.sizes) ? product.sizes : []
+
+    await query(
+      `INSERT INTO products (shop_id, name, description, price, image_url, category_id, sizes, colors)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [shop.id, product.name, product.description ?? '', price, imageUrl, categoryId, sizes, colors]
+    )
+
+    const text = [
+      '✅ Товар добавлен!',
+      `Название: ${escapeHtml(product.name)}`,
+      `Категория: ${escapeHtml(product.category)}`,
+      `Цвета: ${escapeHtml(colors.join(', '))}`,
+      `Цена: ${formatPrice(price)}`,
+      '',
+      'Открой каталог чтобы проверить и изменить цену если нужно.',
+    ].join('\n')
+
+    await sendTelegramMessage(fromId, text, shop.bot_token)
+  } catch (err) {
+    console.error('Product auto-create failed:', err.message)
+    await sendTelegramMessage(
+      fromId,
+      '❌ Не удалось распознать товар на фото. Попробуйте отправить фото ещё раз.',
+      shop.bot_token
+    )
+  }
+}
+
+// Handles a free-text message from a customer using Claude as a shop assistant.
+async function handleCustomerChatMessage(text, fromId, shop) {
+  try {
+    const productsResult = await query(
+      `SELECT p.name, p.description, p.price, p.colors, p.sizes, c.name AS category
+       FROM products p
+       LEFT JOIN categories c ON c.id = p.category_id
+       WHERE p.shop_id = $1 AND p.in_stock = true
+       ORDER BY p.sort_order ASC, p.id ASC
+       LIMIT 100`,
+      [shop.id]
+    )
+
+    const reply = await getShopAssistantReply({
+      shopName: shop.name || 'магазин',
+      products: productsResult.rows,
+      miniAppUrl: getMiniAppUrl(shop.id),
+      userMessage: text,
+    })
+
+    if (reply) await sendTelegramMessage(fromId, escapeHtml(reply), shop.bot_token)
+  } catch (err) {
+    console.error('Shop assistant failed:', err.message)
   }
 }
 

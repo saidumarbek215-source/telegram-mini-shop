@@ -12,3 +12,8 @@ export const ORDER_STATUS_LABELS = {
 export function formatPrice(value) {
   return `${Math.round(Number(value)).toLocaleString('ru-RU').replace(/ /g, ' ')} сум`
 }
+
+export function getMiniAppUrl(shopId) {
+  const baseUrl = process.env.WEBAPP_URL || 'https://telegram-mini-shop.netlify.app'
+  return `${baseUrl}?shop=${shopId}`
+}

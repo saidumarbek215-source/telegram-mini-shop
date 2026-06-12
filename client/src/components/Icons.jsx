@@ -179,3 +179,21 @@ export function SparkleIcon(props) {
     </svg>
   )
 }
+
+export function HelpIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.2 9.3a2.8 2.8 0 1 1 4.6 2.1c-.8.6-1.4 1.1-1.4 2.3" />
+      <circle cx="12" cy="17.2" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  )
+}

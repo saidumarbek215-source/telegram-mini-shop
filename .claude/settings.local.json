@@ -12,7 +12,13 @@
       "Bash(node *)",
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:3099/api/health)",
       "Bash(pkill -f \"node src/index.js\")",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(python3 *)",
+      "Bash(curl -s http://localhost:5173/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(chromium-cli *)",
+      "Bash(npm ls *)",
+      "Bash(find / -maxdepth 6 -iname \"*playwright*\" -type d)",
+      "Bash(compgen -c)"
     ]
   }
 }

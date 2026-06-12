@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useOwner } from '../../context/OwnerContext.jsx'
-import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon } from '../../components/Icons.jsx'
+import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon, HelpIcon } from '../../components/Icons.jsx'
 
 const tabs = [
   { to: '/manage/orders', label: 'Заказы', icon: BoxIcon },
@@ -10,6 +10,7 @@ const tabs = [
   { to: '/manage/banners', label: 'Баннеры', icon: ImageIcon },
   { to: '/manage/settings', label: 'Реквизиты', icon: SettingsIcon },
   { to: '/manage/ai', label: 'AI Ассистент', icon: SparkleIcon },
+  { to: '/manage/help', label: 'Помощь', icon: HelpIcon },
 ]
 
 export default function ManageLayout() {

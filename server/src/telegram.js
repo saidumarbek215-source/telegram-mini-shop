@@ -51,6 +51,25 @@ export async function sendTelegramPhoto(chatId, fileId, botToken, caption = '') 
   }
 }
 
+// Downloads a file sent to the bot (e.g. a photo) via Telegram's getFile API
+// and returns its bytes as base64 plus its content type, so it can be
+// forwarded to other APIs (ImgBB, Claude vision).
+export async function downloadTelegramFile(fileId, botToken) {
+  const fileRes = await fetch(`${API_BASE}${botToken}/getFile?file_id=${fileId}`)
+  const fileData = await fileRes.json()
+  if (!fileData.ok) throw new Error(fileData.description || 'getFile failed')
+
+  const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
+  const downloadRes = await fetch(fileUrl)
+  if (!downloadRes.ok) throw new Error(`Failed to download file: ${downloadRes.status}`)
+
+  const arrayBuffer = await downloadRes.arrayBuffer()
+  const base64 = Buffer.from(arrayBuffer).toString('base64')
+  const mimeType = (downloadRes.headers.get('content-type') || 'image/jpeg').split(';')[0].trim()
+
+  return { base64, mimeType }
+}
+
 export async function editMessageText(chatId, messageId, text, botToken, replyMarkup = null) {
   if (!botToken || !chatId || !messageId) return null
 
