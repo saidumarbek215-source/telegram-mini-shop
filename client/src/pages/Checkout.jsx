@@ -87,10 +87,10 @@ export default function Checkout() {
       if (!botUsername || !orderId) return
       const url = `https://t.me/${botUsername}?start=order_${orderId}`
       const tg = getTelegramWebApp()
-      if (tg?.openTelegramLink) {
-        tg.openTelegramLink(url)
+      if (tg?.openLink) {
+        tg.openLink(url)
       } else {
-        window.open(url, '_blank', 'noopener,noreferrer')
+        window.open(url, '_blank')
       }
     }
 

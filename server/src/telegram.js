@@ -133,6 +133,7 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     `🛍 <b>Новый заказ #${order.id}</b>`,
     '',
     `👤 Имя: ${escapeHtml(order.customer_name)}`,
+    `👤 @${order.telegram_username ? escapeHtml(order.telegram_username) : 'не указан'}`,
     `📱 Телефон: ${escapeHtml(order.phone)}`,
     `📍 Адрес: ${escapeHtml(order.address)}`,
     order.comment ? `💬 Комментарий: ${escapeHtml(order.comment)}` : null,

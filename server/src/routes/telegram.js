@@ -120,7 +120,11 @@ async function handleMessage(message, shop) {
   const startMatch = text.match(/^\/start(?:@\w+)?(?:\s+order_(\d+))?/)
 
   if (startMatch) {
-    if (startMatch[1]) await forwardOrderContact(Number(startMatch[1]), message, shop)
+    if (startMatch[1]) {
+      await forwardOrderContact(Number(startMatch[1]), message, shop)
+    } else {
+      await sendWelcomeMessage(message, shop)
+    }
     return
   }
 
@@ -185,6 +189,20 @@ async function handleOwnerProductPhoto(message, shop) {
   const fromId = message.from.id
   const fileId = message.photo[message.photo.length - 1].file_id
 
+  if (!shop.ai_connected) {
+    await sendTelegramMessage(
+      fromId,
+      [
+        'Эта функция доступна только для подписчиков Finexia AI.',
+        'Подключите AI в Управление → AI Ассистент.',
+        'Первые 10 дней бесплатно! 🎁',
+        'finexia.uz',
+      ].join('\n'),
+      shop.bot_token
+    )
+    return
+  }
+
   await sendTelegramMessage(fromId, '⏳ Распознаю товар на фото...', shop.bot_token)
 
   try {
@@ -248,6 +266,27 @@ async function handleCustomerChatMessage(text, fromId, shop) {
   } catch (err) {
     console.error('Shop assistant failed:', err.message)
   }
+}
+
+// Handles a plain "/start" — greets the user and offers a button to open
+// the shop's Mini App catalog.
+async function sendWelcomeMessage(message, shop) {
+  const fromId = message.from?.id
+  if (!fromId) return
+
+  const text = [
+    `Добро пожаловать в ${escapeHtml(shop.name || 'магазин')}! 🛍`,
+    '',
+    escapeHtml(shop.description || ''),
+    '',
+    'Нажмите кнопку ниже чтобы открыть каталог товаров 👇',
+  ].join('\n')
+
+  const replyMarkup = {
+    inline_keyboard: [[{ text: '🛍 Открыть каталог', web_app: { url: getMiniAppUrl(shop.id) } }]],
+  }
+
+  await sendTelegramMessage(fromId, text, shop.bot_token, replyMarkup)
 }
 
 // Handles "/start order_<id>" sent when a customer taps "Написать продавцу"
