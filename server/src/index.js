@@ -1,6 +1,9 @@
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+require('dotenv').config()
+
 import express from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
 
 import categoriesRouter from './routes/categories.js'
 import productsRouter from './routes/products.js'
@@ -12,8 +15,6 @@ import shopsRouter from './routes/shops.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startAllBots } from './services/botManager.js'
-
-dotenv.config()
 
 const app = express()
 
