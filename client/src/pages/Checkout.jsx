@@ -14,6 +14,7 @@ export default function Checkout() {
   const [settings, setSettings] = useState({})
   const [form, setForm] = useState({ name: '', phone: '', address: '', comment: '' })
   const [locationReceived, setLocationReceived] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [locationCoords, setLocationCoords] = useState(null)
   const [locationLabel, setLocationLabel] = useState('📍 Определить моё местоположение')
   const [showManualInput, setShowManualInput] = useState(false)
@@ -151,7 +152,20 @@ export default function Checkout() {
             <h3 className="mb-2 text-sm font-semibold">💳 Оплатите на карту:</h3>
             <div className="flex items-center justify-between py-1 text-sm">
               <span className="text-muted">Номер</span>
-              <span className="font-mono font-medium">{settings.card_number}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-medium">{settings.card_number}</span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(settings.card_number)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                  className="rounded-lg bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent"
+                >
+                  {copied ? '✅ Скопировано!' : '📋 Копировать'}
+                </button>
+              </div>
             </div>
             {settings.card_holder && (
               <div className="flex items-center justify-between py-1 text-sm">

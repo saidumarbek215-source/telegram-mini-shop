@@ -31,7 +31,7 @@ export default function Cart() {
         <h1 className="text-lg font-bold">Корзина</h1>
       </header>
 
-      <div className="flex flex-col gap-3 px-4">
+      <div className="flex flex-col gap-3 px-4 pb-28">
         {items.map((item) => {
           const key = `${item.product_id}_${item.size}_${item.color}`
           return (
@@ -91,18 +91,13 @@ export default function Cart() {
         })}
       </div>
 
-      <div className="mt-6 px-4">
-        <div className="flex items-center justify-between rounded-2xl bg-surface p-4">
-          <span className="text-sm text-muted">Итого</span>
-          <span className="text-lg font-bold text-accent">{formatPrice(total)}</span>
-        </div>
-        <button
-          onClick={() => navigate('/checkout')}
-          className="mt-3 w-full rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98]"
-        >
-          Оформить заказ
-        </button>
-      </div>
+      <button
+        onClick={() => navigate('/checkout')}
+        className="fixed left-0 right-0 mx-4 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98]"
+        style={{ bottom: '70px' }}
+      >
+        Оформить заказ · {formatPrice(total)}
+      </button>
     </div>
   )
 }
