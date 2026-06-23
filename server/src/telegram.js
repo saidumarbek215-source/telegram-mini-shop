@@ -135,7 +135,14 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     `👤 Имя: ${escapeHtml(order.customer_name)}`,
     `👤 @${order.telegram_username ? escapeHtml(order.telegram_username) : 'не указан'}`,
     `📱 Телефон: ${escapeHtml(order.phone)}`,
-    `📍 Адрес: ${escapeHtml(order.address)}`,
+    (() => {
+      const coordsMatch = order.address.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/)
+      if (coordsMatch) {
+        const [, lat, lng] = coordsMatch
+        return `📍 Адрес: <a href="https://maps.google.com/?q=${lat},${lng}">Открыть на карте</a>`
+      }
+      return `📍 Адрес: ${escapeHtml(order.address)}`
+    })(),
     order.comment ? `💬 Комментарий: ${escapeHtml(order.comment)}` : null,
     '',
     `🛒 Товары:`,
