@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useOwner } from '../../context/OwnerContext.jsx'
 import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon, HelpIcon } from '../../components/Icons.jsx'
 
-const tabs = [
+const baseTabs = [
   { to: '/manage/orders', label: 'Заказы', icon: BoxIcon },
   { to: '/manage/products', label: 'Товары', icon: BagIcon },
   { to: '/manage/categories', label: 'Категории', icon: TagIcon },
@@ -27,6 +27,10 @@ export default function ManageLayout() {
     return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
   }
 
+  const tabs = shop?.features?.partners_map
+    ? [...baseTabs, { to: '/manage/map', label: '🗺 Карта', icon: null }]
+    : baseTabs
+
   return (
     <div>
       <header className="px-4 pb-3 pt-5">
@@ -46,7 +50,7 @@ export default function ManageLayout() {
               }`
             }
           >
-            <Icon className="h-4 w-4" /> {label}
+            {Icon && <Icon className="h-4 w-4" />} {label}
           </NavLink>
         ))}
       </nav>

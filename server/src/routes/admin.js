@@ -18,6 +18,7 @@ router.get('/check', (req, res) => {
       name: req.shop.name,
       currency: req.shop.currency,
       ai_connected: req.shop.ai_connected,
+      features: req.shop.features || {},
     },
   })
 })
@@ -276,6 +277,7 @@ function shopToSettings(shop) {
     click_number: shop.click_number || '',
     currency: shop.currency || '',
     admin_username: shop.admin_username || '',
+    features: shop.features || {},
   }
 }
 
@@ -314,6 +316,62 @@ router.put(
     )
 
     res.json(shopToSettings(result.rows[0]))
+  })
+)
+
+/* ----------------------------- Partners ------------------------------ */
+
+router.get(
+  '/partners',
+  asyncHandler(async (req, res) => {
+    const result = await query(
+      'SELECT * FROM partners WHERE shop_id = $1 ORDER BY created_at DESC',
+      [req.shop.id]
+    )
+    res.json(result.rows)
+  })
+)
+
+router.post(
+  '/partners',
+  asyncHandler(async (req, res) => {
+    const { name, phone = '', address = '', latitude = null, longitude = null, status = 'active' } = req.body
+    if (!name) return res.status(400).json({ error: 'name обязателен' })
+
+    const result = await query(
+      `INSERT INTO partners (shop_id, name, phone, address, latitude, longitude, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [req.shop.id, name, phone, address, latitude, longitude, status]
+    )
+    res.status(201).json(result.rows[0])
+  })
+)
+
+router.put(
+  '/partners/:id',
+  asyncHandler(async (req, res) => {
+    const { name, phone = '', address = '', latitude = null, longitude = null, status = 'active' } = req.body
+    if (!name) return res.status(400).json({ error: 'name обязателен' })
+
+    const result = await query(
+      `UPDATE partners SET name = $1, phone = $2, address = $3, latitude = $4, longitude = $5, status = $6
+       WHERE id = $7 AND shop_id = $8 RETURNING *`,
+      [name, phone, address, latitude, longitude, status, req.params.id, req.shop.id]
+    )
+    if (!result.rows.length) return res.status(404).json({ error: 'Партнёр не найден' })
+    res.json(result.rows[0])
+  })
+)
+
+router.delete(
+  '/partners/:id',
+  asyncHandler(async (req, res) => {
+    const result = await query(
+      'DELETE FROM partners WHERE id = $1 AND shop_id = $2 RETURNING id',
+      [req.params.id, req.shop.id]
+    )
+    if (!result.rows.length) return res.status(404).json({ error: 'Партнёр не найден' })
+    res.json({ success: true })
   })
 )
 

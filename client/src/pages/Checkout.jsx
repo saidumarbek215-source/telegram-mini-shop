@@ -14,6 +14,9 @@ export default function Checkout() {
   const [settings, setSettings] = useState({})
   const [form, setForm] = useState({ name: '', phone: '', address: '', comment: '' })
   const [locationReceived, setLocationReceived] = useState(false)
+  const [locationCoords, setLocationCoords] = useState(null)
+  const [locationLabel, setLocationLabel] = useState('📍 Определить моё местоположение')
+  const [showManualInput, setShowManualInput] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -50,14 +53,22 @@ export default function Checkout() {
   }
 
   function handleRequestLocation() {
-    const tg = window.Telegram?.WebApp
-    if (!tg?.requestLocation) return
-    tg.requestLocation((location) => {
-      if (location) {
-        setForm((f) => ({ ...f, address: `${location.latitude}, ${location.longitude}` }))
+    setLocationLabel('⏳ Определяем местоположение...')
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+        setForm((f) => ({ ...f, address: `${lat},${lng}` }))
+        setLocationCoords({ lat, lng })
         setLocationReceived(true)
+        setShowManualInput(false)
+        setLocationLabel('📍 Местоположение получено ✅')
+      },
+      () => {
+        setLocationLabel('📍 Определить моё местоположение')
+        setShowManualInput(true)
       }
-    })
+    )
   }
 
   async function handleSubmit(e) {
@@ -218,36 +229,61 @@ export default function Checkout() {
           <label className="mb-1.5 block text-xs font-medium text-muted">
             Адрес доставки *
           </label>
-          <button
-            type="button"
-            onClick={handleRequestLocation}
-            className="mb-2 w-full rounded-2xl bg-surface px-4 py-3 text-sm font-medium text-left"
-          >
-            📍 Поделиться геолокацией
-          </button>
           {locationReceived ? (
-            <div className="flex items-center justify-between rounded-2xl bg-surface px-4 py-3">
-              <span className="text-sm text-accent">📍 Местоположение получено</span>
+            <div className="rounded-2xl bg-surface px-4 py-3">
+              <p className="text-sm text-accent">{locationLabel}</p>
+              {locationCoords && (
+                <a
+                  href={`https://maps.google.com/?q=${locationCoords.lat},${locationCoords.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-xs text-muted underline"
+                >
+                  Посмотреть на карте
+                </a>
+              )}
               <button
                 type="button"
                 onClick={() => {
                   setLocationReceived(false)
+                  setLocationCoords(null)
+                  setLocationLabel('📍 Определить моё местоположение')
+                  setShowManualInput(true)
                   setForm((f) => ({ ...f, address: '' }))
                 }}
-                className="text-xs text-muted"
+                className="mt-2 text-xs text-muted underline"
               >
-                ✏️ Вручную
+                ✏️ Ввести адрес вручную
               </button>
             </div>
           ) : (
-            <textarea
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Город, улица, дом, квартира"
-              rows={2}
-              className="w-full resize-none rounded-2xl bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-            />
+            <>
+              <button
+                type="button"
+                onClick={handleRequestLocation}
+                className="mb-2 w-full rounded-2xl bg-surface px-4 py-3 text-sm font-medium text-left"
+              >
+                {locationLabel}
+              </button>
+              {showManualInput ? (
+                <textarea
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Город, улица, дом, квартира"
+                  rows={2}
+                  className="w-full resize-none rounded-2xl bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowManualInput(true)}
+                  className="w-full rounded-2xl bg-surface px-4 py-3 text-sm text-left text-muted"
+                >
+                  ✏️ Ввести адрес вручную
+                </button>
+              )}
+            </>
           )}
         </div>
         <div>

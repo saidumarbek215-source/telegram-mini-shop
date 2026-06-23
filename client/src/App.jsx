@@ -17,6 +17,7 @@ import ManageBanners from './pages/manage/ManageBanners.jsx'
 import ManageSettings from './pages/manage/ManageSettings.jsx'
 import ManageAI from './pages/manage/ManageAI.jsx'
 import ManageHelp from './pages/manage/ManageHelp.jsx'
+import ManageMap from './pages/manage/ManageMap.jsx'
 
 export default function App() {
   const { status } = useShop()
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="settings" element={<ManageSettings />} />
           <Route path="ai" element={<ManageAI />} />
           <Route path="help" element={<ManageHelp />} />
+          <Route path="map" element={<ManageMap />} />
         </Route>
       </Route>
 

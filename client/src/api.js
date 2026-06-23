@@ -82,4 +82,11 @@ export const adminApi = {
   getSettings: () => request('/admin/settings', { admin: true }),
   updateSettings: (data) =>
     request('/admin/settings', { method: 'PUT', body: JSON.stringify(data), admin: true }),
+
+  getPartners: () => request('/admin/partners', { admin: true }),
+  createPartner: (data) =>
+    request('/admin/partners', { method: 'POST', body: JSON.stringify(data), admin: true }),
+  updatePartner: (id, data) =>
+    request(`/admin/partners/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
+  deletePartner: (id) => request(`/admin/partners/${id}`, { method: 'DELETE', admin: true }),
 }

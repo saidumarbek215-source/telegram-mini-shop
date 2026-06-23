@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS shops (
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS bot_username VARCHAR(100);
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS ai_connected BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100);
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS features JSONB DEFAULT '{}';
 
 CREATE TABLE IF NOT EXISTS categories (
   id          SERIAL PRIMARY KEY,
@@ -95,6 +96,18 @@ CREATE TABLE IF NOT EXISTS order_items (
   color         TEXT
 );
 
+CREATE TABLE IF NOT EXISTS partners (
+  id          SERIAL PRIMARY KEY,
+  shop_id     INTEGER NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  phone       TEXT NOT NULL DEFAULT '',
+  address     TEXT NOT NULL DEFAULT '',
+  latitude    DOUBLE PRECISION,
+  longitude   DOUBLE PRECISION,
+  status      TEXT NOT NULL DEFAULT 'active',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_shop ON products(shop_id);
 CREATE INDEX IF NOT EXISTS idx_categories_shop ON categories(shop_id);
@@ -102,3 +115,4 @@ CREATE INDEX IF NOT EXISTS idx_banners_shop ON banners(shop_id);
 CREATE INDEX IF NOT EXISTS idx_orders_shop ON orders(shop_id);
 CREATE INDEX IF NOT EXISTS idx_orders_telegram_user ON orders(telegram_user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_partners_shop ON partners(shop_id);
