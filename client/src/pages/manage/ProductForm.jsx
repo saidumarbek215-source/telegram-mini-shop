@@ -8,8 +8,8 @@ const UNIT_LABELS = {
 
 const UNIT_PLACEHOLDERS = {
   size: 'S, M, L, XL',
-  weight: '1кг, 5кг, 10кг',
-  volume: '1л, 5л, 10л',
+  weight: '1кг, 5кг, 10кг, 25кг, 50кг',
+  volume: '1л, 5л, 10л, 20л',
 }
 
 export default function ProductForm({ product, categories, unitType = 'size', onSave, onCancel }) {
@@ -131,6 +131,10 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           placeholder="https://..."
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
+        <p className="mt-1 text-xs text-muted">
+          Используйте прямую ссылку на фото (Direct link с ImgBB).
+          Пример: https://i.ibb.co/xxxxx/photo.jpg
+        </p>
         {form.image_url.trim() && (
           <div className="mt-2 h-32 w-32 overflow-hidden rounded-xl bg-surface2">
             <img

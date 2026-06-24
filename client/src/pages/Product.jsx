@@ -7,8 +7,8 @@ import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
 
-const WEIGHT_OPTIONS = ['1кг', '5кг', '10кг', '25кг', '50кг']
-const VOLUME_OPTIONS = ['1л', '5л', '10л', '20л']
+const FALLBACK_WEIGHT = ['1кг', '5кг', '10кг', '25кг', '50кг']
+const FALLBACK_VOLUME = ['1л', '5л', '10л', '20л']
 
 export default function Product() {
   const { id } = useParams()
@@ -60,7 +60,15 @@ export default function Product() {
   return (
     <div>
       <div className="relative aspect-square w-full bg-surface">
-        <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+        <img
+          src={product.image_url}
+          alt={product.name}
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            e.target.onerror = null
+            e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'
+          }}
+        />
         <button
           onClick={() => navigate(-1)}
           className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-bg/60 backdrop-blur"
@@ -127,9 +135,9 @@ export default function Product() {
 
         {unitType === 'weight' && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Вес</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">Фасовка</h2>
             <div className="flex flex-wrap gap-2">
-              {WEIGHT_OPTIONS.map((w) => (
+              {(product.sizes?.length ? product.sizes : FALLBACK_WEIGHT).map((w) => (
                 <button
                   key={w}
                   onClick={() => setSize(w)}
@@ -148,7 +156,7 @@ export default function Product() {
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Объём</h2>
             <div className="flex flex-wrap gap-2">
-              {VOLUME_OPTIONS.map((v) => (
+              {(product.sizes?.length ? product.sizes : FALLBACK_VOLUME).map((v) => (
                 <button
                   key={v}
                   onClick={() => setSize(v)}
