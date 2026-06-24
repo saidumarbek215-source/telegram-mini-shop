@@ -35,16 +35,17 @@ export default function Home() {
   return (
     <div>
       <header className="flex items-center gap-3 px-4 pb-3 pt-5">
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-accent text-2xl shadow-glow">
-          👟
-        </div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold leading-tight">
-            {settings.store_name || 'Sneaker Store'}
-          </h1>
-          <p className="truncate text-xs text-muted">
-            {settings.store_description || 'Оригинальные кроссовки с доставкой'}
-          </p>
+          {loading ? (
+            <div className="h-6 w-40 animate-pulse rounded-lg bg-surface2" />
+          ) : (
+            <h1 className="truncate text-lg font-bold leading-tight">
+              {settings.store_name}
+            </h1>
+          )}
+          {!loading && settings.store_description && (
+            <p className="truncate text-xs text-muted">{settings.store_description}</p>
+          )}
         </div>
       </header>
 

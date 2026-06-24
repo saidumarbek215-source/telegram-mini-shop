@@ -7,26 +7,31 @@ import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
 
+const WEIGHT_OPTIONS = ['1кг', '5кг', '10кг', '25кг', '50кг']
+const VOLUME_OPTIONS = ['1л', '5л', '10л', '20л']
+
 export default function Product() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
 
   const [product, setProduct] = useState(null)
+  const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [size, setSize] = useState(null)
   const [color, setColor] = useState(null)
+  const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
 
   useEffect(() => {
     setLoading(true)
     setAdded(false)
-    api
-      .getProduct(id)
-      .then((p) => {
+    Promise.all([api.getProduct(id), api.getSettings()])
+      .then(([p, s]) => {
         setProduct(p)
+        setSettings(s)
         const sizes = p.sizes || []
-        setSize(sizes.find((s) => isSizeAvailable(p, s)) || sizes[0] || null)
+        setSize(sizes.find((sz) => isSizeAvailable(p, sz)) || sizes[0] || null)
         setColor(p.colors?.[0] || null)
       })
       .finally(() => setLoading(false))
@@ -40,11 +45,13 @@ export default function Product() {
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
     : 0
 
+  const unitType = settings?.product_unit_type || 'size'
   const available = isProductAvailable(product)
   const canAddToCart = available && (!size || isSizeAvailable(product, size))
 
   function handleAddToCart() {
-    addItem(product, { size, color, quantity: 1 })
+    const effectiveSize = unitType === 'piece' ? null : size
+    addItem(product, { size: effectiveSize, color, quantity: unitType === 'piece' ? quantity : 1 })
     hapticFeedback('medium')
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -91,7 +98,7 @@ export default function Product() {
           </div>
         )}
 
-        {product.sizes?.length > 0 && (
+        {unitType === 'size' && product.sizes?.length > 0 && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Размер</h2>
             <div className="flex flex-wrap gap-2">
@@ -114,6 +121,65 @@ export default function Product() {
                   </button>
                 )
               })}
+            </div>
+          </div>
+        )}
+
+        {unitType === 'weight' && (
+          <div className="mt-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted">Вес</h2>
+            <div className="flex flex-wrap gap-2">
+              {WEIGHT_OPTIONS.map((w) => (
+                <button
+                  key={w}
+                  onClick={() => setSize(w)}
+                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
+                    size === w ? 'bg-accent text-bg' : 'bg-surface text-white'
+                  }`}
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {unitType === 'volume' && (
+          <div className="mt-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted">Объём</h2>
+            <div className="flex flex-wrap gap-2">
+              {VOLUME_OPTIONS.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setSize(v)}
+                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
+                    size === v ? 'bg-accent text-bg' : 'bg-surface text-white'
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {unitType === 'piece' && (
+          <div className="mt-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted">Количество</h2>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold text-white"
+              >
+                −
+              </button>
+              <span className="min-w-8 text-center text-sm font-bold">{quantity}</span>
+              <button
+                onClick={() => setQuantity((q) => q + 1)}
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold text-white"
+              >
+                +
+              </button>
             </div>
           </div>
         )}

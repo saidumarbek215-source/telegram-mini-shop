@@ -1,6 +1,18 @@
 import { useState } from 'react'
 
-export default function ProductForm({ product, categories, onSave, onCancel }) {
+const UNIT_LABELS = {
+  size: 'Размеры (через запятую)',
+  weight: 'Варианты веса (через запятую, напр. 1кг, 5кг)',
+  volume: 'Варианты объёма (через запятую, напр. 1л, 5л)',
+}
+
+const UNIT_PLACEHOLDERS = {
+  size: 'S, M, L, XL',
+  weight: '1кг, 5кг, 10кг',
+  volume: '1л, 5л, 10л',
+}
+
+export default function ProductForm({ product, categories, unitType = 'size', onSave, onCancel }) {
   const [form, setForm] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -151,23 +163,25 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
           ))}
         </select>
       </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-muted">
-          Размеры (через запятую)
-        </label>
-        <input
-          name="sizes"
-          value={form.sizes}
-          onChange={handleChange}
-          placeholder="40, 41, 42"
-          className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-        />
-      </div>
-
-      {sizesList.length > 0 && (
+      {unitType !== 'piece' && (
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
-            Количество по размерам
+            {UNIT_LABELS[unitType] || UNIT_LABELS.size}
+          </label>
+          <input
+            name="sizes"
+            value={form.sizes}
+            onChange={handleChange}
+            placeholder={UNIT_PLACEHOLDERS[unitType] || UNIT_PLACEHOLDERS.size}
+            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
+      )}
+
+      {unitType !== 'piece' && sizesList.length > 0 && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">
+            Количество по вариантам
           </label>
           <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
             {sizesList.map((size) => {
@@ -175,7 +189,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
               return (
                 <div key={size} className="flex items-center justify-between gap-3">
                   <span className={`text-sm ${qty === 0 ? 'text-muted' : ''}`}>
-                    Размер {size}
+                    {size}
                     {qty === 0 && <span className="ml-1.5 text-xs">— нет в наличии</span>}
                   </span>
                   <input
@@ -190,7 +204,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
             })}
           </div>
           <p className="mt-1 text-xs text-muted">
-            Если для всех размеров указано 0, товар будет показан как «Нет в наличии»
+            Если для всех вариантов указано 0, товар будет показан как «Нет в наличии»
           </p>
         </div>
       )}

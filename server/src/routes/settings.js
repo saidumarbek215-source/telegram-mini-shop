@@ -28,6 +28,7 @@ router.get(
       bot_username: shop.bot_username || '',
       admin_username: shop.admin_username || '',
       features: shop.features || {},
+      product_unit_type: shop.product_unit_type || 'size',
     })
   })
 )

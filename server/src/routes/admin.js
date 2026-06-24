@@ -278,6 +278,7 @@ function shopToSettings(shop) {
     currency: shop.currency || '',
     admin_username: shop.admin_username || '',
     features: shop.features || {},
+    product_unit_type: shop.product_unit_type || 'size',
   }
 }
 
@@ -296,12 +297,16 @@ router.put(
       click_number,
       currency,
       admin_username,
+      product_unit_type,
     } = req.body || {}
+
+    const validUnitTypes = ['size', 'weight', 'volume', 'piece']
+    const unitType = validUnitTypes.includes(product_unit_type) ? product_unit_type : 'size'
 
     const result = await query(
       `UPDATE shops
-       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5, currency = $6, admin_username = $7
-       WHERE id = $8
+       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5, currency = $6, admin_username = $7, product_unit_type = $8
+       WHERE id = $9
        RETURNING *`,
       [
         store_name ?? '',
@@ -311,6 +316,7 @@ router.put(
         click_number ?? '',
         currency ?? '',
         admin_username ?? '',
+        unitType,
         req.shop.id,
       ]
     )

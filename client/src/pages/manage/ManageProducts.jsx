@@ -8,6 +8,7 @@ import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
 export default function ManageProducts() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
+  const [unitType, setUnitType] = useState('size')
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null) // null | 'new' | product
   const [togglingId, setTogglingId] = useState(null)
@@ -18,10 +19,11 @@ export default function ManageProducts() {
 
   function load() {
     setLoading(true)
-    Promise.all([adminApi.getProducts(), adminApi.getCategories()])
-      .then(([p, c]) => {
+    Promise.all([adminApi.getProducts(), adminApi.getCategories(), adminApi.getSettings()])
+      .then(([p, c, s]) => {
         setProducts(p)
         setCategories(c)
+        setUnitType(s.product_unit_type || 'size')
       })
       .finally(() => setLoading(false))
   }
@@ -149,6 +151,7 @@ export default function ManageProducts() {
           <ProductForm
             product={editing === 'new' ? null : editing}
             categories={categories}
+            unitType={unitType}
             onSave={handleSave}
             onCancel={() => setEditing(null)}
           />

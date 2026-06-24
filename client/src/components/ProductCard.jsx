@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../utils/format.js'
 import { isProductAvailable } from '../utils/stock.js'
 
 export default function ProductCard({ product }) {
+  const [imgError, setImgError] = useState(false)
   const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
@@ -15,12 +17,20 @@ export default function ProductCard({ product }) {
       className="group flex flex-col overflow-hidden rounded-2xl bg-surface"
     >
       <div className="relative aspect-square overflow-hidden bg-surface2">
-        <img
-          src={product.image_url}
-          alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-300 group-active:scale-95"
-          loading="lazy"
-        />
+        {imgError || !product.image_url ? (
+          <div className="flex h-full w-full items-center justify-center bg-surface2">
+            <span className="text-3xl text-muted/30">🖼</span>
+          </div>
+        ) : (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            crossOrigin="anonymous"
+            className="h-full w-full object-cover transition-transform duration-300 group-active:scale-95"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        )}
         {hasDiscount && (
           <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-bg">
             -{discountPct}%

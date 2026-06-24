@@ -16,6 +16,13 @@ const FIELDS = [
   { key: 'admin_username', label: 'Ваш Telegram username (без @)', placeholder: 'example: finexia_admin' },
 ]
 
+const UNIT_TYPE_OPTIONS = [
+  { value: 'size', label: 'Размер (S, M, L, XL, 40, 41...)' },
+  { value: 'weight', label: 'Вес (1кг, 5кг, 10кг...)' },
+  { value: 'volume', label: 'Объём (1л, 5л, 10л...)' },
+  { value: 'piece', label: 'Количество (штуки)' },
+]
+
 export default function ManageSettings() {
   const [form, setForm] = useState({})
   const [loading, setLoading] = useState(true)
@@ -96,6 +103,22 @@ export default function ManageSettings() {
           />
         </div>
       ))}
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Тип единиц товара</label>
+        <select
+          name="product_unit_type"
+          value={form.product_unit_type || 'size'}
+          onChange={handleChange}
+          className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          {UNIT_TYPE_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <button
         type="submit"
