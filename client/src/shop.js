@@ -10,12 +10,6 @@ function getShopId() {
     localStorage.setItem('shop_id', tg.initDataUnsafe.start_param)
     return tg.initDataUnsafe.start_param
   }
-  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''))
-  const shopFromHash = hashParams.get('shop')
-  if (shopFromHash) {
-    localStorage.setItem('shop_id', shopFromHash)
-    return shopFromHash
-  }
   return localStorage.getItem('shop_id')
 }
 const raw = getShopId()
