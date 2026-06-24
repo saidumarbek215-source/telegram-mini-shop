@@ -19,6 +19,7 @@ export default function Product() {
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [size, setSize] = useState(null)
+  const [selectedVariant, setSelectedVariant] = useState(null)
   const [color, setColor] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
@@ -30,8 +31,15 @@ export default function Product() {
       .then(([p, s]) => {
         setProduct(p)
         setSettings(s)
-        const sizes = p.sizes || []
-        setSize(sizes.find((sz) => isSizeAvailable(p, sz)) || sizes[0] || null)
+        const pHasVariants = p.variants?.length > 0
+        if (pHasVariants) {
+          setSelectedVariant(p.variants.find((v) => v.in_stock !== false) || p.variants[0])
+          setSize(null)
+        } else {
+          const sizes = p.sizes || []
+          setSize(sizes.find((sz) => isSizeAvailable(p, sz)) || sizes[0] || null)
+          setSelectedVariant(null)
+        }
         setColor(p.colors?.[0] || null)
       })
       .finally(() => setLoading(false))
@@ -40,18 +48,29 @@ export default function Product() {
   if (loading) return <div className="py-20 text-center text-sm text-muted">Загрузка...</div>
   if (!product) return <div className="py-20 text-center text-sm text-muted">Товар не найден</div>
 
-  const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
+  const hasVariants = product.variants?.length > 0
+  const displayPrice = hasVariants ? (selectedVariant?.price ?? product.price) : product.price
+  const hasDiscount = !hasVariants && product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
     : 0
 
   const unitType = settings?.product_unit_type || 'size'
   const available = isProductAvailable(product)
-  const canAddToCart = available && (!size || isSizeAvailable(product, size))
+  const canAddToCart = hasVariants
+    ? selectedVariant != null && selectedVariant.in_stock !== false
+    : available && (!size || isSizeAvailable(product, size))
 
   function handleAddToCart() {
-    const effectiveSize = unitType === 'piece' ? null : size
-    addItem(product, { size: effectiveSize, color, quantity: unitType === 'piece' ? quantity : 1 })
+    if (hasVariants) {
+      addItem(
+        { ...product, price: selectedVariant.price },
+        { size: selectedVariant.label, color, quantity: 1 }
+      )
+    } else {
+      const effectiveSize = unitType === 'piece' ? null : size
+      addItem(product, { size: effectiveSize, color, quantity: unitType === 'piece' ? quantity : 1 })
+    }
     hapticFeedback('medium')
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -85,7 +104,7 @@ export default function Product() {
       <div className="px-4 pt-4">
         <h1 className="text-xl font-bold leading-tight">{product.name}</h1>
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-accent">{formatPrice(product.price)}</span>
+          <span className="text-xl font-bold text-accent">{formatPrice(displayPrice)}</span>
           {hasDiscount && (
             <span className="text-sm text-muted line-through">
               {formatPrice(product.old_price)}
@@ -106,7 +125,31 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'size' && product.sizes?.length > 0 && (
+        {hasVariants && (
+          <div className="mt-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted">Вариант</h2>
+            <div className="flex flex-wrap gap-2">
+              {product.variants.map((v, i) => (
+                <button
+                  key={i}
+                  onClick={() => v.in_stock !== false && setSelectedVariant(v)}
+                  disabled={v.in_stock === false}
+                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
+                    v.in_stock === false
+                      ? 'cursor-not-allowed bg-surface text-muted opacity-50'
+                      : selectedVariant === v
+                        ? 'bg-accent text-bg'
+                        : 'bg-surface text-white'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!hasVariants && unitType === 'size' && product.sizes?.length > 0 && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Размер</h2>
             <div className="flex flex-wrap gap-2">
@@ -133,7 +176,7 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'weight' && (
+        {!hasVariants && unitType === 'weight' && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Фасовка</h2>
             <div className="flex flex-wrap gap-2">
@@ -152,7 +195,7 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'volume' && (
+        {!hasVariants && unitType === 'volume' && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Объём</h2>
             <div className="flex flex-wrap gap-2">
@@ -171,7 +214,7 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'piece' && (
+        {!hasVariants && unitType === 'piece' && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">Количество</h2>
             <div className="flex items-center gap-3">
