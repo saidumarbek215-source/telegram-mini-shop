@@ -42,4 +42,21 @@ router.post(
   })
 )
 
+// GET /api/shops/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await query(
+      'SELECT * FROM shops WHERE id = $1',
+      [id]
+    )
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Shop not found' })
+    }
+    res.json(result.rows[0])
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 export default router
