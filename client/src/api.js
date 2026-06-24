@@ -1,32 +1,27 @@
 import { getTelegramInitData } from './telegram.js'
-import { SHOP_ID } from './shop.js'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
-// Appends `shop_id` (the shop selected via `?shop=ID`) to every request, so
-// the server can scope the response to the right shop.
 function withShopId(path) {
-  if (SHOP_ID == null) return path
+  const urlParams = new URLSearchParams(window.location.search)
+  const shopId = urlParams.get('shop')
+  if (!shopId) return path
   const [base, qs = ''] = path.split('?')
   const params = new URLSearchParams(qs)
-  params.set('shop_id', SHOP_ID)
+  params.set('shop_id', shopId)
   return `${base}?${params.toString()}`
 }
 
 async function request(path, { admin, ...options } = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
-
   if (admin) {
     headers['X-Telegram-Init-Data'] = getTelegramInitData()
   }
-
   const res = await fetch(`${API_URL}${withShopId(path)}`, { ...options, headers })
-
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     throw new Error(body.error || `Ошибка запроса (${res.status})`)
   }
-
   if (res.status === 204) return null
   return res.json()
 }
@@ -49,28 +44,24 @@ export const api = {
 
 export const adminApi = {
   checkOwner: () => request('/admin/check', { admin: true }),
-
   getProducts: () => request('/admin/products', { admin: true }),
   createProduct: (data) =>
     request('/admin/products', { method: 'POST', body: JSON.stringify(data), admin: true }),
   updateProduct: (id, data) =>
     request(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
   deleteProduct: (id) => request(`/admin/products/${id}`, { method: 'DELETE', admin: true }),
-
   getCategories: () => request('/admin/categories', { admin: true }),
   createCategory: (data) =>
     request('/admin/categories', { method: 'POST', body: JSON.stringify(data), admin: true }),
   updateCategory: (id, data) =>
     request(`/admin/categories/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
   deleteCategory: (id) => request(`/admin/categories/${id}`, { method: 'DELETE', admin: true }),
-
   getBanners: () => request('/admin/banners', { admin: true }),
   createBanner: (data) =>
     request('/admin/banners', { method: 'POST', body: JSON.stringify(data), admin: true }),
   updateBanner: (id, data) =>
     request(`/admin/banners/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
   deleteBanner: (id) => request(`/admin/banners/${id}`, { method: 'DELETE', admin: true }),
-
   getOrders: () => request('/admin/orders', { admin: true }),
   updateOrderStatus: (id, status) =>
     request(`/admin/orders/${id}/status`, {
@@ -78,11 +69,9 @@ export const adminApi = {
       body: JSON.stringify({ status }),
       admin: true,
     }),
-
   getSettings: () => request('/admin/settings', { admin: true }),
   updateSettings: (data) =>
     request('/admin/settings', { method: 'PUT', body: JSON.stringify(data), admin: true }),
-
   getPartners: () => request('/admin/partners', { admin: true }),
   createPartner: (data) =>
     request('/admin/partners', { method: 'POST', body: JSON.stringify(data), admin: true }),

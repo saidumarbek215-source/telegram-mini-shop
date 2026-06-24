@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { api } from '../api.js'
-import { SHOP_ID } from '../shop.js'
 
 const ShopContext = createContext({ status: 'loading', shop: null })
 
@@ -8,7 +7,10 @@ export function ShopProvider({ children }) {
   const [state, setState] = useState({ status: 'loading', shop: null })
 
   useEffect(() => {
-    if (SHOP_ID == null) {
+    const urlParams = new URLSearchParams(window.location.search)
+    const shopId = urlParams.get('shop')
+    
+    if (!shopId) {
       setState({ status: 'not-found', shop: null })
       return
     }
