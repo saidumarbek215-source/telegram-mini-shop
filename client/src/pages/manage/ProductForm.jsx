@@ -26,21 +26,8 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     sort_order: product?.sort_order ?? 0,
   })
   const [sizesStock, setSizesStock] = useState(product?.sizes_stock || {})
-  const [variants, setVariants] = useState(product?.variants || [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  const hasVariants = variants.length > 0
-
-  function addVariant() {
-    setVariants((v) => [...v, { label: '', price: '', in_stock: true }])
-  }
-  function removeVariant(i) {
-    setVariants((v) => v.filter((_, idx) => idx !== i))
-  }
-  function updateVariant(i, field, value) {
-    setVariants((v) => v.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)))
-  }
 
   const sizesList = form.sizes
     .split(',')
@@ -58,15 +45,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const cleanVariants = variants
-      .filter((v) => v.label.trim())
-      .map((v) => ({ label: v.label.trim(), price: Number(v.price) || 0, in_stock: Boolean(v.in_stock) }))
-
-    const effectivePrice = cleanVariants.length > 0
-      ? cleanVariants[0].price
-      : Number(form.price)
-
-    if (!form.name.trim() || (!hasVariants && !form.price) || !form.image_url.trim()) {
+    if (!form.name.trim() || !form.price || !form.image_url.trim()) {
       setError('Заполните название, цену и ссылку на фото')
       return
     }
@@ -76,7 +55,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       await onSave({
         name: form.name.trim(),
         description: form.description.trim(),
-        price: effectivePrice,
+        price: Number(form.price),
         old_price: form.old_price ? Number(form.old_price) : null,
         image_url: form.image_url.trim(),
         category_id: form.category_id ? Number(form.category_id) : null,
@@ -90,7 +69,6 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         ),
         in_stock: form.in_stock,
         sort_order: Number(form.sort_order) || 0,
-        variants: cleanVariants,
       })
     } catch (err) {
       setError(err.message)
@@ -119,75 +97,30 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           className="w-full resize-none rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
-      {!hasVariants && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Цена (сум) *</label>
-            <input
-              name="price"
-              type="number"
-              min="0"
-              value={form.price}
-              onChange={handleChange}
-              className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Старая цена</label>
-            <input
-              name="old_price"
-              type="number"
-              min="0"
-              value={form.old_price}
-              onChange={handleChange}
-              placeholder="необязательно"
-              className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Цена (сум) *</label>
+          <input
+            name="price"
+            type="number"
+            min="0"
+            value={form.price}
+            onChange={handleChange}
+            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
         </div>
-      )}
-
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <label className="text-xs font-medium text-muted">Варианты с разными ценами</label>
-          <button
-            type="button"
-            onClick={addVariant}
-            className="text-xs font-medium text-accent"
-          >
-            + Добавить вариант
-          </button>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Старая цена</label>
+          <input
+            name="old_price"
+            type="number"
+            min="0"
+            value={form.old_price}
+            onChange={handleChange}
+            placeholder="необязательно"
+            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
         </div>
-        {hasVariants && (
-          <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
-            {variants.map((v, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  placeholder="Название (напр. 1л)"
-                  value={v.label}
-                  onChange={(e) => updateVariant(i, 'label', e.target.value)}
-                  className="flex-1 rounded-lg bg-surface px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-                <input
-                  placeholder="Цена"
-                  type="number"
-                  min="0"
-                  value={v.price}
-                  onChange={(e) => updateVariant(i, 'price', e.target.value)}
-                  className="w-24 rounded-lg bg-surface px-2 py-1.5 text-right text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeVariant(i)}
-                  className="text-sm text-red-400"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            <p className="mt-1 text-xs text-muted">Цена товара берётся из первого варианта</p>
-          </div>
-        )}
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">Ссылка на фото (URL) *</label>

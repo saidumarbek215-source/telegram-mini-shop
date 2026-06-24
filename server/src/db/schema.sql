@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS products (
 -- Adds columns to existing databases created before they existed
 ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes_stock JSONB NOT NULL DEFAULT '{}'::jsonb;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS shop_id INTEGER REFERENCES shops(id) ON DELETE CASCADE;
-ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 CREATE TABLE IF NOT EXISTS banners (
   id          SERIAL PRIMARY KEY,
