@@ -17,13 +17,13 @@ export default function ProductCard({ product }) {
       className="group flex flex-col overflow-hidden rounded-2xl bg-surface"
     >
       <div className="relative aspect-square overflow-hidden bg-surface2">
-        {imgError || !product.image_url ? (
+        {imgError || (!product.image_url && !product.image) ? (
           <div className="flex h-full w-full items-center justify-center bg-surface2">
             <span className="text-3xl text-muted/30">🖼</span>
           </div>
         ) : (
           <img
-            src={product.image_url}
+            src={product.image_url || product.image}
             alt={product.name}
             crossOrigin="anonymous"
             className="h-full w-full object-cover transition-transform duration-300 group-active:scale-95"

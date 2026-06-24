@@ -2,13 +2,23 @@ import { getTelegramInitData } from './telegram.js'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
-function withShopId(path) {
+// Captured once at module load — before React Router changes the URL
+const SHOP_ID = (() => {
   const urlParams = new URLSearchParams(window.location.search)
-  const shopId = urlParams.get('shop')
-  if (!shopId) return path
+  const fromUrl = urlParams.get('shop')
+  if (fromUrl) return fromUrl
+
+  const tg = window.Telegram?.WebApp
+  if (tg?.initDataUnsafe?.start_param) return tg.initDataUnsafe.start_param
+
+  return localStorage.getItem('shop_id')
+})()
+
+function withShopId(path) {
+  if (!SHOP_ID) return path
   const [base, qs = ''] = path.split('?')
   const params = new URLSearchParams(qs)
-  params.set('shop_id', shopId)
+  params.set('shop_id', SHOP_ID)
   return `${base}?${params.toString()}`
 }
 
