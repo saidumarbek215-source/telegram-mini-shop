@@ -1,37 +1,37 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { api } from '../api.js'
 import SearchBar from '../components/SearchBar.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import { useShop } from '../context/ShopContext.jsx'
 import { t } from '../i18n.js'
 
 export default function Catalog() {
-  const { lang } = useShop()
+  const { categories, products, status, lang } = useShop()
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryId = searchParams.get('category') || ''
   const urlSearch = searchParams.get('search') || ''
-
   const [search, setSearch] = useState(urlSearch)
-  const [categories, setCategories] = useState([])
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.getCategories().then(setCategories)
-  }, [])
+  const loading = status === 'loading'
 
   useEffect(() => {
     setSearch(urlSearch)
   }, [urlSearch])
 
-  useEffect(() => {
-    setLoading(true)
-    api
-      .getProducts({ category: categoryId, search: urlSearch })
-      .then(setProducts)
-      .finally(() => setLoading(false))
-  }, [categoryId, urlSearch])
+  const filtered = useMemo(() => {
+    let list = products
+    if (categoryId) {
+      list = list.filter((p) => String(p.category_id) === categoryId)
+    }
+    if (urlSearch.trim()) {
+      const q = urlSearch.trim().toLowerCase()
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description || '').toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [products, categoryId, urlSearch])
 
   function handleSearch() {
     const params = new URLSearchParams(searchParams)
@@ -52,7 +52,9 @@ export default function Catalog() {
   return (
     <div>
       <header className="px-4 pb-2 pt-5">
-        <h1 className="text-lg font-bold">{activeCategory ? activeCategory.name : t('catalog', lang)}</h1>
+        <h1 className="text-lg font-bold">
+          {activeCategory ? activeCategory.name : t('catalog', lang)}
+        </h1>
       </header>
 
       <SearchBar value={search} onChange={setSearch} onSubmit={handleSearch} />
@@ -82,11 +84,11 @@ export default function Catalog() {
       <div className="mt-4 px-4">
         {loading ? (
           <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
-        ) : products.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="py-10 text-center text-sm text-muted">{t('noProducts', lang)}</div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {products.map((product) => (
+            {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api } from '../api.js'
 import SearchBar from '../components/SearchBar.jsx'
 import BannerSlider from '../components/BannerSlider.jsx'
 import CategoryList from '../components/CategoryList.jsx'
@@ -10,24 +9,9 @@ import { t } from '../i18n.js'
 
 export default function Home() {
   const navigate = useNavigate()
-  const { lang } = useShop()
+  const { shop, categories, banners, products, status, lang } = useShop()
   const [search, setSearch] = useState('')
-  const [settings, setSettings] = useState({})
-  const [banners, setBanners] = useState([])
-  const [categories, setCategories] = useState([])
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    Promise.all([api.getSettings(), api.getBanners(), api.getCategories(), api.getProducts()])
-      .then(([settingsData, bannersData, categoriesData, productsData]) => {
-        setSettings(settingsData)
-        setBanners(bannersData)
-        setCategories(categoriesData)
-        setProducts(productsData)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+  const loading = status === 'loading'
 
   function handleSearch() {
     if (search.trim()) {
@@ -43,11 +27,11 @@ export default function Home() {
             <div className="h-6 w-40 animate-pulse rounded-lg bg-surface2" />
           ) : (
             <h1 className="truncate text-lg font-bold leading-tight">
-              {settings.store_name}
+              {shop?.store_name}
             </h1>
           )}
-          {!loading && settings.store_description && (
-            <p className="truncate text-xs text-muted">{settings.store_description}</p>
+          {!loading && shop?.store_description && (
+            <p className="truncate text-xs text-muted">{shop.store_description}</p>
           )}
         </div>
       </header>
