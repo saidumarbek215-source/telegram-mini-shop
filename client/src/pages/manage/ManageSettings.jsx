@@ -65,6 +65,16 @@ export default function ManageSettings() {
       const updated = await adminApi.updateSettings(form)
       setForm(updated)
       setSaved(true)
+
+      if (form.theme === 'light') {
+        document.body.classList.add('light-theme')
+      } else {
+        document.body.classList.remove('light-theme')
+      }
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } finally {
       setSaving(false)
     }
