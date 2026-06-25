@@ -168,6 +168,17 @@ export default function ManageMap() {
     }
   }
 
+  function openInMaps(partner) {
+    const tg = window.Telegram?.WebApp
+    if (partner.latitude && partner.longitude) {
+      const yandexUrl = `https://yandex.uz/maps/?pt=${partner.longitude},${partner.latitude}&z=16&l=map`
+      tg?.openLink(yandexUrl)
+    } else if (partner.address) {
+      const yandexUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(partner.address)}`
+      tg?.openLink(yandexUrl)
+    }
+  }
+
   if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
 
   return (
@@ -282,6 +293,14 @@ export default function ManageMap() {
                 <span className="flex-shrink-0 text-sm">{p.status === 'active' ? '🟢' : '🔴'}</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
+                {(p.latitude != null || p.address) && (
+                  <button
+                    onClick={() => openInMaps(p)}
+                    className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
+                  >
+                    🗺 Яндекс Карта
+                  </button>
+                )}
                 {p.latitude != null && (
                   <button
                     onClick={() => flyTo(p)}
