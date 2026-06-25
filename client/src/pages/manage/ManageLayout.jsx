@@ -1,20 +1,13 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useOwner } from '../../context/OwnerContext.jsx'
+import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon, HelpIcon } from '../../components/Icons.jsx'
-
-const baseTabs = [
-  { to: '/manage/orders', label: 'Заказы', icon: BoxIcon },
-  { to: '/manage/products', label: 'Товары', icon: BagIcon },
-  { to: '/manage/categories', label: 'Категории', icon: TagIcon },
-  { to: '/manage/banners', label: 'Баннеры', icon: ImageIcon },
-  { to: '/manage/settings', label: 'Реквизиты', icon: SettingsIcon },
-  { to: '/manage/ai', label: 'AI Ассистент', icon: SparkleIcon },
-  { to: '/manage/help', label: 'Помощь', icon: HelpIcon },
-]
 
 export default function ManageLayout() {
   const { isOwner, loading, shop } = useOwner()
+  const { lang } = useShop()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -24,8 +17,18 @@ export default function ManageLayout() {
   }, [loading, isOwner, navigate])
 
   if (loading || !isOwner) {
-    return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+    return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
   }
+
+  const baseTabs = [
+    { to: '/manage/orders', label: t('manageOrders', lang), icon: BoxIcon },
+    { to: '/manage/products', label: t('manageProducts', lang), icon: BagIcon },
+    { to: '/manage/categories', label: t('manageCategories', lang), icon: TagIcon },
+    { to: '/manage/banners', label: t('manageBanners', lang), icon: ImageIcon },
+    { to: '/manage/settings', label: t('manageRequisites', lang), icon: SettingsIcon },
+    { to: '/manage/ai', label: t('manageAI', lang), icon: SparkleIcon },
+    { to: '/manage/help', label: t('help', lang), icon: HelpIcon },
+  ]
 
   const tabs = shop?.features?.partners_map
     ? [...baseTabs, { to: '/manage/map', label: '🗺 Карта', icon: null }]
@@ -35,7 +38,7 @@ export default function ManageLayout() {
     <div>
       <header className="px-4 pb-3 pt-5">
         <h1 className="text-lg font-bold">
-          Управление магазином{shop?.name ? ` «${shop.name}»` : ''}
+          {t('storeManagement', lang)}{shop?.name ? ` «${shop.name}»` : ''}
         </h1>
       </header>
 

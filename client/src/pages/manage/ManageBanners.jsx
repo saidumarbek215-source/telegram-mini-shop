@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import Modal from '../../components/Modal.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
+import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
-function BannerForm({ banner, onSave, onCancel }) {
+function BannerForm({ banner, onSave, onCancel, lang }) {
   const [form, setForm] = useState({
     image_url: banner?.image_url || '',
     title: banner?.title || '',
@@ -22,7 +24,7 @@ function BannerForm({ banner, onSave, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.image_url.trim()) {
-      setError('Укажите ссылку на изображение')
+      setError(t('enterImageUrl', lang))
       return
     }
     setError('')
@@ -45,7 +47,7 @@ function BannerForm({ banner, onSave, onCancel }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">
-          Ссылка на изображение *
+          {t('imageUrlRequired', lang)}
         </label>
         <input
           name="image_url"
@@ -56,7 +58,7 @@ function BannerForm({ banner, onSave, onCancel }) {
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Заголовок</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('bannerTitle', lang)}</label>
         <input
           name="title"
           value={form.title}
@@ -65,7 +67,7 @@ function BannerForm({ banner, onSave, onCancel }) {
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Подзаголовок</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('bannerSubtitle', lang)}</label>
         <input
           name="subtitle"
           value={form.subtitle}
@@ -75,7 +77,7 @@ function BannerForm({ banner, onSave, onCancel }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Порядок</label>
+          <label className="mb-1 block text-xs font-medium text-muted">{t('sortOrder', lang)}</label>
           <input
             name="sort_order"
             type="number"
@@ -92,7 +94,7 @@ function BannerForm({ banner, onSave, onCancel }) {
             onChange={handleChange}
             className="h-4 w-4 accent-accent"
           />
-          Активен
+          {t('activeLabel', lang)}
         </label>
       </div>
 
@@ -104,14 +106,14 @@ function BannerForm({ banner, onSave, onCancel }) {
           onClick={onCancel}
           className="flex-1 rounded-2xl bg-surface2 py-3 text-sm font-medium text-white"
         >
-          Отмена
+          {t('cancel', lang)}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="flex-1 rounded-2xl bg-accent py-3 text-sm font-bold text-bg disabled:opacity-60"
         >
-          {saving ? 'Сохранение...' : 'Сохранить'}
+          {saving ? t('savingText', lang) : t('save', lang)}
         </button>
       </div>
     </form>
@@ -122,6 +124,7 @@ export default function ManageBanners() {
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
+  const { lang } = useShop()
 
   useEffect(() => {
     load()
@@ -147,22 +150,22 @@ export default function ManageBanners() {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Удалить баннер?')) return
+    if (!confirm(t('deleteBanner', lang))) return
     await adminApi.deleteBanner(id)
     setBanners((prev) => prev.filter((b) => b.id !== id))
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   return (
     <div className="pb-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold">Баннеры ({banners.length})</h2>
+        <h2 className="text-base font-bold">{t('manageBanners', lang)} ({banners.length})</h2>
         <button
           onClick={() => setEditing('new')}
           className="flex items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-bg"
         >
-          <PlusIcon className="h-4 w-4" /> Добавить
+          <PlusIcon className="h-4 w-4" /> {t('addProduct', lang)}
         </button>
       </div>
 
@@ -177,11 +180,11 @@ export default function ManageBanners() {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{banner.title || 'Без заголовка'}</p>
+              <p className="truncate text-sm font-medium">{banner.title || `— ${t('bannerTitle', lang)}`}</p>
               <p className="truncate text-xs text-muted">{banner.subtitle}</p>
               {!banner.active && (
                 <span className="mt-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] text-muted">
-                  Скрыт
+                  {t('hiddenLabel', lang)}
                 </span>
               )}
             </div>
@@ -202,19 +205,20 @@ export default function ManageBanners() {
           </div>
         ))}
         {banners.length === 0 && (
-          <p className="py-10 text-center text-sm text-muted">Баннеров пока нет</p>
+          <p className="py-10 text-center text-sm text-muted">{t('noBanners', lang)}</p>
         )}
       </div>
 
       {editing && (
         <Modal
-          title={editing === 'new' ? 'Новый баннер' : 'Редактировать баннер'}
+          title={editing === 'new' ? t('newBanner', lang) : t('editBanner', lang)}
           onClose={() => setEditing(null)}
         >
           <BannerForm
             banner={editing === 'new' ? null : editing}
             onSave={handleSave}
             onCancel={() => setEditing(null)}
+            lang={lang}
           />
         </Modal>
       )}

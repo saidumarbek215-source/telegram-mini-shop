@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import Modal from '../../components/Modal.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
+import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
-function CategoryForm({ category, onSave, onCancel }) {
+function CategoryForm({ category, onSave, onCancel, lang }) {
   const [form, setForm] = useState({
     name: category?.name || '',
     icon: category?.icon || '👟',
@@ -19,7 +21,7 @@ function CategoryForm({ category, onSave, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setError('Введите название')
+      setError(t('enterName', lang))
       return
     }
     setError('')
@@ -39,7 +41,7 @@ function CategoryForm({ category, onSave, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Название *</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('productName', lang)} *</label>
         <input
           name="name"
           value={form.name}
@@ -49,7 +51,7 @@ function CategoryForm({ category, onSave, onCancel }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Иконка (эмодзи)</label>
+          <label className="mb-1 block text-xs font-medium text-muted">{t('iconEmoji', lang)}</label>
           <input
             name="icon"
             value={form.icon}
@@ -58,7 +60,7 @@ function CategoryForm({ category, onSave, onCancel }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Порядок</label>
+          <label className="mb-1 block text-xs font-medium text-muted">{t('sortOrder', lang)}</label>
           <input
             name="sort_order"
             type="number"
@@ -77,14 +79,14 @@ function CategoryForm({ category, onSave, onCancel }) {
           onClick={onCancel}
           className="flex-1 rounded-2xl bg-surface2 py-3 text-sm font-medium text-white"
         >
-          Отмена
+          {t('cancel', lang)}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="flex-1 rounded-2xl bg-accent py-3 text-sm font-bold text-bg disabled:opacity-60"
         >
-          {saving ? 'Сохранение...' : 'Сохранить'}
+          {saving ? t('savingText', lang) : t('save', lang)}
         </button>
       </div>
     </form>
@@ -95,6 +97,7 @@ export default function ManageCategories() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
+  const { lang } = useShop()
 
   useEffect(() => {
     load()
@@ -120,22 +123,22 @@ export default function ManageCategories() {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Удалить категорию? Товары останутся без категории.')) return
+    if (!confirm(t('deleteCategory', lang))) return
     await adminApi.deleteCategory(id)
     setCategories((prev) => prev.filter((c) => c.id !== id))
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   return (
     <div className="pb-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold">Категории ({categories.length})</h2>
+        <h2 className="text-base font-bold">{t('manageCategories', lang)} ({categories.length})</h2>
         <button
           onClick={() => setEditing('new')}
           className="flex items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-bg"
         >
-          <PlusIcon className="h-4 w-4" /> Добавить
+          <PlusIcon className="h-4 w-4" /> {t('addProduct', lang)}
         </button>
       </div>
 
@@ -147,7 +150,7 @@ export default function ManageCategories() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{cat.name}</p>
-              <p className="text-xs text-muted">Порядок: {cat.sort_order}</p>
+              <p className="text-xs text-muted">{t('sortOrder', lang)}: {cat.sort_order}</p>
             </div>
             <div className="flex flex-shrink-0 gap-2">
               <button
@@ -166,19 +169,20 @@ export default function ManageCategories() {
           </div>
         ))}
         {categories.length === 0 && (
-          <p className="py-10 text-center text-sm text-muted">Категорий пока нет</p>
+          <p className="py-10 text-center text-sm text-muted">{t('noCategories', lang)}</p>
         )}
       </div>
 
       {editing && (
         <Modal
-          title={editing === 'new' ? 'Новая категория' : 'Редактировать категорию'}
+          title={editing === 'new' ? t('newCategory', lang) : t('editCategory', lang)}
           onClose={() => setEditing(null)}
         >
           <CategoryForm
             category={editing === 'new' ? null : editing}
             onSave={handleSave}
             onCancel={() => setEditing(null)}
+            lang={lang}
           />
         </Modal>
       )}

@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import { SHOP_ID } from '../../shop.js'
+import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
 const MINI_APP_BASE_URL =
   import.meta.env.VITE_MINI_APP_URL || 'https://telegram-mini-shop.netlify.app'
 const MINI_APP_URL = `${MINI_APP_BASE_URL}?shop=${SHOP_ID}`
-
-const FIELDS = [
-  { key: 'store_name', label: 'Название магазина' },
-  { key: 'store_description', label: 'Описание магазина' },
-  { key: 'card_number', label: 'Номер карты для оплаты' },
-  { key: 'card_holder', label: 'Получатель платежа (ФИО)' },
-  { key: 'click_number', label: 'Номер Click' },
-  { key: 'admin_username', label: 'Ваш Telegram username (без @)', placeholder: 'example: finexia_admin' },
-]
 
 const CURRENCY_OPTIONS = [
   { value: 'сум', label: '🇺🇿 Сум (UZS)' },
@@ -29,7 +22,19 @@ const UNIT_TYPE_OPTIONS = [
   { value: 'piece', label: 'Количество (штуки)' },
 ]
 
+function getFields(lang) {
+  return [
+    { key: 'store_name', label: t('storeName', lang) },
+    { key: 'store_description', label: t('storeDesc', lang) },
+    { key: 'card_number', label: t('cardNumber', lang) },
+    { key: 'card_holder', label: t('cardHolder', lang) },
+    { key: 'click_number', label: t('clickNumber', lang) },
+    { key: 'admin_username', label: t('tgUsername', lang), placeholder: 'example: finexia_admin' },
+  ]
+}
+
 export default function ManageSettings() {
+  const { lang } = useShop()
   const [form, setForm] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -88,15 +93,15 @@ export default function ManageSettings() {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   return (
     <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-3 pb-4">
-      <h2 className="mb-1 text-base font-bold">Реквизиты и настройки магазина</h2>
+      <h2 className="mb-1 text-base font-bold">{t('manageSettings', lang)}</h2>
 
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">
-          Ссылка на Mini App (для BotFather)
+          {t('linkMiniApp', lang)}
         </label>
         <div className="flex gap-2">
           <input
@@ -110,12 +115,12 @@ export default function ManageSettings() {
             onClick={handleCopyLink}
             className="flex-shrink-0 rounded-xl bg-surface px-3 py-2.5 text-sm font-medium text-accent"
           >
-            {linkCopied ? 'Скопировано ✓' : 'Копировать'}
+            {linkCopied ? t('copyLinkDone', lang) : t('copyLink', lang)}
           </button>
         </div>
       </div>
 
-      {FIELDS.map(({ key, label, placeholder }) => (
+      {getFields(lang).map(({ key, label, placeholder }) => (
         <div key={key}>
           <label className="mb-1 block text-xs font-medium text-muted">{label}</label>
           <input
@@ -129,7 +134,7 @@ export default function ManageSettings() {
       ))}
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Тип единиц товара</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('productUnitType', lang)}</label>
         <select
           name="product_unit_type"
           value={form.product_unit_type || 'size'}
@@ -145,7 +150,7 @@ export default function ManageSettings() {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Валюта</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('currency', lang)}</label>
         <select
           name="currency"
           value={form.currency || 'сум'}
@@ -161,7 +166,7 @@ export default function ManageSettings() {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Тема оформления</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('theme', lang)}</label>
         <select
           name="theme"
           value={form.theme || 'dark'}
@@ -174,7 +179,7 @@ export default function ManageSettings() {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Язык интерфейса</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('language', lang)}</label>
         <select
           name="language"
           value={form.language || 'ru'}
@@ -188,7 +193,7 @@ export default function ManageSettings() {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Автоотмена заказа (минуты)</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('autoCancelMinutes', lang)}</label>
         <select
           name="auto_cancel_minutes"
           value={form.auto_cancel_minutes ?? 15}
@@ -209,7 +214,7 @@ export default function ManageSettings() {
         disabled={saving}
         className="mt-2 rounded-2xl bg-accent py-3 text-sm font-bold text-bg disabled:opacity-60"
       >
-        {saving ? 'Сохранение...' : saved ? 'Сохранено ✓' : 'Сохранить'}
+        {saving ? t('savingText', lang) : saved ? t('saved', lang) : t('save', lang)}
       </button>
     </form>
   )

@@ -3,12 +3,13 @@ import { adminApi } from '../../api.js'
 import { formatPrice } from '../../utils/format.js'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUSES } from '../../constants.js'
 import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
 export default function ManageOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState(null)
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
 
   useEffect(() => {
@@ -35,21 +36,21 @@ export default function ManageOrders() {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   if (orders.length === 0) {
-    return <div className="py-10 text-center text-sm text-muted">Заказов пока нет</div>
+    return <div className="py-10 text-center text-sm text-muted">{t('noOrdersYet', lang)}</div>
   }
 
   return (
     <div className="flex flex-col gap-3 pb-4">
-      <h2 className="text-base font-bold">Заказы ({orders.length})</h2>
+      <h2 className="text-base font-bold">{t('manageOrders', lang)} ({orders.length})</h2>
 
       {orders.map((order) => (
         <div key={order.id} className="rounded-2xl bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-sm font-semibold">Заказ #{order.id}</span>
+              <span className="text-sm font-semibold">{t('orderNum', lang)} #{order.id}</span>
               <p className="text-xs text-muted">
                 {new Date(order.created_at).toLocaleString('ru-RU', {
                   day: '2-digit',
@@ -78,20 +79,20 @@ export default function ManageOrders() {
 
           <div className="mt-3 grid gap-1 text-sm text-white/90 sm:grid-cols-2">
             <p>
-              <span className="text-muted">Клиент: </span>
+              <span className="text-muted">{t('client', lang)}: </span>
               {order.customer_name}
             </p>
             <p>
-              <span className="text-muted">Телефон: </span>
+              <span className="text-muted">{t('phone', lang)}: </span>
               {order.phone}
             </p>
             <p className="sm:col-span-2">
-              <span className="text-muted">Адрес: </span>
+              <span className="text-muted">{t('address', lang)}: </span>
               {order.address}
             </p>
             {order.comment && (
               <p className="sm:col-span-2">
-                <span className="text-muted">Комментарий: </span>
+                <span className="text-muted">{t('comment', lang)}: </span>
                 {order.comment}
               </p>
             )}
@@ -115,7 +116,7 @@ export default function ManageOrders() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate">{item.product_name}</p>
                   <p className="text-xs text-muted">
-                    {[item.size && `Размер ${item.size}`, item.color, `× ${item.quantity}`]
+                    {[item.size && `${t('size', lang)} ${item.size}`, item.color, `× ${item.quantity}`]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
@@ -128,7 +129,7 @@ export default function ManageOrders() {
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
-            <span className="text-sm text-muted">Итого</span>
+            <span className="text-sm text-muted">{t('total', lang)}</span>
             <span className="text-base font-bold text-accent">{formatPrice(order.total, currency)}</span>
           </div>
         </div>

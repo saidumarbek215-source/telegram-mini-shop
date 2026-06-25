@@ -5,13 +5,14 @@ import Modal from '../../components/Modal.jsx'
 import ProductForm from './ProductForm.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
 import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
 export default function ManageProducts() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [unitType, setUnitType] = useState('size')
   const [loading, setLoading] = useState(true)
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
   const [editing, setEditing] = useState(null) // null | 'new' | product
   const [togglingId, setTogglingId] = useState(null)
@@ -47,7 +48,7 @@ export default function ManageProducts() {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Удалить товар?')) return
+    if (!confirm(t('deleteProduct', lang))) return
     await adminApi.deleteProduct(id)
     setProducts((prev) => prev.filter((p) => p.id !== id))
   }
@@ -74,17 +75,17 @@ export default function ManageProducts() {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   return (
     <div className="pb-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold">Товары ({products.length})</h2>
+        <h2 className="text-base font-bold">{t('manageProducts', lang)} ({products.length})</h2>
         <button
           onClick={() => setEditing('new')}
           className="flex items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-bg"
         >
-          <PlusIcon className="h-4 w-4" /> Добавить
+          <PlusIcon className="h-4 w-4" /> {t('addProduct', lang)}
         </button>
       </div>
 
@@ -101,7 +102,7 @@ export default function ManageProducts() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{product.name}</p>
               <p className="text-xs text-muted">
-                {categoryName(product.category_id) || 'Без категории'}
+                {categoryName(product.category_id) || t('noCategory', lang)}
               </p>
               <div className="mt-0.5 flex items-center gap-2">
                 <span className="text-sm font-bold text-accent">
@@ -113,7 +114,7 @@ export default function ManageProducts() {
               <button
                 onClick={() => handleToggleStock(product)}
                 disabled={togglingId === product.id}
-                title={product.in_stock ? 'В наличии' : 'Нет в наличии'}
+                title={product.in_stock ? t('inStockToggle', lang) : t('outOfStock', lang)}
                 className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-60 ${
                   product.in_stock ? 'bg-accent' : 'bg-surface2'
                 }`}
@@ -142,13 +143,13 @@ export default function ManageProducts() {
           </div>
         ))}
         {products.length === 0 && (
-          <p className="py-10 text-center text-sm text-muted">Товаров пока нет</p>
+          <p className="py-10 text-center text-sm text-muted">{t('noProductsYet', lang)}</p>
         )}
       </div>
 
       {editing && (
         <Modal
-          title={editing === 'new' ? 'Новый товар' : 'Редактировать товар'}
+          title={editing === 'new' ? t('newProduct', lang) : t('editProduct', lang)}
           onClose={() => setEditing(null)}
         >
           <ProductForm

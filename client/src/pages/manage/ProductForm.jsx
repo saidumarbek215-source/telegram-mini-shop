@@ -1,18 +1,9 @@
 import { useState } from 'react'
-
-const UNIT_LABELS = {
-  size: 'Размеры (через запятую)',
-  weight: 'Варианты веса (через запятую, напр. 1кг, 5кг)',
-  volume: 'Варианты объёма (через запятую, напр. 1л, 5л)',
-}
-
-const UNIT_PLACEHOLDERS = {
-  size: 'S, M, L, XL',
-  weight: '1кг, 5кг, 10кг, 25кг, 50кг',
-  volume: '1л, 5л, 10л, 20л',
-}
+import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
 export default function ProductForm({ product, categories, unitType = 'size', onSave, onCancel }) {
+  const { lang } = useShop()
   const [form, setForm] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -46,7 +37,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim() || !form.price || !form.image_url.trim()) {
-      setError('Заполните название, цену и ссылку на фото')
+      setError(t('fillNamePricePhoto', lang))
       return
     }
     setError('')
@@ -76,10 +67,22 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     }
   }
 
+  const unitLabels = {
+    size: t('sizesLabel', lang),
+    weight: t('weightLabel', lang),
+    volume: t('volumeLabel', lang),
+  }
+
+  const unitPlaceholders = {
+    size: 'S, M, L, XL',
+    weight: '1кг, 5кг, 10кг, 25кг, 50кг',
+    volume: '1л, 5л, 10л, 20л',
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Название *</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('productName', lang)} *</label>
         <input
           name="name"
           value={form.name}
@@ -88,7 +91,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Описание</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('productDesc', lang)}</label>
         <textarea
           name="description"
           value={form.description}
@@ -99,7 +102,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Цена *</label>
+          <label className="mb-1 block text-xs font-medium text-muted">{t('price', lang)} *</label>
           <input
             name="price"
             type="text"
@@ -115,7 +118,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Старая цена</label>
+          <label className="mb-1 block text-xs font-medium text-muted">{t('oldPrice', lang)}</label>
           <input
             name="old_price"
             type="text"
@@ -127,13 +130,13 @@ export default function ProductForm({ product, categories, unitType = 'size', on
                 setForm((f) => ({ ...f, old_price: value }))
               }
             }}
-            placeholder="необязательно"
+            placeholder={t('optional', lang)}
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Ссылка на фото (URL) *</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('photoUrl', lang)} *</label>
         <input
           name="image_url"
           value={form.image_url}
@@ -141,15 +144,12 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           placeholder="https://..."
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
-        <p className="mt-1 text-xs text-muted">
-          Используйте прямую ссылку на фото (Direct link с ImgBB).
-          Пример: https://i.ibb.co/xxxxx/photo.jpg
-        </p>
+        <p className="mt-1 text-xs text-muted">{t('photoHint', lang)}</p>
         {form.image_url.trim() && (
           <div className="mt-2 h-32 w-32 overflow-hidden rounded-xl bg-surface2">
             <img
               src={form.image_url.trim()}
-              alt="Превью"
+              alt={t('preview', lang)}
               className="h-full w-full object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
@@ -162,14 +162,14 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         )}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Категория</label>
+        <label className="mb-1 block text-xs font-medium text-muted">{t('category', lang)}</label>
         <select
           name="category_id"
           value={form.category_id}
           onChange={handleChange}
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         >
-          <option value="">Без категории</option>
+          <option value="">{t('noCategory', lang)}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.icon} {c.name}
@@ -180,13 +180,13 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       {unitType !== 'piece' && (
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
-            {UNIT_LABELS[unitType] || UNIT_LABELS.size}
+            {unitLabels[unitType] || unitLabels.size}
           </label>
           <input
             name="sizes"
             value={form.sizes}
             onChange={handleChange}
-            placeholder={UNIT_PLACEHOLDERS[unitType] || UNIT_PLACEHOLDERS.size}
+            placeholder={unitPlaceholders[unitType] || unitPlaceholders.size}
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
@@ -195,7 +195,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       {unitType !== 'piece' && sizesList.length > 0 && (
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
-            Количество по вариантам
+            {t('sortByVariants', lang)}
           </label>
           <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
             {sizesList.map((size) => {
@@ -204,7 +204,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
                 <div key={size} className="flex items-center justify-between gap-3">
                   <span className={`text-sm ${qty === 0 ? 'text-muted' : ''}`}>
                     {size}
-                    {qty === 0 && <span className="ml-1.5 text-xs">— нет в наличии</span>}
+                    {qty === 0 && <span className="ml-1.5 text-xs">{t('noInStock', lang)}</span>}
                   </span>
                   <input
                     type="number"
@@ -217,14 +217,12 @@ export default function ProductForm({ product, categories, unitType = 'size', on
               )
             })}
           </div>
-          <p className="mt-1 text-xs text-muted">
-            Если для всех вариантов указано 0, товар будет показан как «Нет в наличии»
-          </p>
+          <p className="mt-1 text-xs text-muted">{t('stockZeroHint', lang)}</p>
         </div>
       )}
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">
-          Цвета (через запятую)
+          {t('colorsLabel', lang)}
         </label>
         <input
           name="colors"
@@ -237,7 +235,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
-            Порядок сортировки
+            {t('productSortOrder', lang)}
           </label>
           <input
             name="sort_order"
@@ -255,7 +253,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
             onChange={handleChange}
             className="h-4 w-4 accent-accent"
           />
-          В наличии
+          {t('inStockToggle', lang)}
         </label>
       </div>
 
@@ -267,14 +265,14 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           onClick={onCancel}
           className="flex-1 rounded-2xl bg-surface2 py-3 text-sm font-medium text-white"
         >
-          Отмена
+          {t('cancel', lang)}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="flex-1 rounded-2xl bg-accent py-3 text-sm font-bold text-bg disabled:opacity-60"
         >
-          {saving ? 'Сохранение...' : 'Сохранить'}
+          {saving ? t('savingText', lang) : t('save', lang)}
         </button>
       </div>
     </form>
