@@ -20,10 +20,13 @@ router.post(
     }
 
     const result = await query(
-      `INSERT INTO shops (name, owner_telegram_id, bot_token, bot_username)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO shops (name, owner_telegram_id, bot_token)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (owner_telegram_id) DO UPDATE
+         SET name = EXCLUDED.name,
+             bot_token = COALESCE(EXCLUDED.bot_token, shops.bot_token)
        RETURNING id`,
-      [String(name).trim(), ownerId, bot_token, null]
+      [String(name).trim(), ownerId, bot_token]
     )
 
     const shopId = result.rows[0].id
