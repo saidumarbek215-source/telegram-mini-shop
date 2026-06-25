@@ -1,41 +1,29 @@
 import FaqAccordion from '../components/FaqAccordion.jsx'
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
-const FAQ_ITEMS = [
-  {
-    q: 'Как оформить заказ?',
-    a: 'Выберите товар → укажите размер и цвет → нажмите "В корзину" → перейдите в корзину → нажмите "Оформить заказ" → заполните данные.',
-  },
-  {
-    q: 'Как оплатить?',
-    a: 'После оформления заказа вам придут реквизиты карты продавца. Переведите сумму и отправьте фото чека продавцу через кнопку "Написать продавцу".',
-  },
-  {
-    q: 'Когда подтвердят заказ?',
-    a: 'Продавец подтверждает заказ после получения оплаты. Обычно в течение 15-30 минут.',
-  },
-  {
-    q: 'Что если товара нет в наличии?',
-    a: 'Товары с пометкой "Нет в наличии" временно недоступны. Напишите продавцу — он сообщит когда появится.',
-  },
-  {
-    q: 'Можно ли вернуть товар?',
-    a: 'Условия возврата уточняйте у продавца через кнопку "Написать продавцу".',
-  },
-  {
-    q: 'На каких языках работает магазин?',
-    a: 'Магазин работает на русском и узбекском языках.',
-  },
-]
+function getFaqItems(lang) {
+  return [
+    { q: t('faqQ1', lang), a: t('faqA1', lang) },
+    { q: t('faqQ2', lang), a: t('faqA2', lang) },
+    { q: t('faqQ3', lang), a: t('faqA3', lang) },
+    { q: t('faqQ4', lang), a: t('faqA4', lang) },
+    { q: t('faqQ5', lang), a: t('faqA5', lang) },
+    { q: t('faqQ6', lang), a: t('faqA6', lang) },
+  ]
+}
 
 export default function Faq() {
+  const { lang } = useShop()
+
   return (
     <div className="px-4">
       <header className="pb-3 pt-5">
-        <h1 className="text-lg font-bold">Помощь</h1>
-        <p className="mt-1 text-sm text-muted">Частые вопросы покупателей</p>
+        <h1 className="text-lg font-bold">{t('help', lang)}</h1>
+        <p className="mt-1 text-sm text-muted">{t('faqSubtitle', lang)}</p>
       </header>
 
-      <FaqAccordion items={FAQ_ITEMS} />
+      <FaqAccordion items={getFaqItems(lang)} />
     </div>
   )
 }

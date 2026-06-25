@@ -7,6 +7,7 @@ import { useShop } from '../context/ShopContext.jsx'
 import { CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
+import { t } from '../i18n.js'
 
 const FALLBACK_WEIGHT = ['1кг', '5кг', '10кг', '25кг', '50кг']
 const FALLBACK_VOLUME = ['1л', '5л', '10л', '20л']
@@ -15,7 +16,7 @@ export default function Product() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
 
   const [product, setProduct] = useState(null)
   const [settings, setSettings] = useState(null)
@@ -39,8 +40,8 @@ export default function Product() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="py-20 text-center text-sm text-muted">Загрузка...</div>
-  if (!product) return <div className="py-20 text-center text-sm text-muted">Товар не найден</div>
+  if (loading) return <div className="py-20 text-center text-sm text-muted">{t('loading', lang)}</div>
+  if (!product) return <div className="py-20 text-center text-sm text-muted">{t('productNotFound', lang)}</div>
 
   const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
@@ -113,20 +114,20 @@ export default function Product() {
 
         {!available && (
           <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400">
-            Нет в наличии
+            {t('outOfStock', lang)}
           </div>
         )}
 
         {product.description && (
           <div className="mt-4">
-            <h2 className="mb-1 text-sm font-semibold text-muted">Описание</h2>
+            <h2 className="mb-1 text-sm font-semibold text-muted">{t('description', lang)}</h2>
             <p className="text-sm leading-relaxed text-white/80">{product.description}</p>
           </div>
         )}
 
         {unitType === 'size' && product.sizes?.length > 0 && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Размер</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">{t('size', lang)}</h2>
             <div className="flex flex-wrap gap-2">
               {product.sizes.map((s) => {
                 const sizeAvailable = isSizeAvailable(product, s)
@@ -153,7 +154,7 @@ export default function Product() {
 
         {unitType === 'weight' && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Фасовка</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">{t('packaging', lang)}</h2>
             <div className="flex flex-wrap gap-2">
               {(product.sizes?.length ? product.sizes : FALLBACK_WEIGHT).map((w) => (
                 <button
@@ -172,7 +173,7 @@ export default function Product() {
 
         {unitType === 'volume' && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Объём</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">{t('volume', lang)}</h2>
             <div className="flex flex-wrap gap-2">
               {(product.sizes?.length ? product.sizes : FALLBACK_VOLUME).map((v) => (
                 <button
@@ -191,7 +192,7 @@ export default function Product() {
 
         {unitType === 'piece' && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Количество</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">{t('quantity', lang)}</h2>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -212,7 +213,7 @@ export default function Product() {
 
         {product.colors?.length > 0 && (
           <div className="mt-4">
-            <h2 className="mb-2 text-sm font-semibold text-muted">Цвет</h2>
+            <h2 className="mb-2 text-sm font-semibold text-muted">{t('color', lang)}</h2>
             <div className="flex flex-wrap gap-2">
               {product.colors.map((c) => (
                 <button
@@ -238,12 +239,12 @@ export default function Product() {
         >
           {added ? (
             <>
-              <CheckIcon className="h-5 w-5" /> Добавлено
+              <CheckIcon className="h-5 w-5" /> {t('added', lang)}
             </>
           ) : canAddToCart ? (
-            'В корзину'
+            t('addToCart', lang)
           ) : (
-            'Нет в наличии'
+            t('outOfStock', lang)
           )}
         </button>
       </div>

@@ -224,7 +224,7 @@ export default function Checkout() {
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder="Иван Иванов"
+            placeholder={t('namePlaceholder', lang)}
             className="w-full rounded-2xl bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
@@ -286,7 +286,7 @@ export default function Checkout() {
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  placeholder="Город, улица, дом, квартира"
+                  placeholder={t('addressPlaceholder', lang)}
                   rows={2}
                   className="w-full resize-none rounded-2xl bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
                 />
@@ -308,7 +308,7 @@ export default function Checkout() {
             name="comment"
             value={form.comment}
             onChange={handleChange}
-            placeholder="Дополнительная информация к заказу"
+            placeholder={t('commentPlaceholder', lang)}
             rows={2}
             className="w-full resize-none rounded-2xl bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
@@ -319,13 +319,13 @@ export default function Checkout() {
             <h3 className="mb-2 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
             {settings.card_number && (
               <div className="flex items-center justify-between py-1 text-sm">
-                <span className="text-muted">Карта</span>
+                <span className="text-muted">{t('card', lang)}</span>
                 <span className="font-mono font-medium">{settings.card_number}</span>
               </div>
             )}
             {settings.card_holder && (
               <div className="flex items-center justify-between py-1 text-sm">
-                <span className="text-muted">Получатель</span>
+                <span className="text-muted">{t('recipient', lang)}</span>
                 <span className="font-medium">{settings.card_holder}</span>
               </div>
             )}
@@ -336,7 +336,7 @@ export default function Checkout() {
               </div>
             )}
             <p className="mt-2 text-xs leading-relaxed text-muted">
-              Переведите сумму заказа по указанным реквизитам после подтверждения менеджером
+              {t('payAfterConfirm', lang)}
             </p>
           </div>
         )}

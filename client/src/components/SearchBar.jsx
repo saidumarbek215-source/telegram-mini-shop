@@ -1,6 +1,10 @@
 import { SearchIcon } from './Icons.jsx'
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
-export default function SearchBar({ value, onChange, onSubmit, placeholder = 'Поиск товаров' }) {
+export default function SearchBar({ value, onChange, onSubmit }) {
+  const { lang } = useShop()
+
   return (
     <form
       onSubmit={(e) => {
@@ -14,7 +18,7 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder = 'П
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
+          placeholder={t('search', lang)}
           className="w-full bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
         />
       </div>
