@@ -11,6 +11,12 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE shops DROP CONSTRAINT IF EXISTS shops_owner_telegram_id_key`
   )
+  await pool.query(
+    `ALTER TABLE products ALTER COLUMN price TYPE NUMERIC(12,2) USING price::NUMERIC(12,2)`
+  )
+  await pool.query(
+    `ALTER TABLE products ALTER COLUMN old_price TYPE NUMERIC(12,2) USING old_price::NUMERIC(12,2)`
+  )
   console.log('Migration applied successfully')
 }
 
