@@ -8,6 +8,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export async function migrate() {
   const sql = readFileSync(join(__dirname, 'schema.sql'), 'utf-8')
   await pool.query(sql)
+  await pool.query(
+    `ALTER TABLE shops DROP CONSTRAINT IF EXISTS shops_owner_telegram_id_key`
+  )
   console.log('Migration applied successfully')
 }
 
