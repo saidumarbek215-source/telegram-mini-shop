@@ -55,8 +55,8 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       await onSave({
         name: form.name.trim(),
         description: form.description.trim(),
-        price: Number(form.price),
-        old_price: form.old_price ? Number(form.old_price) : null,
+        price: parseFloat(String(form.price).replace(',', '.')),
+        old_price: form.old_price ? parseFloat(String(form.old_price).replace(',', '.')) : null,
         image_url: form.image_url.trim(),
         category_id: form.category_id ? Number(form.category_id) : null,
         sizes: sizesList,
@@ -99,13 +99,18 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Цена (сум) *</label>
+          <label className="mb-1 block text-xs font-medium text-muted">Цена *</label>
           <input
             name="price"
-            type="number"
-            min="0"
+            type="text"
+            inputMode="decimal"
             value={form.price}
-            onChange={handleChange}
+            onChange={(e) => {
+              const value = e.target.value.replace(',', '.')
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setForm((f) => ({ ...f, price: value }))
+              }
+            }}
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
@@ -113,10 +118,15 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           <label className="mb-1 block text-xs font-medium text-muted">Старая цена</label>
           <input
             name="old_price"
-            type="number"
-            min="0"
+            type="text"
+            inputMode="decimal"
             value={form.old_price}
-            onChange={handleChange}
+            onChange={(e) => {
+              const value = e.target.value.replace(',', '.')
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setForm((f) => ({ ...f, old_price: value }))
+              }
+            }}
             placeholder="необязательно"
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
