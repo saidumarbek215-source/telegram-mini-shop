@@ -2,6 +2,24 @@ import { getTelegramInitData } from './telegram.js'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
+const cache = new Map()
+const CACHE_TTL = 30000
+
+async function cachedRequest(path) {
+  const cached = cache.get(path)
+  if (cached && Date.now() - cached.time < CACHE_TTL) {
+    return cached.data
+  }
+  const data = await request(path)
+  cache.set(path, { data, time: Date.now() })
+  return data
+}
+
+export function invalidateCache(path) {
+  if (path) cache.delete(path)
+  else cache.clear()
+}
+
 // Captured once at module load — before React Router changes the URL
 const SHOP_ID = (() => {
   const urlParams = new URLSearchParams(window.location.search)
@@ -37,17 +55,18 @@ async function request(path, { admin, ...options } = {}) {
 }
 
 export const api = {
-  getCategories: () => request('/categories'),
+  getCategories: () => cachedRequest('/categories'),
   getProducts: (params = {}) => {
     const filtered = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== '')
     )
     const qs = new URLSearchParams(filtered).toString()
-    return request(`/products${qs ? `?${qs}` : ''}`)
+    const path = `/products${qs ? `?${qs}` : ''}`
+    return cachedRequest(path)
   },
   getProduct: (id) => request(`/products/${id}`),
-  getBanners: () => request('/banners'),
-  getSettings: () => request('/settings'),
+  getBanners: () => cachedRequest('/banners'),
+  getSettings: () => cachedRequest('/settings'),
   createOrder: (data) => request('/orders', { method: 'POST', body: JSON.stringify(data) }),
   getOrderHistory: (telegramUserId) => request(`/orders/user/${telegramUserId}`),
 }

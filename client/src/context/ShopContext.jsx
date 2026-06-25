@@ -15,9 +15,12 @@ export function ShopProvider({ children }) {
       return
     }
 
-    api
-      .getSettings()
-      .then((shop) => setState({ status: 'ready', shop }))
+    Promise.all([
+      api.getSettings(),
+      api.getCategories().catch(() => null),
+      api.getBanners().catch(() => null),
+    ])
+      .then(([shop]) => setState({ status: 'ready', shop }))
       .catch(() => setState({ status: 'not-found', shop: null }))
   }, [])
 
