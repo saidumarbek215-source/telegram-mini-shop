@@ -63,8 +63,11 @@ export default function ManageSettings() {
     setSaving(true)
     try {
       const updated = await adminApi.updateSettings(form)
-      setForm(updated)
-      setSaved(true)
+      setForm({
+        ...updated,
+        theme: updated.features?.theme || 'dark',
+        language: updated.features?.language || 'ru',
+      })
 
       if (form.theme === 'light') {
         document.body.classList.add('light-theme')
@@ -72,7 +75,8 @@ export default function ManageSettings() {
         document.body.classList.remove('light-theme')
       }
 
-      setTimeout(() => window.location.reload(), 500)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
     } finally {
       setSaving(false)
     }

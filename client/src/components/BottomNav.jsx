@@ -2,21 +2,24 @@ import { NavLink } from 'react-router-dom'
 import { HomeIcon, GridIcon, BagIcon, UserIcon, SlidersIcon, HelpIcon } from './Icons.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useOwner } from '../context/OwnerContext.jsx'
-
-const items = [
-  { to: '/', label: 'Главная', icon: HomeIcon, end: true },
-  { to: '/catalog', label: 'Каталог', icon: GridIcon },
-  { to: '/cart', label: 'Корзина', icon: BagIcon, badge: true },
-  { to: '/profile', label: 'Профиль', icon: UserIcon },
-  { to: '/faq', label: 'Помощь', icon: HelpIcon },
-]
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function BottomNav() {
   const { count } = useCart()
   const { isOwner } = useOwner()
+  const { lang } = useShop()
+
+  const items = [
+    { to: '/', label: t('home', lang), icon: HomeIcon, end: true },
+    { to: '/catalog', label: t('catalog', lang), icon: GridIcon },
+    { to: '/cart', label: t('cart', lang), icon: BagIcon, badge: true },
+    { to: '/profile', label: t('profile', lang), icon: UserIcon },
+    { to: '/faq', label: t('help', lang), icon: HelpIcon },
+  ]
 
   const navItems = isOwner
-    ? [...items, { to: '/manage', label: 'Управление', icon: SlidersIcon }]
+    ? [...items, { to: '/manage', label: t('manage', lang), icon: SlidersIcon }]
     : items
 
   return (

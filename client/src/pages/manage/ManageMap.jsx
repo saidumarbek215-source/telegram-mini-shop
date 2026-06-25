@@ -27,6 +27,8 @@ export default function ManageMap() {
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [picking, setPicking] = useState(false)
+  const [searchResults, setSearchResults] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
@@ -106,10 +108,40 @@ export default function ManageMap() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
+  async function handleAddressSearch(e) {
+    const q = e.target.value
+    setSearchQuery(q)
+    if (q.length < 4) { setSearchResults([]); return }
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5`,
+        { headers: { 'Accept-Language': 'ru' } }
+      )
+      setSearchResults(await res.json())
+    } catch {
+      setSearchResults([])
+    }
+  }
+
+  function pickSearchResult(result) {
+    const lat = parseFloat(result.lat)
+    const lng = parseFloat(result.lon)
+    setForm((f) => ({ ...f, address: result.display_name, latitude: lat, longitude: lng }))
+    setSearchResults([])
+    setSearchQuery('')
+    if (mapInstanceRef.current) mapInstanceRef.current.setView([lat, lng], 15)
+    if (pickMarkerRef.current) pickMarkerRef.current.remove()
+    pickMarkerRef.current = window.L.circleMarker([lat, lng], {
+      radius: 8, color: '#6366f1', fillColor: '#6366f1', fillOpacity: 0.8,
+    }).addTo(mapInstanceRef.current).bindPopup('Новая точка').openPopup()
+  }
+
   function openAdd() {
     setForm(EMPTY_FORM)
     setEditingId(null)
     setPicking(false)
+    setSearchResults([])
+    setSearchQuery('')
     if (pickMarkerRef.current) { pickMarkerRef.current.remove(); pickMarkerRef.current = null }
     setShowForm(true)
   }
@@ -229,6 +261,27 @@ export default function ManageMap() {
             type="tel"
             className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
+          <div className="relative">
+            <input
+              value={searchQuery}
+              onChange={handleAddressSearch}
+              placeholder="Поиск адреса..."
+              className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+            {searchResults.length > 0 && (
+              <ul className="absolute z-50 mt-1 w-full rounded-xl bg-surface shadow-lg overflow-hidden">
+                {searchResults.map((r) => (
+                  <li
+                    key={r.place_id}
+                    onClick={() => pickSearchResult(r)}
+                    className="cursor-pointer px-3 py-2 text-xs hover:bg-bg truncate border-b border-white/5 last:border-0"
+                  >
+                    {r.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <div className="flex gap-2">
             <input
               name="address"

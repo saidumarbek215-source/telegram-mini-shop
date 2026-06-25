@@ -41,5 +41,7 @@ export function ShopProvider({ children }) {
 }
 
 export function useShop() {
-  return useContext(ShopContext)
+  const ctx = useContext(ShopContext)
+  const lang = ctx.shop?.features?.language || 'ru'
+  return { ...ctx, lang }
 }

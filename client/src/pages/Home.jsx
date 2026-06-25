@@ -5,9 +5,12 @@ import SearchBar from '../components/SearchBar.jsx'
 import BannerSlider from '../components/BannerSlider.jsx'
 import CategoryList from '../components/CategoryList.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function Home() {
   const navigate = useNavigate()
+  const { lang } = useShop()
   const [search, setSearch] = useState('')
   const [settings, setSettings] = useState({})
   const [banners, setBanners] = useState([])
@@ -60,9 +63,9 @@ export default function Home() {
       {categories.length > 0 && (
         <div className="mt-5">
           <div className="mb-2 flex items-center justify-between px-4">
-            <h2 className="text-sm font-semibold">Категории</h2>
+            <h2 className="text-sm font-semibold">{t('categories', lang)}</h2>
             <Link to="/catalog" className="text-xs font-medium text-accent">
-              Все товары
+              {t('allProducts', lang)}
             </Link>
           </div>
           <CategoryList categories={categories} />
@@ -70,11 +73,11 @@ export default function Home() {
       )}
 
       <div className="mt-5 px-4">
-        <h2 className="mb-3 text-sm font-semibold">Популярные товары</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t('popular', lang)}</h2>
         {loading ? (
-          <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+          <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
         ) : products.length === 0 ? (
-          <div className="py-10 text-center text-sm text-muted">Товары не найдены</div>
+          <div className="py-10 text-center text-sm text-muted">{t('noProducts', lang)}</div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {products.map((product) => (
