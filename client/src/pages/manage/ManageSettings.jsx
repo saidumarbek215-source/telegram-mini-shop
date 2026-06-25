@@ -17,9 +17,9 @@ const FIELDS = [
 
 const CURRENCY_OPTIONS = [
   { value: 'сум', label: '🇺🇿 Сум (UZS)' },
-  { value: 'руб', label: '🇷🇺 Рубль (RUB)' },
-  { value: '$', label: '🇺🇸 Доллар (USD)' },
-  { value: '€', label: '🇪🇺 Евро (EUR)' },
+  { value: '$', label: '🇺🇸 Доллар ($)' },
+  { value: '€', label: '🇪🇺 Евро (€)' },
+  { value: '₽', label: '🇷🇺 Рубль (₽)' },
 ]
 
 const UNIT_TYPE_OPTIONS = [
