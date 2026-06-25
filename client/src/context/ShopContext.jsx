@@ -9,7 +9,7 @@ export function ShopProvider({ children }) {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const shopId = urlParams.get('shop')
-    
+
     if (!shopId) {
       setState({ status: 'not-found', shop: null })
       return
@@ -17,16 +17,21 @@ export function ShopProvider({ children }) {
 
     api
       .getSettings()
-      .then((shop) => {
-        if (shop.features?.theme === 'light') {
-          document.body.classList.add('light-theme')
-        } else {
-          document.body.classList.remove('light-theme')
-        }
-        setState({ status: 'ready', shop })
-      })
+      .then((shop) => setState({ status: 'ready', shop }))
       .catch(() => setState({ status: 'not-found', shop: null }))
   }, [])
+
+  useEffect(() => {
+    const { shop } = state
+    if (!shop) return
+
+    if (shop.features?.theme === 'light') {
+      document.body.classList.add('light-theme')
+      document.body.classList.remove('dark-theme')
+    } else {
+      document.body.classList.remove('light-theme')
+    }
+  }, [state.shop])
 
   return <ShopContext.Provider value={state}>{children}</ShopContext.Provider>
 }
