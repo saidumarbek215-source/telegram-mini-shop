@@ -17,7 +17,14 @@ export function ShopProvider({ children }) {
 
     api
       .getSettings()
-      .then((shop) => setState({ status: 'ready', shop }))
+      .then((shop) => {
+        if (shop.features?.theme === 'light') {
+          document.body.classList.add('light-theme')
+        } else {
+          document.body.classList.remove('light-theme')
+        }
+        setState({ status: 'ready', shop })
+      })
       .catch(() => setState({ status: 'not-found', shop: null }))
   }, [])
 
