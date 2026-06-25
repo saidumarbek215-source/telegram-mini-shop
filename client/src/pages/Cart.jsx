@@ -2,10 +2,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { formatPrice } from '../utils/format.js'
 import { MinusIcon, PlusIcon, TrashIcon, BagIcon } from '../components/Icons.jsx'
+import { useShop } from '../context/ShopContext.jsx'
 
 export default function Cart() {
   const navigate = useNavigate()
   const { items, updateQuantity, removeItem, total } = useCart()
+  const { shop } = useShop()
+  const currency = shop?.currency || 'сум'
 
   if (items.length === 0) {
     return (
@@ -61,7 +64,7 @@ export default function Cart() {
                 )}
                 <div className="mt-auto flex items-center justify-between pt-2">
                   <span className="text-sm font-bold text-accent">
-                    {formatPrice(item.price * item.quantity)}
+                    {formatPrice(item.price * item.quantity, currency)}
                   </span>
                   <div className="flex items-center gap-1 rounded-full bg-surface2 p-1">
                     <button
@@ -96,7 +99,7 @@ export default function Cart() {
         className="fixed left-0 right-0 mx-4 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98]"
         style={{ bottom: '70px' }}
       >
-        Оформить заказ · {formatPrice(total)}
+        Оформить заказ · {formatPrice(total, currency)}
       </button>
     </div>
   )

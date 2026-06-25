@@ -2,8 +2,11 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../utils/format.js'
 import { isProductAvailable } from '../utils/stock.js'
+import { useShop } from '../context/ShopContext.jsx'
 
 export default function ProductCard({ product }) {
+  const { shop } = useShop()
+  const currency = shop?.currency || 'сум'
   const [imgError, setImgError] = useState(false)
   const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
@@ -49,10 +52,10 @@ export default function ProductCard({ product }) {
           {product.name}
         </h3>
         <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-sm font-bold text-accent">{formatPrice(product.price)}</span>
+          <span className="text-sm font-bold text-accent">{formatPrice(product.price, currency)}</span>
           {hasDiscount && (
             <span className="text-xs text-muted line-through">
-              {formatPrice(product.old_price)}
+              {formatPrice(product.old_price, currency)}
             </span>
           )}
         </div>

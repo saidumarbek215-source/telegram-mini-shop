@@ -46,6 +46,7 @@ export default function Product() {
     : 0
 
   const unitType = settings?.product_unit_type || 'size'
+  const currency = settings?.currency || 'сум'
   const available = isProductAvailable(product)
   const canAddToCart = available && (!size || isSizeAvailable(product, size))
 
@@ -85,10 +86,10 @@ export default function Product() {
       <div className="px-4 pt-4">
         <h1 className="text-xl font-bold leading-tight">{product.name}</h1>
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-accent">{formatPrice(product.price)}</span>
+          <span className="text-xl font-bold text-accent">{formatPrice(product.price, currency)}</span>
           {hasDiscount && (
             <span className="text-sm text-muted line-through">
-              {formatPrice(product.old_price)}
+              {formatPrice(product.old_price, currency)}
             </span>
           )}
         </div>

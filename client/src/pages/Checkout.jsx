@@ -127,7 +127,7 @@ export default function Checkout() {
             )
             .join('\n') +
           '\n' +
-          `Сумма: ${formatPrice(orderTotal)}\n` +
+          `Сумма: ${formatPrice(orderTotal, settings.currency || 'сум')}\n` +
           `Прикрепляю фото чека`
       )
 
@@ -175,7 +175,7 @@ export default function Checkout() {
             )}
             <div className="flex items-center justify-between py-1 text-sm">
               <span className="text-muted">Сумма</span>
-              <span className="font-bold text-accent">{formatPrice(orderTotal)}</span>
+              <span className="font-bold text-accent">{formatPrice(orderTotal, settings.currency || 'сум')}</span>
             </div>
           </div>
         )}
@@ -344,7 +344,7 @@ export default function Checkout() {
             <span className="text-sm text-muted">
               Товаров: {items.reduce((s, i) => s + i.quantity, 0)}
             </span>
-            <span className="text-lg font-bold text-accent">{formatPrice(total)}</span>
+            <span className="text-lg font-bold text-accent">{formatPrice(total, settings.currency || 'сум')}</span>
           </div>
         </div>
 

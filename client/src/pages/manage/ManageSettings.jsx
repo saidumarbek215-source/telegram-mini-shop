@@ -12,8 +12,14 @@ const FIELDS = [
   { key: 'card_number', label: 'Номер карты для оплаты' },
   { key: 'card_holder', label: 'Получатель платежа (ФИО)' },
   { key: 'click_number', label: 'Номер Click' },
-  { key: 'currency', label: 'Валюта' },
   { key: 'admin_username', label: 'Ваш Telegram username (без @)', placeholder: 'example: finexia_admin' },
+]
+
+const CURRENCY_OPTIONS = [
+  { value: 'сум', label: '🇺🇿 Сум (UZS)' },
+  { value: 'руб', label: '🇷🇺 Рубль (RUB)' },
+  { value: '$', label: '🇺🇸 Доллар (USD)' },
+  { value: '€', label: '🇪🇺 Евро (EUR)' },
 ]
 
 const UNIT_TYPE_OPTIONS = [
@@ -131,6 +137,22 @@ export default function ManageSettings() {
           className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         >
           {UNIT_TYPE_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Валюта</label>
+        <select
+          name="currency"
+          value={form.currency || 'сум'}
+          onChange={handleChange}
+          className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          {CURRENCY_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>
               {label}
             </option>

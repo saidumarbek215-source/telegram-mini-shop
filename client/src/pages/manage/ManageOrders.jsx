@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import { formatPrice } from '../../utils/format.js'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUSES } from '../../constants.js'
+import { useShop } from '../../context/ShopContext.jsx'
 
 export default function ManageOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState(null)
+  const { shop } = useShop()
+  const currency = shop?.currency || 'сум'
 
   useEffect(() => {
     load()
@@ -118,7 +121,7 @@ export default function ManageOrders() {
                   </p>
                 </div>
                 <span className="flex-shrink-0 text-sm font-medium">
-                  {formatPrice(item.price * item.quantity)}
+                  {formatPrice(item.price * item.quantity, currency)}
                 </span>
               </div>
             ))}
@@ -126,7 +129,7 @@ export default function ManageOrders() {
 
           <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
             <span className="text-sm text-muted">Итого</span>
-            <span className="text-base font-bold text-accent">{formatPrice(order.total)}</span>
+            <span className="text-base font-bold text-accent">{formatPrice(order.total, currency)}</span>
           </div>
         </div>
       ))}

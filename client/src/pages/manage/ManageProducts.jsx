@@ -4,12 +4,15 @@ import { formatPrice } from '../../utils/format.js'
 import Modal from '../../components/Modal.jsx'
 import ProductForm from './ProductForm.jsx'
 import { PencilIcon, TrashIcon, PlusIcon } from '../../components/Icons.jsx'
+import { useShop } from '../../context/ShopContext.jsx'
 
 export default function ManageProducts() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [unitType, setUnitType] = useState('size')
   const [loading, setLoading] = useState(true)
+  const { shop } = useShop()
+  const currency = shop?.currency || 'сум'
   const [editing, setEditing] = useState(null) // null | 'new' | product
   const [togglingId, setTogglingId] = useState(null)
 
@@ -102,7 +105,7 @@ export default function ManageProducts() {
               </p>
               <div className="mt-0.5 flex items-center gap-2">
                 <span className="text-sm font-bold text-accent">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.price, currency)}
                 </span>
               </div>
             </div>

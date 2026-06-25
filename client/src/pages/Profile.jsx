@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
+import { useShop } from '../context/ShopContext.jsx'
 import { getTelegramUser } from '../telegram.js'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '../constants.js'
 import { UserIcon, BoxIcon } from '../components/Icons.jsx'
@@ -9,6 +10,8 @@ export default function Profile() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const tgUser = getTelegramUser()
+  const { shop } = useShop()
+  const currency = shop?.currency || 'сум'
 
   useEffect(() => {
     if (!tgUser?.id) {
@@ -104,7 +107,7 @@ export default function Profile() {
                 <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
                   <span className="text-xs text-muted">Итого</span>
                   <span className="text-sm font-bold text-accent">
-                    {formatPrice(order.total)}
+                    {formatPrice(order.total, currency)}
                   </span>
                 </div>
               </div>
