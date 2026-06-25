@@ -298,15 +298,23 @@ router.put(
       currency,
       admin_username,
       product_unit_type,
+      theme,
+      language,
     } = req.body || {}
 
     const validUnitTypes = ['size', 'weight', 'volume', 'piece']
     const unitType = validUnitTypes.includes(product_unit_type) ? product_unit_type : 'size'
+    const validThemes = ['dark', 'light']
+    const validLanguages = ['ru', 'uz', 'en']
+    const safeTheme = validThemes.includes(theme) ? theme : 'dark'
+    const safeLanguage = validLanguages.includes(language) ? language : 'ru'
 
     const result = await query(
       `UPDATE shops
-       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5, currency = $6, admin_username = $7, product_unit_type = $8
-       WHERE id = $9
+       SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5,
+           currency = $6, admin_username = $7, product_unit_type = $8,
+           features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($9::text)), '{language}', to_jsonb($10::text))
+       WHERE id = $11
        RETURNING *`,
       [
         store_name ?? '',
@@ -317,6 +325,8 @@ router.put(
         currency ?? '',
         admin_username ?? '',
         unitType,
+        safeTheme,
+        safeLanguage,
         req.shop.id,
       ]
     )

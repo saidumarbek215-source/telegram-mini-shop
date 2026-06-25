@@ -33,7 +33,13 @@ export default function ManageSettings() {
   useEffect(() => {
     adminApi
       .getSettings()
-      .then(setForm)
+      .then((data) =>
+        setForm({
+          ...data,
+          theme: data.features?.theme || 'dark',
+          language: data.features?.language || 'ru',
+        })
+      )
       .finally(() => setLoading(false))
   }, [])
 
@@ -117,6 +123,33 @@ export default function ManageSettings() {
               {label}
             </option>
           ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Тема оформления</label>
+        <select
+          name="theme"
+          value={form.theme || 'dark'}
+          onChange={handleChange}
+          className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          <option value="dark">🌙 Тёмная</option>
+          <option value="light">☀️ Светлая</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Язык интерфейса</label>
+        <select
+          name="language"
+          value={form.language || 'ru'}
+          onChange={handleChange}
+          className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          <option value="ru">🇷🇺 Русский</option>
+          <option value="uz">🇺🇿 Узбекский</option>
+          <option value="en">🇬🇧 English</option>
         </select>
       </div>
 
