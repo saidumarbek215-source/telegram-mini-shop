@@ -187,6 +187,23 @@ export default function ManageSettings() {
         </select>
       </div>
 
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Автоотмена заказа (минуты)</label>
+        <select
+          name="auto_cancel_minutes"
+          value={form.auto_cancel_minutes ?? 15}
+          onChange={handleChange}
+          className="w-full rounded-xl bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          <option value={0}>Не отменять автоматически</option>
+          <option value={15}>15 минут</option>
+          <option value={30}>30 минут</option>
+          <option value={60}>1 час</option>
+          <option value={120}>2 часа</option>
+          <option value={1440}>24 часа</option>
+        </select>
+      </div>
+
       <button
         type="submit"
         disabled={saving}
