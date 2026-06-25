@@ -62,6 +62,13 @@ export default function Product() {
 
   return (
     <div>
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium text-muted active:opacity-70"
+      >
+        <ChevronLeftIcon className="h-4 w-4" />
+        Назад
+      </button>
       <div className="relative aspect-square w-full bg-surface">
         <img
           src={product.image_url}
@@ -72,12 +79,6 @@ export default function Product() {
             e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'
           }}
         />
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-bg/60 backdrop-blur"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </button>
         {hasDiscount && (
           <span className="absolute right-3 top-3 rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-bg">
             -{discountPct}%
