@@ -3,8 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import SearchBar from '../components/SearchBar.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function Catalog() {
+  const { lang } = useShop()
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryId = searchParams.get('category') || ''
   const urlSearch = searchParams.get('search') || ''
@@ -49,7 +52,7 @@ export default function Catalog() {
   return (
     <div>
       <header className="px-4 pb-2 pt-5">
-        <h1 className="text-lg font-bold">{activeCategory ? activeCategory.name : 'Каталог'}</h1>
+        <h1 className="text-lg font-bold">{activeCategory ? activeCategory.name : t('catalog', lang)}</h1>
       </header>
 
       <SearchBar value={search} onChange={setSearch} onSubmit={handleSearch} />
@@ -61,7 +64,7 @@ export default function Catalog() {
             !categoryId ? 'bg-accent text-bg' : 'bg-surface text-muted'
           }`}
         >
-          Все
+          {t('all', lang)}
         </button>
         {categories.map((cat) => (
           <button
@@ -78,9 +81,9 @@ export default function Catalog() {
 
       <div className="mt-4 px-4">
         {loading ? (
-          <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+          <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
         ) : products.length === 0 ? (
-          <div className="py-10 text-center text-sm text-muted">Товары не найдены</div>
+          <div className="py-10 text-center text-sm text-muted">{t('noProducts', lang)}</div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {products.map((product) => (

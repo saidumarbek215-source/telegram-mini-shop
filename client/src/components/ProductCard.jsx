@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import { formatPrice } from '../utils/format.js'
 import { isProductAvailable } from '../utils/stock.js'
 import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function ProductCard({ product }) {
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
   const [imgError, setImgError] = useState(false)
   const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
@@ -29,8 +30,16 @@ export default function ProductCard({ product }) {
             src={product.image_url || product.image}
             alt={product.name}
             crossOrigin="anonymous"
-            className="h-full w-full object-cover transition-transform duration-300 group-active:scale-95"
             loading="lazy"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              objectPosition: 'center',
+              padding: '4px',
+              backgroundColor: '#fff',
+            }}
+            className="transition-transform duration-300 group-active:scale-95"
             onError={() => setImgError(true)}
           />
         )}
@@ -42,7 +51,7 @@ export default function ProductCard({ product }) {
         {!available && (
           <div className="absolute inset-0 flex items-center justify-center bg-bg/60">
             <span className="rounded-full bg-bg/80 px-3 py-1 text-[11px] text-muted">
-              Нет в наличии
+              {t('outOfStock', lang)}
             </span>
           </div>
         )}

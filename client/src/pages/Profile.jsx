@@ -5,12 +5,13 @@ import { useShop } from '../context/ShopContext.jsx'
 import { getTelegramUser } from '../telegram.js'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '../constants.js'
 import { UserIcon, BoxIcon } from '../components/Icons.jsx'
+import { t } from '../i18n.js'
 
 export default function Profile() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const tgUser = getTelegramUser()
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
 
   useEffect(() => {
@@ -32,34 +33,34 @@ export default function Profile() {
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-bold leading-tight">
-            {tgUser ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : 'Гость'}
+            {tgUser ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : t('guest', lang)}
           </h1>
           {tgUser?.username && <p className="text-xs text-muted">@{tgUser.username}</p>}
         </div>
       </header>
 
       <div className="px-4">
-        <h2 className="mb-3 text-sm font-semibold">История заказов</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t('orderHistory', lang)}</h2>
 
         {!tgUser?.id ? (
           <div className="py-10 text-center text-sm text-muted">
-            Откройте магазин в Telegram, чтобы видеть историю своих заказов
+            {t('openInTelegramNote', lang)}
           </div>
         ) : loading ? (
-          <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+          <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
         ) : orders.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-surface">
               <BoxIcon className="h-6 w-6 text-muted" />
             </div>
-            <p className="text-sm text-muted">У вас пока нет заказов</p>
+            <p className="text-sm text-muted">{t('noOrders', lang)}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {orders.map((order) => (
               <div key={order.id} className="rounded-2xl bg-surface p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Заказ #{order.id}</span>
+                  <span className="text-sm font-semibold">{t('order', lang)} #{order.id}</span>
                   <span
                     className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
                       ORDER_STATUS_COLORS[order.status] || 'bg-surface2 text-muted'
@@ -92,7 +93,7 @@ export default function Profile() {
                         <p className="truncate">{item.product_name}</p>
                         <p className="text-xs text-muted">
                           {[
-                            item.size && `Размер ${item.size}`,
+                            item.size && `${t('size', lang)} ${item.size}`,
                             item.color,
                             `× ${item.quantity}`,
                           ]
@@ -105,7 +106,7 @@ export default function Profile() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
-                  <span className="text-xs text-muted">Итого</span>
+                  <span className="text-xs text-muted">{t('total', lang)}</span>
                   <span className="text-sm font-bold text-accent">
                     {formatPrice(order.total, currency)}
                   </span>

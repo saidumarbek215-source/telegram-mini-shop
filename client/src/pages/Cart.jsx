@@ -3,11 +3,12 @@ import { useCart } from '../context/CartContext.jsx'
 import { formatPrice } from '../utils/format.js'
 import { MinusIcon, PlusIcon, TrashIcon, BagIcon } from '../components/Icons.jsx'
 import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function Cart() {
   const navigate = useNavigate()
   const { items, updateQuantity, removeItem, total } = useCart()
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
 
   if (items.length === 0) {
@@ -16,13 +17,13 @@ export default function Cart() {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
           <BagIcon className="h-7 w-7 text-muted" />
         </div>
-        <h2 className="text-base font-semibold">Корзина пуста</h2>
-        <p className="mt-1 text-sm text-muted">Добавьте товары из каталога</p>
+        <h2 className="text-base font-semibold">{t('cartEmpty', lang)}</h2>
+        <p className="mt-1 text-sm text-muted">{t('cartEmptyDesc', lang)}</p>
         <Link
           to="/catalog"
           className="mt-5 rounded-2xl bg-accent px-6 py-3 text-sm font-bold text-bg"
         >
-          Перейти в каталог
+          {t('goToCatalog', lang)}
         </Link>
       </div>
     )
@@ -31,7 +32,7 @@ export default function Cart() {
   return (
     <div>
       <header className="px-4 pb-2 pt-5">
-        <h1 className="text-lg font-bold">Корзина</h1>
+        <h1 className="text-lg font-bold">{t('cart', lang)}</h1>
       </header>
 
       <div className="flex flex-col gap-3 px-4 pb-28">
@@ -59,7 +60,7 @@ export default function Cart() {
                 </div>
                 {(item.size || item.color) && (
                   <p className="mt-0.5 text-xs text-muted">
-                    {[item.size && `Размер: ${item.size}`, item.color].filter(Boolean).join(' · ')}
+                    {[item.size && `${t('size', lang)}: ${item.size}`, item.color].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 <div className="mt-auto flex items-center justify-between pt-2">
@@ -99,7 +100,7 @@ export default function Cart() {
         className="fixed left-0 right-0 mx-4 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98]"
         style={{ bottom: '70px' }}
       >
-        Оформить заказ · {formatPrice(total, currency)}
+        {t('checkout', lang)} · {formatPrice(total, currency)}
       </button>
     </div>
   )

@@ -5,18 +5,21 @@ import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
 import { getTelegramUser, getTelegramWebApp, hapticFeedback } from '../telegram.js'
 import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
+import { useShop } from '../context/ShopContext.jsx'
+import { t } from '../i18n.js'
 
 export default function Checkout() {
   const navigate = useNavigate()
   const { setHideContact } = useOutletContext() ?? {}
   const { items, total, clearCart } = useCart()
+  const { lang } = useShop()
 
   const [settings, setSettings] = useState({})
   const [form, setForm] = useState({ name: '', phone: '', address: '', comment: '' })
   const [locationReceived, setLocationReceived] = useState(false)
   const [copied, setCopied] = useState(false)
   const [locationCoords, setLocationCoords] = useState(null)
-  const [locationLabel, setLocationLabel] = useState('📍 Определить моё местоположение')
+  const [locationLabel, setLocationLabel] = useState('')
   const [showManualInput, setShowManualInput] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -54,7 +57,7 @@ export default function Checkout() {
   }
 
   function handleRequestLocation() {
-    setLocationLabel('⏳ Определяем местоположение...')
+    setLocationLabel(t('locating', lang))
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude
@@ -63,10 +66,10 @@ export default function Checkout() {
         setLocationCoords({ lat, lng })
         setLocationReceived(true)
         setShowManualInput(false)
-        setLocationLabel('📍 Местоположение получено ✅')
+        setLocationLabel(t('locationReceived', lang))
       },
       () => {
-        setLocationLabel('📍 Определить моё местоположение')
+        setLocationLabel(t('detectLocation', lang))
         setShowManualInput(true)
       }
     )
@@ -75,7 +78,7 @@ export default function Checkout() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim() || !form.phone.trim() || !form.address.trim()) {
-      setError('Заполните все обязательные поля')
+      setError(t('fillFields', lang))
       return
     }
     setError('')
@@ -145,13 +148,13 @@ export default function Checkout() {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
           <CheckIcon className="h-8 w-8 text-accent" />
         </div>
-        <h2 className="text-lg font-bold">✅ Заказ #{orderId} оформлен!</h2>
+        <h2 className="text-lg font-bold">✅ {t('order', lang)} #{orderId} — {t('orderSuccess', lang)}</h2>
 
         {settings.card_number && (
           <div className="mt-4 w-full rounded-2xl bg-surface p-4 text-left">
-            <h3 className="mb-2 text-sm font-semibold">💳 Оплатите на карту:</h3>
+            <h3 className="mb-2 text-sm font-semibold">💳 {t('payCard', lang)}:</h3>
             <div className="flex items-center justify-between py-1 text-sm">
-              <span className="text-muted">Номер</span>
+              <span className="text-muted">{t('name', lang)}</span>
               <div className="flex items-center gap-2">
                 <span className="font-mono font-medium">{settings.card_number}</span>
                 <button
@@ -163,31 +166,30 @@ export default function Checkout() {
                   }}
                   className="rounded-lg bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent"
                 >
-                  {copied ? '✅ Скопировано!' : '📋 Копировать'}
+                  {copied ? `✅ ${t('copied', lang)}` : `📋 ${t('copy', lang)}`}
                 </button>
               </div>
             </div>
             {settings.card_holder && (
               <div className="flex items-center justify-between py-1 text-sm">
-                <span className="text-muted">Владелец</span>
-                <span className="font-medium">{settings.card_holder}</span>
+                <span className="text-muted">{settings.card_holder}</span>
               </div>
             )}
             <div className="flex items-center justify-between py-1 text-sm">
-              <span className="text-muted">Сумма</span>
+              <span className="text-muted">{t('total', lang)}</span>
               <span className="font-bold text-accent">{formatPrice(orderTotal, settings.currency || 'сум')}</span>
             </div>
           </div>
         )}
 
-        <p className="mt-4 text-sm text-muted">📦 Детали доставки уточните у продавца.</p>
+        <p className="mt-4 text-sm text-muted">📦 {t('deliveryNote', lang)}</p>
 
         {settings.admin_username && (
           <button
             onClick={handleContactSeller}
             className="mt-4 w-full rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg"
           >
-            💬 Написать продавцу
+            💬 {t('writeSeller', lang)}
           </button>
         )}
 
@@ -195,7 +197,7 @@ export default function Checkout() {
           onClick={() => navigate('/profile')}
           className="mt-3 w-full rounded-2xl bg-surface py-3.5 text-sm font-bold text-white"
         >
-          Мои заказы
+          {t('myOrders', lang)}
         </button>
       </div>
     )
@@ -210,13 +212,13 @@ export default function Checkout() {
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-bold">Оформление заказа</h1>
+        <h1 className="text-lg font-bold">{t('orderForm', lang)}</h1>
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 pt-2">
         <div>
           <label className="mb-1.5 block text-xs font-medium text-muted">
-            Имя покупателя *
+            {t('buyerName', lang)}
           </label>
           <input
             name="name"
@@ -228,7 +230,7 @@ export default function Checkout() {
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-medium text-muted">
-            Номер телефона *
+            {t('phoneNumber', lang)}
           </label>
           <input
             name="phone"
@@ -241,7 +243,7 @@ export default function Checkout() {
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-medium text-muted">
-            Адрес доставки *
+            {t('deliveryAddress', lang)}
           </label>
           {locationReceived ? (
             <div className="rounded-2xl bg-surface px-4 py-3">
@@ -253,7 +255,7 @@ export default function Checkout() {
                   rel="noreferrer"
                   className="mt-1 block text-xs text-muted underline"
                 >
-                  Посмотреть на карте
+                  {t('viewOnMap', lang)}
                 </a>
               )}
               <button
@@ -261,7 +263,7 @@ export default function Checkout() {
                 onClick={() => {
                   setLocationReceived(false)
                   setLocationCoords(null)
-                  setLocationLabel('📍 Определить моё местоположение')
+                  setLocationLabel(t('detectLocation', lang))
                   setShowManualInput(true)
                   setForm((f) => ({ ...f, address: '' }))
                 }}
@@ -277,7 +279,7 @@ export default function Checkout() {
                 onClick={handleRequestLocation}
                 className="mb-2 w-full rounded-2xl bg-surface px-4 py-3 text-sm font-medium text-left"
               >
-                {locationLabel}
+                {locationLabel || t('detectLocation', lang)}
               </button>
               {showManualInput ? (
                 <textarea
@@ -294,14 +296,14 @@ export default function Checkout() {
                   onClick={() => setShowManualInput(true)}
                   className="w-full rounded-2xl bg-surface px-4 py-3 text-sm text-left text-muted"
                 >
-                  ✏️ Ввести адрес вручную
+                  ✏️ {t('enterAddressManual', lang)}
                 </button>
               )}
             </>
           )}
         </div>
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted">Комментарий</label>
+          <label className="mb-1.5 block text-xs font-medium text-muted">{t('comment', lang)}</label>
           <textarea
             name="comment"
             value={form.comment}
@@ -314,7 +316,7 @@ export default function Checkout() {
 
         {(settings.card_number || settings.click_number) && (
           <div className="rounded-2xl bg-surface p-4">
-            <h3 className="mb-2 text-sm font-semibold">Реквизиты для оплаты</h3>
+            <h3 className="mb-2 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
             {settings.card_number && (
               <div className="flex items-center justify-between py-1 text-sm">
                 <span className="text-muted">Карта</span>
@@ -342,7 +344,7 @@ export default function Checkout() {
         <div className="rounded-2xl bg-surface p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted">
-              Товаров: {items.reduce((s, i) => s + i.quantity, 0)}
+              {t('itemCount', lang)}: {items.reduce((s, i) => s + i.quantity, 0)}
             </span>
             <span className="text-lg font-bold text-accent">{formatPrice(total, settings.currency || 'сум')}</span>
           </div>
@@ -355,7 +357,7 @@ export default function Checkout() {
           disabled={submitting}
           className="mb-2 w-full rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:opacity-60"
         >
-          {submitting ? 'Отправка...' : 'Подтвердить заказ'}
+          {submitting ? t('submitting', lang) : t('confirmOrder', lang)}
         </button>
       </form>
     </div>
