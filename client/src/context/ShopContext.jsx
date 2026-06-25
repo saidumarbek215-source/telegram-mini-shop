@@ -27,9 +27,13 @@ export function ShopProvider({ children }) {
 
     if (shop.features?.theme === 'light') {
       document.body.classList.add('light-theme')
-      document.body.classList.remove('dark-theme')
     } else {
       document.body.classList.remove('light-theme')
+    }
+
+    if (shop.features?.language) {
+      document.documentElement.lang = shop.features.language
+      localStorage.setItem('lang', shop.features.language)
     }
   }, [state.shop])
 

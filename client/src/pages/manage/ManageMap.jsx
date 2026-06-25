@@ -170,12 +170,15 @@ export default function ManageMap() {
 
   function openInMaps(partner) {
     const tg = window.Telegram?.WebApp
+    let url = ''
     if (partner.latitude && partner.longitude) {
-      const yandexUrl = `https://yandex.uz/maps/?pt=${partner.longitude},${partner.latitude}&z=16&l=map`
-      tg?.openLink(yandexUrl)
+      url = `https://yandex.uz/maps/?pt=${partner.longitude},${partner.latitude}&z=16&l=map`
     } else if (partner.address) {
-      const yandexUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(partner.address)}`
-      tg?.openLink(yandexUrl)
+      url = `https://yandex.uz/maps/?text=${encodeURIComponent(partner.address)}`
+    }
+    if (url) {
+      if (tg) tg.openLink(url)
+      else window.open(url, '_blank')
     }
   }
 

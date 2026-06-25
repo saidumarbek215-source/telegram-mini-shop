@@ -72,9 +72,7 @@ export default function ManageSettings() {
         document.body.classList.remove('light-theme')
       }
 
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      setTimeout(() => window.location.reload(), 500)
     } finally {
       setSaving(false)
     }
