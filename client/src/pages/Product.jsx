@@ -84,11 +84,17 @@ export default function Product() {
       >
         ←
       </button>
-      <div className="relative aspect-square w-full bg-surface">
+      <div className="relative w-full">
         <img
           src={product.image_url}
           alt={product.name}
-          className="h-full w-full object-cover"
+          style={{
+            width: '100%',
+            maxHeight: '350px',
+            objectFit: 'contain',
+            backgroundColor: 'white',
+            padding: '16px',
+          }}
           onError={(e) => {
             e.target.onerror = null
             e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'

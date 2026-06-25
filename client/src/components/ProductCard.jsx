@@ -36,8 +36,9 @@ export default function ProductCard({ product }) {
               height: '100%',
               objectFit: 'contain',
               objectPosition: 'center',
-              padding: '4px',
+              padding: '8px',
               backgroundColor: '#fff',
+              borderRadius: '12px',
             }}
             className="transition-transform duration-300 group-active:scale-95"
             onError={() => setImgError(true)}
