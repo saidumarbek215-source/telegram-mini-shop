@@ -29,6 +29,7 @@ router.get(
       admin_username: shop.admin_username || '',
       features: shop.features || {},
       product_unit_type: shop.product_unit_type || 'size',
+      auto_cancel_minutes: shop.auto_cancel_minutes ?? 15,
     })
   })
 )

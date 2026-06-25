@@ -3,14 +3,15 @@ import { restoreOrderStock } from '../services/orderStock.js'
 import { notifyCustomerOrderExpired } from '../telegram.js'
 
 const CHECK_INTERVAL_MS = 60 * 1000
-const ORDER_TIMEOUT = '15 minutes'
 
-// Cancels orders that have stayed in 'new' status for longer than
-// ORDER_TIMEOUT (payment was never confirmed), returns their items to stock
-// and notifies the customer.
 async function cancelExpiredOrders() {
   const { rows: expiredOrders } = await pool.query(
-    `SELECT * FROM orders WHERE status = 'new' AND created_at < NOW() - INTERVAL '${ORDER_TIMEOUT}'`
+    `SELECT o.*, s.auto_cancel_minutes, s.bot_token, s.owner_telegram_id
+     FROM orders o
+     JOIN shops s ON s.id = o.shop_id
+     WHERE o.status = 'new'
+       AND (s.auto_cancel_minutes IS NULL OR s.auto_cancel_minutes > 0)
+       AND o.created_at < NOW() - (COALESCE(s.auto_cancel_minutes, 15) || ' minutes')::INTERVAL`
   )
 
   for (const order of expiredOrders) {

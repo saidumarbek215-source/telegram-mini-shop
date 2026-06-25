@@ -17,6 +17,9 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE products ALTER COLUMN old_price TYPE DECIMAL(10,2) USING old_price::DECIMAL(10,2)`
   )
+  await pool.query(
+    `ALTER TABLE shops ADD COLUMN IF NOT EXISTS auto_cancel_minutes INTEGER DEFAULT 15`
+  )
   console.log('Migration applied successfully')
 }
 
