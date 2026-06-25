@@ -62,7 +62,7 @@ router.post(
         (shop_id, name, description, price, old_price, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-      [req.shop.id, name, description, price, old_price, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order]
+      [req.shop.id, name, description, parseFloat(price), old_price != null ? parseFloat(old_price) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order]
     )
     res.status(201).json(result.rows[0])
   })
@@ -95,7 +95,7 @@ router.put(
            category_id = $6, sizes = $7, colors = $8, sizes_stock = $9, in_stock = $10, sort_order = $11
        WHERE id = $12 AND shop_id = $13
        RETURNING *`,
-      [name, description, price, old_price, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, req.params.id, req.shop.id]
+      [name, description, parseFloat(price), old_price != null ? parseFloat(old_price) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, req.params.id, req.shop.id]
     )
 
     if (!result.rows.length) return res.status(404).json({ error: 'Товар не найден' })
