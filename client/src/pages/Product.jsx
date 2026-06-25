@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
 import { useCart } from '../context/CartContext.jsx'
+import { useShop } from '../context/ShopContext.jsx'
 import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
@@ -14,6 +15,7 @@ export default function Product() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const { shop } = useShop()
 
   const [product, setProduct] = useState(null)
   const [settings, setSettings] = useState(null)
@@ -46,7 +48,7 @@ export default function Product() {
     : 0
 
   const unitType = settings?.product_unit_type || 'size'
-  const currency = settings?.currency || 'сум'
+  const currency = shop?.currency || 'сум'
   const available = isProductAvailable(product)
   const canAddToCart = available && (!size || isSizeAvailable(product, size))
 
