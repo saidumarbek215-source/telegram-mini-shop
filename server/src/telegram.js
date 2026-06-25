@@ -119,6 +119,9 @@ export async function answerCallbackQuery(callbackQueryId, botToken, text = '') 
 export async function notifyOwnerNewOrder(order, items, shop) {
   if (!shop?.bot_token || !shop?.owner_telegram_id) return
 
+  const orderNum = order.shop_order_number || order.id
+  const isCredit = order.payment_type === 'credit'
+
   const itemsText = items
     .map((item) => {
       const parts = [escapeHtml(item.product_name)]
@@ -129,8 +132,12 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     })
     .join('\n')
 
+  const paymentLine = isCredit
+    ? `📅 РАССРОЧКА! Оплата до: <b>${order.payment_due_date ? new Date(order.payment_due_date).toLocaleDateString('ru-RU') : '—'}</b>`
+    : `💳 Реквизиты отправлены клиенту`
+
   const text = [
-    `🛍 <b>Новый заказ #${order.id}</b>`,
+    `🛍 <b>Новый заказ #${orderNum}</b>`,
     '',
     `👤 Имя: ${escapeHtml(order.customer_name)}`,
     `👤 @${order.telegram_username ? escapeHtml(order.telegram_username) : 'не указан'}`,
@@ -150,7 +157,7 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     '',
     `💰 Итого: <b>${formatPrice(order.total)}</b>`,
     '',
-    `💳 Реквизиты отправлены клиенту`,
+    paymentLine,
   ]
     .filter((line) => line !== null)
     .join('\n')

@@ -50,7 +50,7 @@ export default function ManageOrders() {
         <div key={order.id} className="rounded-2xl bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-sm font-semibold">{t('orderNum', lang)} #{order.id}</span>
+              <span className="text-sm font-semibold">{t('orderNum', lang)} #{order.shop_order_number || order.id}</span>
               <p className="text-xs text-muted">
                 {new Date(order.created_at).toLocaleString('ru-RU', {
                   day: '2-digit',

@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../../api.js'
 import { formatPrice } from '../../utils/format.js'
 import { useShop } from '../../context/ShopContext.jsx'
+import { t } from '../../i18n.js'
 
 function isOverdue(dueDateStr) {
   if (!dueDateStr) return false
   return new Date(dueDateStr) < new Date(new Date().toDateString())
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr, lang) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('ru-RU', {
+  return new Date(dateStr).toLocaleDateString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -21,7 +22,7 @@ export default function ManageCredits() {
   const [credits, setCredits] = useState([])
   const [loading, setLoading] = useState(true)
   const [markingId, setMarkingId] = useState(null)
-  const { shop } = useShop()
+  const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
 
   useEffect(() => {
@@ -57,13 +58,13 @@ export default function ManageCredits() {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-sm text-muted">Загрузка...</div>
+  if (loading) return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
 
   if (credits.length === 0) {
     return (
       <div className="flex flex-col items-center py-16 text-center">
         <div className="mb-3 text-4xl">✅</div>
-        <p className="text-sm font-medium text-white">Должников нет</p>
+        <p className="text-sm font-medium text-white">{t('noDebtors', lang)}</p>
         <p className="mt-1 text-xs text-muted">Все клиенты оплатили свои заказы</p>
       </div>
     )
@@ -71,10 +72,11 @@ export default function ManageCredits() {
 
   return (
     <div className="flex flex-col gap-3 pb-4">
-      <h2 className="text-base font-bold">Должники ({credits.length})</h2>
+      <h2 className="text-base font-bold">{t('debtors', lang)} ({credits.length})</h2>
 
       {credits.map((order) => {
         const overdue = isOverdue(order.payment_due_date)
+        const orderNum = order.shop_order_number || order.id
         return (
           <div
             key={order.id}
@@ -83,7 +85,7 @@ export default function ManageCredits() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold">{order.customer_name}</p>
-                <p className="text-xs text-muted">Заказ #{order.id}</p>
+                <p className="text-xs text-muted">{t('orderNum', lang)} #{orderNum}</p>
               </div>
               <span className="text-base font-bold text-accent">
                 {formatPrice(order.total, currency)}
@@ -92,10 +94,10 @@ export default function ManageCredits() {
 
             <div className="mt-2 flex items-center gap-2">
               <span className={`text-xs font-medium ${overdue ? 'text-red-400' : 'text-muted'}`}>
-                {overdue ? '⚠️ Просрочено' : '📅 Дата оплаты'}:
+                {overdue ? t('overdue', lang) : `📅 ${t('paymentDate', lang)}`}:
               </span>
               <span className={`text-xs font-semibold ${overdue ? 'text-red-400' : 'text-white'}`}>
-                {formatDate(order.payment_due_date)}
+                {formatDate(order.payment_due_date, lang)}
               </span>
             </div>
 
@@ -122,14 +124,14 @@ export default function ManageCredits() {
                 href={`tel:${order.phone}`}
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-surface2 py-2.5 text-xs font-medium text-white"
               >
-                📞 {order.phone}
+                {t('callClient', lang)} {order.phone}
               </a>
               <button
                 onClick={() => handleMarkPaid(order.id)}
                 disabled={markingId === order.id}
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent py-2.5 text-xs font-bold text-bg disabled:opacity-60"
               >
-                ✅ Оплачено
+                {t('markPaid', lang)}
               </button>
             </div>
           </div>

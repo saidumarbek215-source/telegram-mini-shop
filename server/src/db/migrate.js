@@ -32,6 +32,9 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE shops ADD COLUMN IF NOT EXISTS credit_enabled BOOLEAN DEFAULT false`
   )
+  await pool.query(
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shop_order_number INTEGER DEFAULT 1`
+  )
   console.log('Migration applied successfully')
 }
 

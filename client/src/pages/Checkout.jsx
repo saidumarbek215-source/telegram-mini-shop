@@ -154,36 +154,55 @@ export default function Checkout() {
         </div>
         <h2 className="text-lg font-bold">✅ {t('order', lang)} #{orderId} — {t('orderSuccess', lang)}</h2>
 
-        {settings.card_number && (
-          <div className="mt-4 w-full rounded-2xl bg-surface p-4 text-left">
-            <h3 className="mb-2 text-sm font-semibold">💳 {t('payCard', lang)}:</h3>
-            <div className="flex items-center justify-between py-1 text-sm">
-              <span className="text-muted">{t('name', lang)}</span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-medium">{settings.card_number}</span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(settings.card_number)
-                    setCopied(true)
-                    setTimeout(() => setCopied(false), 2000)
-                  }}
-                  className="rounded-lg bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent"
-                >
-                  {copied ? `✅ ${t('copied', lang)}` : `📋 ${t('copy', lang)}`}
-                </button>
-              </div>
-            </div>
-            {settings.card_holder && (
-              <div className="flex items-center justify-between py-1 text-sm">
-                <span className="text-muted">{settings.card_holder}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between py-1 text-sm">
+        {paymentType === 'credit' ? (
+          <div className="mt-4 w-full rounded-2xl bg-accent/10 p-4 text-left">
+            <p className="text-sm font-semibold text-accent">
+              📅 {t('creditConfirm', lang)}{' '}
+              {paymentDueDate
+                ? new Date(paymentDueDate).toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })
+                : '—'}
+            </p>
+            <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-muted">{t('total', lang)}</span>
               <span className="font-bold text-accent">{formatPrice(orderTotal, settings.currency || 'сум')}</span>
             </div>
           </div>
+        ) : (
+          settings.card_number && (
+            <div className="mt-4 w-full rounded-2xl bg-surface p-4 text-left">
+              <h3 className="mb-2 text-sm font-semibold">💳 {t('payCard', lang)}:</h3>
+              <div className="flex items-center justify-between py-1 text-sm">
+                <span className="text-muted">{t('name', lang)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-medium">{settings.card_number}</span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(settings.card_number)
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    }}
+                    className="rounded-lg bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent"
+                  >
+                    {copied ? `✅ ${t('copied', lang)}` : `📋 ${t('copy', lang)}`}
+                  </button>
+                </div>
+              </div>
+              {settings.card_holder && (
+                <div className="flex items-center justify-between py-1 text-sm">
+                  <span className="text-muted">{settings.card_holder}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between py-1 text-sm">
+                <span className="text-muted">{t('total', lang)}</span>
+                <span className="font-bold text-accent">{formatPrice(orderTotal, settings.currency || 'сум')}</span>
+              </div>
+            </div>
+          )
         )}
 
         <p className="mt-4 text-sm text-muted">📦 {t('deliveryNote', lang)}</p>
@@ -329,7 +348,7 @@ export default function Checkout() {
                   paymentType === 'prepaid' ? 'bg-accent text-bg' : 'bg-surface2 text-white'
                 }`}
               >
-                💳 Оплата сейчас
+                💳 {t('payNow', lang)}
               </button>
               <button
                 type="button"
@@ -338,13 +357,13 @@ export default function Checkout() {
                   paymentType === 'credit' ? 'bg-accent text-bg' : 'bg-surface2 text-white'
                 }`}
               >
-                📅 Рассрочка (оплата позже)
+                📅 {t('payLater', lang)}
               </button>
             </div>
             {paymentType === 'credit' && (
               <div className="mt-3">
                 <label className="mb-1.5 block text-xs font-medium text-muted">
-                  Дата оплаты
+                  {t('paymentDate', lang)}
                 </label>
                 <input
                   type="date"

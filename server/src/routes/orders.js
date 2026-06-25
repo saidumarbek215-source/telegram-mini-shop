@@ -40,10 +40,16 @@ router.post(
         0
       )
 
+      const numResult = await client.query(
+        'SELECT COALESCE(MAX(shop_order_number), 0) + 1 AS next FROM orders WHERE shop_id = $1',
+        [req.shopId]
+      )
+      const shopOrderNumber = numResult.rows[0].next
+
       const orderResult = await client.query(
         `INSERT INTO orders
-          (shop_id, telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status, payment_type, payment_due_date, payment_status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'new', $9, $10, $11)
+          (shop_id, telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status, payment_type, payment_due_date, payment_status, shop_order_number)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'new', $9, $10, $11, $12)
          RETURNING *`,
         [
           req.shopId,
@@ -57,6 +63,7 @@ router.post(
           safePaymentType,
           payment_due_date || null,
           paymentStatus,
+          shopOrderNumber,
         ]
       )
       const order = orderResult.rows[0]
