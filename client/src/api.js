@@ -101,6 +101,9 @@ export const adminApi = {
   getSettings: () => request('/admin/settings', { admin: true }),
   updateSettings: (data) =>
     request('/admin/settings', { method: 'PUT', body: JSON.stringify(data), admin: true }),
+  getCredits: () => request('/admin/credits', { admin: true }),
+  markCreditPaid: (id) =>
+    request(`/admin/credits/${id}/paid`, { method: 'PUT', admin: true }),
   getPartners: () => request('/admin/partners', { admin: true }),
   createPartner: (data) =>
     request('/admin/partners', { method: 'POST', body: JSON.stringify(data), admin: true }),

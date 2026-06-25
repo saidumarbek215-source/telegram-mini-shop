@@ -209,6 +209,23 @@ export default function ManageSettings() {
         </select>
       </div>
 
+      <label className="flex items-center justify-between rounded-xl bg-surface px-4 py-3">
+        <div>
+          <p className="text-sm font-medium">Рассрочка (Должники)</p>
+          <p className="text-xs text-muted">Включить возможность продавать в долг</p>
+        </div>
+        <input
+          type="checkbox"
+          name="credit_enabled"
+          checked={form.credit_enabled || false}
+          onChange={(e) => {
+            setForm((f) => ({ ...f, credit_enabled: e.target.checked }))
+            setSaved(false)
+          }}
+          className="h-5 w-5 accent-accent"
+        />
+      </label>
+
       <button
         type="submit"
         disabled={saving}

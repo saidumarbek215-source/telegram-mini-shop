@@ -7,7 +7,7 @@ import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon, HelpIc
 
 export default function ManageLayout() {
   const { isOwner, loading, shop } = useOwner()
-  const { lang } = useShop()
+  const { shop: publicShop, lang } = useShop()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -30,9 +30,13 @@ export default function ManageLayout() {
     { to: '/manage/help', label: t('help', lang), icon: HelpIcon },
   ]
 
-  const tabs = shop?.features?.partners_map
-    ? [...baseTabs, { to: '/manage/map', label: '🗺 Карта', icon: null }]
-    : baseTabs
+  const tabs = [...baseTabs]
+  if (publicShop?.credit_enabled) {
+    tabs.splice(1, 0, { to: '/manage/credits', label: '💰 Долги', icon: null })
+  }
+  if (shop?.features?.partners_map) {
+    tabs.push({ to: '/manage/map', label: '🗺 Карта', icon: null })
+  }
 
   return (
     <div>

@@ -10,6 +10,7 @@ import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
+import { startCreditReminderJob } from './jobs/creditReminder.js'
 import { startAllBots } from './services/botManager.js'
 
 const app = express()
@@ -38,6 +39,7 @@ async function start() {
   await migrate()
   await startAllBots()
   startAutoCancelJob()
+  startCreditReminderJob()
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
   })

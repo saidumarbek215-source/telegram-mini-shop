@@ -16,6 +16,8 @@ export default function Checkout() {
 
   const [settings, setSettings] = useState({})
   const [form, setForm] = useState({ name: '', phone: '', address: '', comment: '' })
+  const [paymentType, setPaymentType] = useState('prepaid')
+  const [paymentDueDate, setPaymentDueDate] = useState('')
   const [locationReceived, setLocationReceived] = useState(false)
   const [copied, setCopied] = useState(false)
   const [locationCoords, setLocationCoords] = useState(null)
@@ -94,6 +96,8 @@ export default function Checkout() {
         phone: form.phone.trim(),
         address: form.address.trim(),
         comment: form.comment.trim(),
+        payment_type: paymentType,
+        payment_due_date: paymentType === 'credit' ? paymentDueDate || null : null,
         items: items.map((i) => ({
           product_id: i.product_id,
           product_name: i.product_name,
@@ -314,7 +318,47 @@ export default function Checkout() {
           />
         </div>
 
-        {(settings.card_number || settings.click_number) && (
+        {settings.credit_enabled && (
+          <div className="rounded-2xl bg-surface p-4">
+            <h3 className="mb-3 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentType('prepaid')}
+                className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                  paymentType === 'prepaid' ? 'bg-accent text-bg' : 'bg-surface2 text-white'
+                }`}
+              >
+                💳 Оплата сейчас
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType('credit')}
+                className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                  paymentType === 'credit' ? 'bg-accent text-bg' : 'bg-surface2 text-white'
+                }`}
+              >
+                📅 Рассрочка (оплата позже)
+              </button>
+            </div>
+            {paymentType === 'credit' && (
+              <div className="mt-3">
+                <label className="mb-1.5 block text-xs font-medium text-muted">
+                  Дата оплаты
+                </label>
+                <input
+                  type="date"
+                  value={paymentDueDate}
+                  min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                  onChange={(e) => setPaymentDueDate(e.target.value)}
+                  className="w-full rounded-2xl bg-surface2 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {paymentType === 'prepaid' && (settings.card_number || settings.click_number) && (
           <div className="rounded-2xl bg-surface p-4">
             <h3 className="mb-2 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
             {settings.card_number && (

@@ -30,6 +30,7 @@ router.get(
       features: shop.features || {},
       product_unit_type: shop.product_unit_type || 'size',
       auto_cancel_minutes: shop.auto_cancel_minutes ?? 15,
+      credit_enabled: shop.credit_enabled || false,
     })
   })
 )

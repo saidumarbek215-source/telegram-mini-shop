@@ -280,6 +280,7 @@ function shopToSettings(shop) {
     features: shop.features || {},
     product_unit_type: shop.product_unit_type || 'size',
     auto_cancel_minutes: shop.auto_cancel_minutes ?? 15,
+    credit_enabled: shop.credit_enabled || false,
   }
 }
 
@@ -300,6 +301,7 @@ router.put(
       admin_username,
       product_unit_type,
       auto_cancel_minutes,
+      credit_enabled,
       theme,
       language,
     } = req.body || {}
@@ -319,8 +321,9 @@ router.put(
       `UPDATE shops
        SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5,
            currency = $6, admin_username = $7, product_unit_type = $8, auto_cancel_minutes = $9,
-           features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($10::text)), '{language}', to_jsonb($11::text))
-       WHERE id = $12
+           credit_enabled = $10,
+           features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($11::text)), '{language}', to_jsonb($12::text))
+       WHERE id = $13
        RETURNING *`,
       [
         store_name ?? '',
@@ -332,6 +335,7 @@ router.put(
         admin_username ?? '',
         unitType,
         cancelMinutes,
+        credit_enabled === true || credit_enabled === 'true',
         safeTheme,
         safeLanguage,
         req.shop.id,
@@ -339,6 +343,42 @@ router.put(
     )
 
     res.json(shopToSettings(result.rows[0]))
+  })
+)
+
+/* ----------------------------- Credits ------------------------------- */
+
+router.get(
+  '/credits',
+  asyncHandler(async (req, res) => {
+    const ordersResult = await query(
+      `SELECT * FROM orders
+       WHERE shop_id = $1 AND payment_type = 'credit' AND payment_status = 'pending'
+       ORDER BY payment_due_date ASC NULLS LAST`,
+      [req.shop.id]
+    )
+    const orders = ordersResult.rows
+
+    for (const order of orders) {
+      const itemsResult = await query('SELECT * FROM order_items WHERE order_id = $1', [order.id])
+      order.items = itemsResult.rows
+    }
+
+    res.json(orders)
+  })
+)
+
+router.put(
+  '/credits/:id/paid',
+  asyncHandler(async (req, res) => {
+    const result = await query(
+      `UPDATE orders SET payment_status = 'paid', updated_at = now()
+       WHERE id = $1 AND shop_id = $2 AND payment_type = 'credit'
+       RETURNING *`,
+      [req.params.id, req.shop.id]
+    )
+    if (!result.rows.length) return res.status(404).json({ error: 'Заказ не найден' })
+    res.json(result.rows[0])
   })
 )
 

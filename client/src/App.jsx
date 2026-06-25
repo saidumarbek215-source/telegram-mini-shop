@@ -17,6 +17,7 @@ const ManageProducts = lazy(() => import('./pages/manage/ManageProducts.jsx'))
 const ManageCategories = lazy(() => import('./pages/manage/ManageCategories.jsx'))
 const ManageBanners = lazy(() => import('./pages/manage/ManageBanners.jsx'))
 const ManageSettings = lazy(() => import('./pages/manage/ManageSettings.jsx'))
+const ManageCredits = lazy(() => import('./pages/manage/ManageCredits.jsx'))
 const ManageAI = lazy(() => import('./pages/manage/ManageAI.jsx'))
 const ManageHelp = lazy(() => import('./pages/manage/ManageHelp.jsx'))
 const ManageMap = lazy(() => import('./pages/manage/ManageMap.jsx'))
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="categories" element={<ManageCategories />} />
             <Route path="banners" element={<ManageBanners />} />
             <Route path="settings" element={<ManageSettings />} />
+            <Route path="credits" element={<ManageCredits />} />
             <Route path="ai" element={<ManageAI />} />
             <Route path="help" element={<ManageHelp />} />
             <Route path="map" element={<ManageMap />} />

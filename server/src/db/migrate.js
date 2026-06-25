@@ -20,6 +20,18 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE shops ADD COLUMN IF NOT EXISTS auto_cancel_minutes INTEGER DEFAULT 15`
   )
+  await pool.query(
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_type VARCHAR(20) DEFAULT 'prepaid'`
+  )
+  await pool.query(
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_due_date DATE`
+  )
+  await pool.query(
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'paid'`
+  )
+  await pool.query(
+    `ALTER TABLE shops ADD COLUMN IF NOT EXISTS credit_enabled BOOLEAN DEFAULT false`
+  )
   console.log('Migration applied successfully')
 }
 
