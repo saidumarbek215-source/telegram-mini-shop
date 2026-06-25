@@ -4,7 +4,7 @@ import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
 import { useCart } from '../context/CartContext.jsx'
 import { useShop } from '../context/ShopContext.jsx'
-import { ChevronLeftIcon, CheckIcon } from '../components/Icons.jsx'
+import { CheckIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
 
@@ -64,10 +64,24 @@ export default function Product() {
     <div>
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium text-muted active:opacity-70"
+        style={{
+          position: 'fixed',
+          left: '16px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          borderRadius: '50%',
+          width: '44px',
+          height: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: '20px',
+        }}
       >
-        <ChevronLeftIcon className="h-4 w-4" />
-        Назад
+        ←
       </button>
       <div className="relative aspect-square w-full bg-surface">
         <img
