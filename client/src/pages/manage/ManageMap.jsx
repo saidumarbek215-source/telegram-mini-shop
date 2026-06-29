@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { adminApi } from '../../api.js'
 
 const TASHKENT = [41.2995, 69.2401]
-const EMPTY_FORM = { name: '', phone: '', address: '', status: 'active', latitude: null, longitude: null }
+const EMPTY_FORM = {
+  name: '', phone: '', address: '', status: 'active', latitude: null, longitude: null,
+  photo_url: '', description: '', monthly_turnover: '', contact_person: '', working_hours: '',
+}
 
 function makeIcon(active) {
   const color = active ? '#22c55e' : '#ef4444'
@@ -154,6 +157,11 @@ export default function ManageMap() {
       status: partner.status || 'active',
       latitude: partner.latitude ?? null,
       longitude: partner.longitude ?? null,
+      photo_url: partner.photo_url || '',
+      description: partner.description || '',
+      monthly_turnover: partner.monthly_turnover != null ? String(partner.monthly_turnover) : '',
+      contact_person: partner.contact_person || '',
+      working_hours: partner.working_hours || '',
     })
     setEditingId(partner.id)
     setPicking(false)
@@ -314,6 +322,68 @@ export default function ManageMap() {
             <option value="active">🟢 Активный</option>
             <option value="inactive">🔴 Неактивный</option>
           </select>
+
+          <div className="flex flex-col gap-1">
+            <input
+              name="photo_url"
+              value={form.photo_url}
+              onChange={handleChange}
+              placeholder="Фото магазина (URL)"
+              className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+            {form.photo_url && (
+              <img
+                src={form.photo_url}
+                alt="preview"
+                className="w-full rounded-xl object-cover"
+                style={{ maxHeight: 140 }}
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+                onLoad={(e) => { e.currentTarget.style.display = 'block' }}
+              />
+            )}
+          </div>
+
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Описание магазина, ассортимент..."
+            rows={3}
+            className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+          />
+
+          <div className="flex flex-col gap-1">
+            <input
+              name="monthly_turnover"
+              value={form.monthly_turnover}
+              onChange={handleChange}
+              placeholder="Оборот в месяц (сум)"
+              type="number"
+              className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+            {form.monthly_turnover && (
+              <p className="text-xs text-muted px-1">
+                Оборот: {Number(form.monthly_turnover).toLocaleString('ru-RU')} сум
+              </p>
+            )}
+          </div>
+
+          <input
+            name="contact_person"
+            value={form.contact_person}
+            onChange={handleChange}
+            placeholder="Контактное лицо (имя менеджера)"
+            className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+
+          <input
+            name="working_hours"
+            value={form.working_hours}
+            onChange={handleChange}
+            placeholder="Время работы: 09:00 - 21:00"
+            className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+
           <div className="flex gap-2">
             <button
               type="submit"
@@ -339,50 +409,72 @@ export default function ManageMap() {
       ) : (
         <div className="flex flex-col gap-3">
           {partners.map((p) => (
-            <div key={p.id} className="rounded-2xl bg-surface p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+            <div key={p.id} className="rounded-2xl bg-surface overflow-hidden">
+              {p.photo_url && (
+                <img
+                  src={p.photo_url}
+                  alt={p.name}
+                  className="w-full object-cover"
+                  style={{ maxHeight: 160 }}
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
+              )}
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="font-semibold text-sm truncate">{p.name}</p>
-                  {p.phone && <p className="text-xs text-muted mt-0.5">{p.phone}</p>}
-                  {p.address && <p className="text-xs text-muted mt-0.5">{p.address}</p>}
+                  <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
+                    p.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {p.status === 'active' ? 'Активный' : 'Неактивный'}
+                  </span>
                 </div>
-                <span className="flex-shrink-0 text-sm">{p.status === 'active' ? '🟢' : '🔴'}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(p.latitude != null || p.address) && (
+
+                {p.description && (
+                  <p className="text-xs text-muted mb-2 leading-relaxed">{p.description}</p>
+                )}
+
+                <div className="flex flex-col gap-1 mb-3">
+                  {p.monthly_turnover != null && (
+                    <p className="text-xs text-muted">
+                      💰 Оборот: {Number(p.monthly_turnover).toLocaleString('ru-RU')} сум
+                    </p>
+                  )}
+                  {p.contact_person && (
+                    <p className="text-xs text-muted">👤 {p.contact_person}</p>
+                  )}
+                  {p.phone && (
+                    <p className="text-xs text-muted">📞 {p.phone}</p>
+                  )}
+                  {p.working_hours && (
+                    <p className="text-xs text-muted">🕐 {p.working_hours}</p>
+                  )}
+                  {p.address && (
+                    <p className="text-xs text-muted">📍 {p.address}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(p.latitude != null || p.address) && (
+                    <button
+                      onClick={() => openInMaps(p)}
+                      className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
+                    >
+                      🗺 Яндекс Карта
+                    </button>
+                  )}
                   <button
-                    onClick={() => openInMaps(p)}
+                    onClick={() => openEdit(p)}
                     className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
                   >
-                    🗺 Яндекс Карта
+                    ✏️ Изменить
                   </button>
-                )}
-                {p.latitude != null && (
                   <button
-                    onClick={() => flyTo(p)}
-                    className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
+                    onClick={() => handleDelete(p.id)}
+                    className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-red-400"
                   >
-                    📍 На карте
+                    🗑 Удалить
                   </button>
-                )}
-                <button
-                  onClick={() => toggleStatus(p)}
-                  className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
-                >
-                  {p.status === 'active' ? '🔴 Деактивировать' : '🟢 Активировать'}
-                </button>
-                <button
-                  onClick={() => openEdit(p)}
-                  className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-muted"
-                >
-                  ✏️ Изменить
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  className="rounded-lg bg-bg px-3 py-1.5 text-xs font-medium text-red-400"
-                >
-                  🗑 Удалить
-                </button>
+                </div>
               </div>
             </div>
           ))}

@@ -398,13 +398,17 @@ router.get(
 router.post(
   '/partners',
   asyncHandler(async (req, res) => {
-    const { name, phone = '', address = '', latitude = null, longitude = null, status = 'active' } = req.body
+    const {
+      name, phone = '', address = '', latitude = null, longitude = null, status = 'active',
+      photo_url = null, description = null, monthly_turnover = null, contact_person = null, working_hours = null,
+    } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(
-      `INSERT INTO partners (shop_id, name, phone, address, latitude, longitude, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.shop.id, name, phone, address, latitude, longitude, status]
+      `INSERT INTO partners (shop_id, name, phone, address, latitude, longitude, status, photo_url, description, monthly_turnover, contact_person, working_hours)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      [req.shop.id, name, phone, address, latitude, longitude, status, photo_url, description,
+       monthly_turnover != null ? parseFloat(monthly_turnover) : null, contact_person, working_hours]
     )
     res.status(201).json(result.rows[0])
   })
@@ -413,13 +417,19 @@ router.post(
 router.put(
   '/partners/:id',
   asyncHandler(async (req, res) => {
-    const { name, phone = '', address = '', latitude = null, longitude = null, status = 'active' } = req.body
+    const {
+      name, phone = '', address = '', latitude = null, longitude = null, status = 'active',
+      photo_url = null, description = null, monthly_turnover = null, contact_person = null, working_hours = null,
+    } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(
-      `UPDATE partners SET name = $1, phone = $2, address = $3, latitude = $4, longitude = $5, status = $6
-       WHERE id = $7 AND shop_id = $8 RETURNING *`,
-      [name, phone, address, latitude, longitude, status, req.params.id, req.shop.id]
+      `UPDATE partners SET name = $1, phone = $2, address = $3, latitude = $4, longitude = $5, status = $6,
+        photo_url = $7, description = $8, monthly_turnover = $9, contact_person = $10, working_hours = $11
+       WHERE id = $12 AND shop_id = $13 RETURNING *`,
+      [name, phone, address, latitude, longitude, status, photo_url, description,
+       monthly_turnover != null ? parseFloat(monthly_turnover) : null, contact_person, working_hours,
+       req.params.id, req.shop.id]
     )
     if (!result.rows.length) return res.status(404).json({ error: 'Партнёр не найден' })
     res.json(result.rows[0])

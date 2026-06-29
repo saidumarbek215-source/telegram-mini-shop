@@ -35,6 +35,11 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shop_order_number INTEGER DEFAULT 1`
   )
+  await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS photo_url TEXT`)
+  await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS description TEXT`)
+  await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS monthly_turnover DECIMAL(15,2)`)
+  await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS contact_person TEXT`)
+  await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS working_hours TEXT`)
   console.log('Migration applied successfully')
 }
 
