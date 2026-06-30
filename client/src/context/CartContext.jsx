@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 const CartContext = createContext(null)
 
-const STORAGE_KEY = 'sneaker_store_cart'
+const SHOP_ID = new URLSearchParams(window.location.search).get('shop')
+const STORAGE_KEY = SHOP_ID ? `cart_shop_${SHOP_ID}` : 'cart_shop_default'
 
 function cartKey(productId, size, color) {
   return `${productId}__${size || ''}__${color || ''}`
