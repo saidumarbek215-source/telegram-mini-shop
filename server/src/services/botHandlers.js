@@ -485,3 +485,51 @@ async function forwardOrderContact(orderId, message, shop) {
     expiresAt: Date.now() + PENDING_RECEIPT_TTL_MS,
   })
 }
+
+async function handleReklamaCommand(message, shop) {
+  const fromId = message.from?.id
+  if (!fromId) return
+
+  if (!shop.ads_enabled) {
+    await sendWelcomeMessage(message, shop)
+    return
+  }
+
+  const prices = shop.ad_prices || {}
+  if (Object.keys(prices).length === 0) {
+    await sendTelegramMessage(fromId, 'Реклама временно недоступна.', shop.bot_token)
+    return
+  }
+
+  const priceList = Object.entries(prices)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([hours, price]) => `• ${hours} ч — ${formatPrice(Number(price))}`)
+    .join('\n')
+
+  pendingAdOrders.set(fromId, {
+    shopId: shop.id,
+    step: 'text',
+    adText: null,
+    adPhotoFileId: null,
+    durationHours: null,
+    price: null,
+    expiresAt: Date.now() + PENDING_AD_TTL_MS,
+  })
+
+  await sendTelegramMessage(
+    fromId,
+    ['📢 <b>Реклама в канале</b>', '', '<b>Прайс:</b>', priceList, '', 'Отправьте текст вашего рекламного поста 👇'].join('\n'),
+    shop.bot_token
+  )
+}
+
+async function sendAdDurationKeyboard(fromId, shop) {
+  const prices = shop.ad_prices || {}
+  const buttons = Object.entries(prices)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([hours, price]) => [{ text: `${hours} ч — ${formatPrice(Number(price))}`, callback_data: `ad_dur_${hours}` }])
+
+  await sendTelegramMessage(fromId, 'Выберите длительность:', shop.bot_token, {
+    inline_keyboard: buttons,
+  })
+}

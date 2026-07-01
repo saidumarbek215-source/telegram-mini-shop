@@ -110,4 +110,7 @@ export const adminApi = {
   updatePartner: (id, data) =>
     request(`/admin/partners/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
   deletePartner: (id) => request(`/admin/partners/${id}`, { method: 'DELETE', admin: true }),
+  getAdOrders: () => request('/admin/ad-orders', { admin: true }),
+  updateAdOrderStatus: (id, status) =>
+    request(`/admin/ad-orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }), admin: true }),
 }

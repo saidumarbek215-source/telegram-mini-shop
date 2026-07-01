@@ -37,6 +37,9 @@ export default function ManageLayout() {
   if (shop?.features?.partners_map) {
     tabs.push({ to: '/manage/map', label: '🗺 Карта', icon: null })
   }
+  if (publicShop?.ads_enabled) {
+    tabs.push({ to: '/manage/ads', label: '📢 Реклама', icon: null })
+  }
 
   return (
     <div>
