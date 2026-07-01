@@ -9,18 +9,18 @@ const STATUS_COLOR = {
 }
 
 const TYPE_META = {
-  reklama:    { label: '📢 Reklama',        color: 'bg-blue-500/20 text-blue-400' },
-  hamkorlik:  { label: '🤝 Hamkorlik',      color: 'bg-purple-500/20 text-purple-400' },
-  optom:      { label: '📦 Optom',          color: 'bg-orange-500/20 text-orange-400' },
-  boshqa:     { label: '💬 Boshqa',         color: 'bg-gray-500/20 text-gray-400' },
+  reklama:    { label: '📢 Reklama berish',   color: 'bg-blue-500/20 text-blue-400' },
+  hamkorlik:  { label: '🤝 Hamkorlik',        color: 'bg-purple-500/20 text-purple-400' },
+  savol:      { label: '💬 Savol va taklif',  color: 'bg-teal-500/20 text-teal-400' },
+  optom:      { label: '📦 Optom',            color: 'bg-orange-500/20 text-orange-400' },
+  boshqa:     { label: '💬 Boshqa',           color: 'bg-gray-500/20 text-gray-400' },
 }
 
 const FILTERS = [
   { key: 'all',       label: 'Hammasi' },
   { key: 'reklama',   label: '📢 Reklama' },
   { key: 'hamkorlik', label: '🤝 Hamkorlik' },
-  { key: 'optom',     label: '📦 Optom' },
-  { key: 'boshqa',    label: '💬 Boshqa' },
+  { key: 'savol',     label: '💬 Savol' },
 ]
 
 const EMPTY_CHANNEL = { name: '', username: '', subscribers: '', price: '' }

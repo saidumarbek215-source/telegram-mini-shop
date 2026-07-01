@@ -39,7 +39,7 @@ export async function handleCallbackQuery(callbackQuery, shop) {
   }
 
   // --- Ad: type selection ---
-  const typeMatch = data.match(/^ad_type_(reklama|hamkorlik|optom|boshqa)$/)
+  const typeMatch = data.match(/^ad_type_(reklama|hamkorlik|optom|boshqa|savol)$/)
   if (typeMatch) {
     const pending = pendingAdOrders.get(fromId)
     if (pending && pending.shopId === shop.id && pending.step === 'type_sel') {
@@ -47,28 +47,33 @@ export async function handleCallbackQuery(callbackQuery, shop) {
       pending.requestType = type
 
       if (type === 'reklama') {
-        const channels = (shop.ad_prices || {}).channels || []
-        if (channels.length === 0) {
-          pendingAdOrders.delete(fromId)
-          await sendTelegramMessage(fromId, 'Reklama vaqtincha mavjud emas.', shop.bot_token)
-          await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-          return
+        const channels = shop.ads_enabled ? ((shop.ad_prices || {}).channels || []) : []
+        if (channels.length > 0) {
+          pending.step = 'channel'
+          pendingAdOrders.set(fromId, pending)
+          const buttons = channels.map((ch, i) => [{
+            text: `${ch.name} — ${Number(ch.subscribers).toLocaleString('ru-RU')} obunachi | ${formatPrice(ch.price)}`,
+            callback_data: `ad_ch_${i}`,
+          }])
+          await sendTelegramMessage(fromId, 'Reklamani qayerda joylashtirmoqchisiz? 📍', shop.bot_token, { inline_keyboard: buttons })
+        } else {
+          // No channels configured — go directly to ad text
+          pending.step = 'r_text'
+          pendingAdOrders.set(fromId, pending)
+          await sendTelegramMessage(fromId, 'Reklama matnini yuboring 📝', shop.bot_token)
         }
-        pending.step = 'channel'
-        pendingAdOrders.set(fromId, pending)
-        const buttons = channels.map((ch, i) => [{
-          text: `${ch.name} — ${Number(ch.subscribers).toLocaleString('ru-RU')} obunachi | ${formatPrice(ch.price)}`,
-          callback_data: `ad_ch_${i}`,
-        }])
-        await sendTelegramMessage(fromId, 'Reklamani qayerda joylashtirmoqchisiz? 📍', shop.bot_token, { inline_keyboard: buttons })
       } else if (type === 'hamkorlik') {
         pending.step = 'h_company'
         pendingAdOrders.set(fromId, pending)
-        await sendTelegramMessage(fromId, 'Kompaniyangiz nomi?', shop.bot_token)
+        await sendTelegramMessage(fromId, 'Kompaniyangiz/ismingiz?', shop.bot_token)
       } else if (type === 'optom') {
         pending.step = 'o_product'
         pendingAdOrders.set(fromId, pending)
         await sendTelegramMessage(fromId, 'Qanday mahsulot kerak?', shop.bot_token)
+      } else if (type === 'savol') {
+        pending.step = 's_msg'
+        pendingAdOrders.set(fromId, pending)
+        await sendTelegramMessage(fromId, 'Xabaringizni yozing', shop.bot_token)
       } else {
         pending.step = 'b_msg'
         pendingAdOrders.set(fromId, pending)
@@ -131,6 +136,7 @@ export async function handleCallbackQuery(callbackQuery, shop) {
         hamkorlik: '🤝 Hamkorlik taklifi',
         optom: '📦 Optom buyurtma',
         boshqa: '💬 Boshqa murojaat',
+        savol: '💬 Savol va taklif',
       }
       const ownerLines = [`${TYPE_LABELS[type] || '📨 Yangi ariza'}! <b>#${adOrder.id}</b>`, '']
 
@@ -146,6 +152,8 @@ export async function handleCallbackQuery(callbackQuery, shop) {
       } else if (type === 'optom') {
         ownerLines.push(`📦 Mahsulot: ${escapeHtml(pending.field1 || '')}`)
         ownerLines.push(`🔢 Miqdor: ${escapeHtml(pending.field2 || '')}`)
+      } else if (type === 'savol') {
+        ownerLines.push(`💬 Xabar: ${escapeHtml(pending.field1 || '')}`)
       } else {
         ownerLines.push(`💬 ${escapeHtml(pending.field1 || '')}`)
       }
@@ -380,8 +388,8 @@ export async function handleMessage(message, shop) {
         await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
         return
       }
-      // boshqa: message
-      if (adPending.step === 'b_msg') {
+      // savol / boshqa: message
+      if (adPending.step === 's_msg' || adPending.step === 'b_msg') {
         adPending.field1 = text
         adPending.step = 'phone'
         pendingAdOrders.set(fromId, adPending)
@@ -528,10 +536,10 @@ async function sendWelcomeMessage(message, shop) {
     'Нажмите кнопку ниже чтобы открыть каталог товаров 👇',
   ].join('\n')
 
-  const keyboard = [[{ text: '🛍 Открыть каталог', web_app: { url: getMiniAppUrl(shop.id) } }]]
-  if (shop.ads_enabled) {
-    keyboard.push([{ text: '📢 Hamkorlik va reklama', callback_data: 'start_contact' }])
-  }
+  const keyboard = [
+    [{ text: '🛍 Открыть каталог', web_app: { url: getMiniAppUrl(shop.id) } }],
+    [{ text: '🤝 Hamkorlik va aloqa', callback_data: 'start_contact' }],
+  ]
 
   await sendTelegramMessage(fromId, text, shop.bot_token, { inline_keyboard: keyboard })
 }
@@ -611,12 +619,11 @@ async function showTypeMenu(fromId, shop) {
     expiresAt: Date.now() + PENDING_AD_TTL_MS,
   })
 
-  await sendTelegramMessage(fromId, 'Qanday murojaat qilmoqchisiz? 👇', shop.bot_token, {
+  await sendTelegramMessage(fromId, 'Bizga murojaat qiling 👇', shop.bot_token, {
     inline_keyboard: [
-      [{ text: '📢 Reklama', callback_data: 'ad_type_reklama' }],
-      [{ text: '🤝 Hamkorlik', callback_data: 'ad_type_hamkorlik' }],
-      [{ text: '📦 Optom buyurtma', callback_data: 'ad_type_optom' }],
-      [{ text: '💬 Boshqa', callback_data: 'ad_type_boshqa' }],
+      [{ text: '📢 Reklama berish', callback_data: 'ad_type_reklama' }],
+      [{ text: '🤝 Hamkorlik taklifi', callback_data: 'ad_type_hamkorlik' }],
+      [{ text: '💬 Savol va taklif', callback_data: 'ad_type_savol' }],
     ],
   })
 }
@@ -640,6 +647,8 @@ async function sendAdSummary(fromId, pending, shop) {
   } else if (type === 'optom') {
     lines.push(`📦 Mahsulot: ${escapeHtml(pending.field1 || '')}`)
     lines.push(`🔢 Miqdor: ${escapeHtml(pending.field2 || '')}`)
+  } else if (type === 'savol') {
+    lines.push(`💬 Xabar: ${escapeHtml(pending.field1 || '')}`)
   } else {
     lines.push(`💬 Xabar: ${escapeHtml(pending.field1 || '')}`)
   }
