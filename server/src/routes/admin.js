@@ -324,13 +324,19 @@ router.put(
 
     const safePrices = (() => {
       if (!ad_prices || typeof ad_prices !== 'object') return {}
-      const out = {}
-      for (const [k, v] of Object.entries(ad_prices)) {
-        const hours = Number(k)
-        const price = Number(v)
-        if (Number.isInteger(hours) && hours > 0 && price >= 0) out[String(hours)] = price
+      if (Array.isArray(ad_prices.channels)) {
+        return {
+          channels: ad_prices.channels
+            .filter((ch) => ch && typeof ch.name === 'string' && ch.name.trim())
+            .map((ch) => ({
+              name: ch.name.trim(),
+              username: String(ch.username || '').trim(),
+              subscribers: Number(ch.subscribers) || 0,
+              price: Number(ch.price) || 0,
+            })),
+        }
       }
-      return out
+      return {}
     })()
 
     const result = await query(
