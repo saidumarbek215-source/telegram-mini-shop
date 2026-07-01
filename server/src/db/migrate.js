@@ -43,6 +43,7 @@ export async function migrate() {
   await pool.query(`ALTER TABLE ad_orders ADD COLUMN IF NOT EXISTS ad_placement TEXT`)
   await pool.query(`ALTER TABLE ad_orders ADD COLUMN IF NOT EXISTS customer_phone TEXT`)
   await pool.query(`ALTER TABLE ad_orders ADD COLUMN IF NOT EXISTS customer_comment TEXT`)
+  await pool.query(`ALTER TABLE ad_orders ADD COLUMN IF NOT EXISTS request_type VARCHAR(50)`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ads_enabled BOOLEAN DEFAULT false`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ad_channel_id TEXT`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ad_prices JSONB DEFAULT '{}'`)
