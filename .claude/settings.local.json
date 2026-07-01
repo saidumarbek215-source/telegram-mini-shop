@@ -19,7 +19,11 @@
       "Bash(npm ls *)",
       "Bash(find / -maxdepth 6 -iname \"*playwright*\" -type d)",
       "Bash(compgen -c)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(git -C /Users/saidumarbek215.com/telegram-mini-shop add client/src/context/CartContext.jsx)",
+      "Bash(git -C /Users/saidumarbek215.com/telegram-mini-shop commit -m \"Isolate cart per shop_id in localStorage\")",
+      "Bash(git -C /Users/saidumarbek215.com/telegram-mini-shop push)",
+      "Bash(git *)"
     ]
   }
 }

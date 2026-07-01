@@ -40,6 +40,23 @@ export async function migrate() {
   await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS monthly_turnover DECIMAL(15,2)`)
   await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS contact_person TEXT`)
   await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS working_hours TEXT`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ads_enabled BOOLEAN DEFAULT false`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ad_channel_id TEXT`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS ad_prices JSONB DEFAULT '{}'`)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ad_orders (
+      id SERIAL PRIMARY KEY,
+      shop_id INTEGER REFERENCES shops(id),
+      customer_telegram_id BIGINT,
+      customer_username TEXT,
+      ad_text TEXT,
+      ad_photo_file_id TEXT,
+      duration_hours INTEGER,
+      price DECIMAL(10,2),
+      payment_status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
   console.log('Migration applied successfully')
 }
 

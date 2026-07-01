@@ -281,6 +281,9 @@ function shopToSettings(shop) {
     product_unit_type: shop.product_unit_type || 'size',
     auto_cancel_minutes: shop.auto_cancel_minutes ?? 15,
     credit_enabled: shop.credit_enabled || false,
+    ads_enabled: shop.ads_enabled || false,
+    ad_channel_id: shop.ad_channel_id || '',
+    ad_prices: shop.ad_prices || {},
   }
 }
 
@@ -304,6 +307,8 @@ router.put(
       credit_enabled,
       theme,
       language,
+      ad_channel_id,
+      ad_prices,
     } = req.body || {}
 
     const validUnitTypes = ['size', 'weight', 'volume', 'piece']
@@ -317,12 +322,24 @@ router.put(
       ? Number(auto_cancel_minutes)
       : 15
 
+    const safePrices = (() => {
+      if (!ad_prices || typeof ad_prices !== 'object') return {}
+      const out = {}
+      for (const [k, v] of Object.entries(ad_prices)) {
+        const hours = Number(k)
+        const price = Number(v)
+        if (Number.isInteger(hours) && hours > 0 && price >= 0) out[String(hours)] = price
+      }
+      return out
+    })()
+
     const result = await query(
       `UPDATE shops
        SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5,
            currency = $6, admin_username = $7, product_unit_type = $8, auto_cancel_minutes = $9,
            credit_enabled = $10,
-           features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($11::text)), '{language}', to_jsonb($12::text))
+           features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($11::text)), '{language}', to_jsonb($12::text)),
+           ad_channel_id = $14, ad_prices = $15
        WHERE id = $13
        RETURNING *`,
       [
@@ -339,6 +356,8 @@ router.put(
         safeTheme,
         safeLanguage,
         req.shop.id,
+        ad_channel_id ?? '',
+        JSON.stringify(safePrices),
       ]
     )
 
@@ -445,6 +464,35 @@ router.delete(
     )
     if (!result.rows.length) return res.status(404).json({ error: 'Партнёр не найден' })
     res.json({ success: true })
+  })
+)
+
+/* ----------------------------- Ad Orders ----------------------------- */
+
+router.get(
+  '/ad-orders',
+  asyncHandler(async (req, res) => {
+    const result = await query(
+      'SELECT * FROM ad_orders WHERE shop_id = $1 ORDER BY created_at DESC',
+      [req.shop.id]
+    )
+    res.json(result.rows)
+  })
+)
+
+router.put(
+  '/ad-orders/:id/status',
+  asyncHandler(async (req, res) => {
+    const { status } = req.body
+    const valid = ['pending', 'approved', 'rejected']
+    if (!valid.includes(status)) return res.status(400).json({ error: 'Недопустимый статус' })
+
+    const result = await query(
+      `UPDATE ad_orders SET payment_status = $1 WHERE id = $2 AND shop_id = $3 RETURNING *`,
+      [status, req.params.id, req.shop.id]
+    )
+    if (!result.rows.length) return res.status(404).json({ error: 'Заявка не найдена' })
+    res.json(result.rows[0])
   })
 )
 

@@ -14,29 +14,182 @@ import {
   sendTelegramPhoto,
 } from '../telegram.js'
 
-// Telegram user id -> { shopId, orderId, expiresAt }. Set when a customer
-// opens a chat via the "Написать продавцу" deep link (/start order_<id>), so
-// the next photo they send (the payment receipt) can be forwarded to the
-// shop owner with the right order context.
+// Telegram user id -> { shopId, orderId, expiresAt }
 const pendingReceipts = new Map()
 const PENDING_RECEIPT_TTL_MS = 60 * 60 * 1000
 
-export async function handleCallbackQuery(callbackQuery, shop) {
-  const match = (callbackQuery.data || '').match(/^(confirm|cancel)_order_(\d+)$/)
-  if (!match) {
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
+// Telegram user id -> { shopId, step, adText, adPhotoFileId, durationHours, price, expiresAt }
+// steps: 'text' | 'photo' | 'duration' | 'confirm'
+const pendingAdOrders = new Map()
+const PENDING_AD_TTL_MS = 30 * 60 * 1000
 
-  const [, action, orderIdStr] = match
-  const orderId = Number(orderIdStr)
+export async function handleCallbackQuery(callbackQuery, shop) {
+  const data = callbackQuery.data || ''
+  const fromId = callbackQuery.from?.id
   const chatId = callbackQuery.message?.chat?.id
   const messageId = callbackQuery.message?.message_id
   const originalText = callbackQuery.message?.text || ''
 
+  // --- Ad: skip photo ---
+  if (data === 'ad_skip_photo') {
+    const pending = pendingAdOrders.get(fromId)
+    if (pending && pending.shopId === shop.id && pending.step === 'photo') {
+      pending.step = 'duration'
+      pendingAdOrders.set(fromId, pending)
+      await sendAdDurationKeyboard(fromId, shop)
+    }
+    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
+    return
+  }
+
+  // --- Ad: select duration ---
+  const durMatch = data.match(/^ad_dur_(\d+)$/)
+  if (durMatch) {
+    const pending = pendingAdOrders.get(fromId)
+    const hours = Number(durMatch[1])
+    const price = (shop.ad_prices || {})[String(hours)]
+    if (pending && pending.shopId === shop.id && pending.step === 'duration' && price != null) {
+      pending.durationHours = hours
+      pending.price = price
+      pending.step = 'confirm'
+      pendingAdOrders.set(fromId, pending)
+      const payInfo = shop.card_number
+        ? `\n💳 Карта для оплаты: <code>${escapeHtml(shop.card_number)}</code>`
+        : ''
+      const summary = [
+        '📋 <b>Ваша заявка:</b>',
+        '',
+        `📝 Текст: ${escapeHtml(pending.adText)}`,
+        `🖼 Фото: ${pending.adPhotoFileId ? 'Да' : 'Нет'}`,
+        `⏱ Длительность: ${hours} ч`,
+        `💰 Стоимость: ${formatPrice(price)}`,
+        payInfo,
+        '',
+        'После оплаты нажмите кнопку ниже:',
+      ].join('\n')
+      await sendTelegramMessage(fromId, summary, shop.bot_token, {
+        inline_keyboard: [
+          [{ text: '✅ Оформить заявку', callback_data: 'ad_pay_confirm' }],
+          [{ text: '❌ Отмена', callback_data: 'ad_pay_cancel' }],
+        ],
+      })
+    }
+    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
+    return
+  }
+
+  // --- Ad: confirm payment ---
+  if (data === 'ad_pay_confirm') {
+    const pending = pendingAdOrders.get(fromId)
+    if (pending && pending.shopId === shop.id && pending.step === 'confirm') {
+      const username = callbackQuery.from?.username || null
+      const result = await query(
+        `INSERT INTO ad_orders
+           (shop_id, customer_telegram_id, customer_username, ad_text, ad_photo_file_id, duration_hours, price, payment_status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending') RETURNING *`,
+        [shop.id, fromId, username, pending.adText, pending.adPhotoFileId,
+         pending.durationHours, pending.price]
+      )
+      const adOrder = result.rows[0]
+      pendingAdOrders.delete(fromId)
+
+      await sendTelegramMessage(
+        fromId,
+        `✅ Заявка <b>#${adOrder.id}</b> принята! Ожидайте подтверждения.`,
+        shop.bot_token
+      )
+
+      const ownerText = [
+        `📢 <b>Новая заявка на рекламу #${adOrder.id}</b>`,
+        '',
+        `👤 ${username ? `@${escapeHtml(username)}` : String(fromId)}`,
+        `📝 ${escapeHtml(pending.adText)}`,
+        `🖼 Фото: ${pending.adPhotoFileId ? 'Да' : 'Нет'}`,
+        `⏱ ${pending.durationHours} ч — ${formatPrice(pending.price)}`,
+      ].join('\n')
+
+      await sendTelegramMessage(shop.owner_telegram_id, ownerText, shop.bot_token, {
+        inline_keyboard: [[
+          { text: '✅ Одобрить', callback_data: `approve_ad_${adOrder.id}` },
+          { text: '❌ Отклонить', callback_data: `reject_ad_${adOrder.id}` },
+        ]],
+      })
+    }
+    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
+    return
+  }
+
+  // --- Ad: cancel ---
+  if (data === 'ad_pay_cancel') {
+    pendingAdOrders.delete(fromId)
+    await sendTelegramMessage(fromId, 'Заявка отменена.', shop.bot_token)
+    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
+    return
+  }
+
+  // --- Owner: approve / reject ad ---
+  const adActionMatch = data.match(/^(approve|reject)_ad_(\d+)$/)
+  if (adActionMatch) {
+    const [, action, adIdStr] = adActionMatch
+    const adId = Number(adIdStr)
+    const adResult = await query(
+      'SELECT * FROM ad_orders WHERE id = $1 AND shop_id = $2', [adId, shop.id]
+    )
+    const adOrder = adResult.rows[0]
+    if (!adOrder) {
+      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заявка не найдена')
+      return
+    }
+    if (adOrder.payment_status !== 'pending') {
+      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заявка уже обработана')
+      return
+    }
+
+    if (action === 'approve') {
+      await query(`UPDATE ad_orders SET payment_status = 'approved' WHERE id = $1`, [adId])
+      if (shop.ad_channel_id) {
+        if (adOrder.ad_photo_file_id) {
+          await sendTelegramPhoto(
+            shop.ad_channel_id, adOrder.ad_photo_file_id, shop.bot_token,
+            escapeHtml(adOrder.ad_text || '')
+          )
+        } else {
+          await sendTelegramMessage(
+            shop.ad_channel_id, escapeHtml(adOrder.ad_text || ''), shop.bot_token
+          )
+        }
+      }
+      await sendTelegramMessage(
+        adOrder.customer_telegram_id,
+        `✅ Ваша реклама <b>#${adId}</b> одобрена и опубликована!`,
+        shop.bot_token
+      )
+      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Одобрено')
+      await editMessageText(chatId, messageId, `${originalText}\n\n✅ Одобрено`, shop.bot_token)
+    } else {
+      await query(`UPDATE ad_orders SET payment_status = 'rejected' WHERE id = $1`, [adId])
+      await sendTelegramMessage(
+        adOrder.customer_telegram_id,
+        `❌ Ваша реклама <b>#${adId}</b> отклонена.`,
+        shop.bot_token
+      )
+      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Отклонено')
+      await editMessageText(chatId, messageId, `${originalText}\n\n❌ Отклонено`, shop.bot_token)
+    }
+    return
+  }
+
+  // --- Order: confirm / cancel ---
+  const orderMatch = data.match(/^(confirm|cancel)_order_(\d+)$/)
+  if (!orderMatch) {
+    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
+    return
+  }
+
+  const [, action, orderIdStr] = orderMatch
+  const orderId = Number(orderIdStr)
   const orderResult = await query('SELECT * FROM orders WHERE id = $1 AND shop_id = $2', [
-    orderId,
-    shop.id,
+    orderId, shop.id,
   ])
   const order = orderResult.rows[0]
 
@@ -44,7 +197,6 @@ export async function handleCallbackQuery(callbackQuery, shop) {
     await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заказ не найден')
     return
   }
-
   if (order.status !== 'new') {
     await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заказ уже обработан')
     return
@@ -66,8 +218,7 @@ export async function handleCallbackQuery(callbackQuery, shop) {
     await client.query('BEGIN')
     await restoreOrderStock(client, orderId)
     await client.query(
-      `UPDATE orders SET status = 'cancelled', updated_at = now() WHERE id = $1`,
-      [orderId]
+      `UPDATE orders SET status = 'cancelled', updated_at = now() WHERE id = $1`, [orderId]
     )
     await client.query('COMMIT')
   } catch (err) {
@@ -101,19 +252,34 @@ export async function handleMessage(message, shop) {
 
   const isOwner = shop.owner_telegram_id != null && Number(fromId) === Number(shop.owner_telegram_id)
 
+  // /reklama command
+  if (/^\/reklama(?:@\w+)?$/.test(text)) {
+    await handleReklamaCommand(message, shop)
+    return
+  }
+
   if (message.photo?.length) {
     if (isOwner) {
       await handleOwnerProductPhoto(message, shop)
       return
     }
 
+    // Ad flow: waiting for photo
+    const adPending = pendingAdOrders.get(fromId)
+    if (adPending && adPending.shopId === shop.id && adPending.step === 'photo' && adPending.expiresAt > Date.now()) {
+      adPending.adPhotoFileId = message.photo[message.photo.length - 1].file_id
+      adPending.step = 'duration'
+      pendingAdOrders.set(fromId, adPending)
+      await sendAdDurationKeyboard(fromId, shop)
+      return
+    }
+
+    // Receipt forwarding
     const pending = pendingReceipts.get(fromId)
     if (pending && pending.shopId === shop.id && pending.expiresAt > Date.now()) {
       const fileId = message.photo[message.photo.length - 1].file_id
       await sendTelegramPhoto(
-        shop.owner_telegram_id,
-        fileId,
-        shop.bot_token,
+        shop.owner_telegram_id, fileId, shop.bot_token,
         `📎 Чек об оплате к заказу #${pending.orderId}`
       )
       await sendTelegramMessage(fromId, 'Спасибо! Чек отправлен продавцу.', shop.bot_token)
@@ -122,6 +288,18 @@ export async function handleMessage(message, shop) {
   }
 
   if (text && !isOwner) {
+    // Ad flow: waiting for text
+    const adPending = pendingAdOrders.get(fromId)
+    if (adPending && adPending.shopId === shop.id && adPending.step === 'text' && adPending.expiresAt > Date.now()) {
+      adPending.adText = text
+      adPending.step = 'photo'
+      pendingAdOrders.set(fromId, adPending)
+      await sendTelegramMessage(fromId, 'Отправьте фото для рекламы:', shop.bot_token, {
+        inline_keyboard: [[{ text: '🚫 Без фото', callback_data: 'ad_skip_photo' }]],
+      })
+      return
+    }
+
     await handleCustomerChatMessage(text, fromId, shop)
   }
 }
