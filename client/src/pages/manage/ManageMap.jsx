@@ -9,16 +9,12 @@ const EMPTY_FORM = {
 
 function makeIcon(active) {
   const color = active ? '#22c55e' : '#ef4444'
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
-    <path d="M12 0C5.373 0 0 5.373 0 12c0 8 12 20 12 20S24 20 24 12C24 5.373 18.627 0 12 0z" fill="${color}"/>
-    <circle cx="12" cy="12" r="5" fill="white"/>
-  </svg>`
   return window.L.divIcon({
-    html: svg,
     className: '',
-    iconSize: [24, 32],
-    iconAnchor: [12, 32],
-    popupAnchor: [0, -32],
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
   })
 }
 
@@ -422,9 +418,14 @@ export default function ManageMap() {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="font-semibold text-sm truncate">{p.name}</p>
-                  <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
+                  <span className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${
                     p.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                   }`}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: '50%',
+                      backgroundColor: p.status === 'active' ? '#22c55e' : '#ef4444',
+                      display: 'inline-block', flexShrink: 0,
+                    }} />
                     {p.status === 'active' ? 'Активный' : 'Неактивный'}
                   </span>
                 </div>
