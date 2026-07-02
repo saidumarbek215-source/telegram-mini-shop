@@ -18,35 +18,6 @@ import {
 const pendingReceipts = new Map()
 const PENDING_RECEIPT_TTL_MS = 60 * 60 * 1000
 
-// Contact/ad dialog state — composite key `${userId}_${shopId}` for shop isolation
-// State: { step, requestType, channel, field1, field2, adPhotoFileId, customerPhone, expiresAt }
-// requestType: 'reklama' | 'hamkorlik' | 'savol' | 'optom' | 'boshqa'
-// steps: 'type_sel' | 'channel' | 'r_text' | 'r_photo' | 'h_company' | 'h_desc' |
-//        's_msg' | 'o_product' | 'o_qty' | 'b_msg' | 'phone' | 'confirm'
-const dialogState = new Map()
-const DIALOG_TTL_MS = 30 * 60 * 1000
-
-function dialogKey(userId, shopId) {
-  return `${userId}_${shopId}`
-}
-
-function getDialog(userId, shopId) {
-  const state = dialogState.get(dialogKey(userId, shopId))
-  if (!state || state.expiresAt < Date.now()) {
-    dialogState.delete(dialogKey(userId, shopId))
-    return null
-  }
-  return state
-}
-
-function setDialog(userId, shopId, state) {
-  dialogState.set(dialogKey(userId, shopId), { ...state, expiresAt: Date.now() + DIALOG_TTL_MS })
-}
-
-function clearDialog(userId, shopId) {
-  dialogState.delete(dialogKey(userId, shopId))
-}
-
 /* ─────────────────────────── CALLBACK QUERY ─────────────────────────── */
 
 export async function handleCallbackQuery(callbackQuery, shop) {
@@ -58,191 +29,6 @@ export async function handleCallbackQuery(callbackQuery, shop) {
 
   if (!fromId) {
     await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Contact menu button ──────────────────────────────────────────────
-  if (data === 'start_contact') {
-    await showTypeMenu(fromId, shop)
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Type selection ───────────────────────────────────────────────────
-  const typeMatch = data.match(/^ad_type_(reklama|hamkorlik|savol|optom|boshqa)$/)
-  if (typeMatch) {
-    const dlg = getDialog(fromId, shop.id)
-    if (dlg && dlg.step === 'type_sel') {
-      const type = typeMatch[1]
-      dlg.requestType = type
-
-      if (type === 'reklama') {
-        const channels = shop.ads_enabled ? ((shop.ad_prices || {}).channels || []) : []
-        if (channels.length > 0) {
-          dlg.step = 'channel'
-          setDialog(fromId, shop.id, dlg)
-          const buttons = channels.map((ch, i) => [{
-            text: `${ch.name} — ${Number(ch.subscribers).toLocaleString('ru-RU')} obunachi | ${formatPrice(ch.price)}`,
-            callback_data: `ad_ch_${i}`,
-          }])
-          await sendTelegramMessage(fromId, 'Reklamani qayerda joylashtirmoqchisiz? 📍', shop.bot_token, { inline_keyboard: buttons })
-        } else {
-          dlg.step = 'r_text'
-          setDialog(fromId, shop.id, dlg)
-          await sendTelegramMessage(fromId, 'Reklama matnini yuboring 📝', shop.bot_token)
-        }
-      } else if (type === 'hamkorlik') {
-        dlg.step = 'h_company'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Kompaniyangiz/ismingiz?', shop.bot_token)
-      } else if (type === 'savol') {
-        dlg.step = 's_msg'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Xabaringizni yozing', shop.bot_token)
-      } else if (type === 'optom') {
-        dlg.step = 'o_product'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Qanday mahsulot kerak?', shop.bot_token)
-      } else {
-        dlg.step = 'b_msg'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Xabaringizni yozing', shop.bot_token)
-      }
-    }
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Channel selection (reklama) ──────────────────────────────────────
-  const chMatch = data.match(/^ad_ch_(\d+)$/)
-  if (chMatch) {
-    const dlg = getDialog(fromId, shop.id)
-    const channels = (shop.ad_prices || {}).channels || []
-    const ch = channels[Number(chMatch[1])]
-    if (dlg && dlg.step === 'channel' && ch) {
-      dlg.channel = ch
-      dlg.step = 'r_text'
-      setDialog(fromId, shop.id, dlg)
-      await sendTelegramMessage(fromId, 'Reklama matnini yuboring 📝', shop.bot_token)
-    }
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Confirm submission ───────────────────────────────────────────────
-  if (data === 'ad_pay_confirm') {
-    const dlg = getDialog(fromId, shop.id)
-    if (dlg && dlg.step === 'confirm') {
-      const username = callbackQuery.from?.username || null
-      const type = dlg.requestType
-      const ch = dlg.channel
-
-      const adText = type === 'reklama'
-        ? (dlg.field1 || '')
-        : [dlg.field1, dlg.field2].filter(Boolean).join('\n')
-      const adPlacement = type === 'reklama' && ch ? `${ch.name} (${ch.username})` : null
-      const price = type === 'reklama' && ch ? ch.price : 0
-
-      const result = await query(
-        `INSERT INTO ad_orders
-           (shop_id, customer_telegram_id, customer_username, ad_text, ad_photo_file_id,
-            ad_placement, customer_phone, price, payment_status, request_type)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9) RETURNING *`,
-        [shop.id, fromId, username, adText, dlg.adPhotoFileId,
-         adPlacement, dlg.customerPhone, price, type]
-      )
-      const adOrder = result.rows[0]
-      clearDialog(fromId, shop.id)
-
-      await sendTelegramMessage(
-        fromId,
-        `✅ Arizangiz <b>#${adOrder.id}</b> qabul qilindi! Tasdiqlashni kuting.`,
-        shop.bot_token
-      )
-
-      const TYPE_LABELS = {
-        reklama:   '📢 Reklama arizasi',
-        hamkorlik: '🤝 Hamkorlik taklifi',
-        savol:     '💬 Savol va taklif',
-        optom:     '📦 Optom buyurtma',
-        boshqa:    '💬 Boshqa murojaat',
-      }
-      const ownerLines = [`${TYPE_LABELS[type] || '📨 Yangi ariza'}! <b>#${adOrder.id}</b>`, '']
-
-      if (type === 'reklama' && ch) ownerLines.push(`📍 Kanal: ${escapeHtml(`${ch.name} (${ch.username})`)}`)
-      ownerLines.push(`👤 Mijoz: ${username ? `@${escapeHtml(username)}` : String(fromId)}`)
-
-      if (type === 'reklama') {
-        ownerLines.push(`📝 Matn: ${escapeHtml(dlg.field1 || '')}`)
-        ownerLines.push(`🖼 Rasm: ${dlg.adPhotoFileId ? 'Bor' : "Yo'q"}`)
-        if (ch) ownerLines.push(`💰 Narx: ${formatPrice(ch.price)}`)
-      } else if (type === 'hamkorlik') {
-        ownerLines.push(`🏢 Kompaniya: ${escapeHtml(dlg.field1 || '')}`)
-        ownerLines.push(`📝 ${escapeHtml(dlg.field2 || '')}`)
-      } else if (type === 'optom') {
-        ownerLines.push(`📦 Mahsulot: ${escapeHtml(dlg.field1 || '')}`)
-        ownerLines.push(`🔢 Miqdor: ${escapeHtml(dlg.field2 || '')}`)
-      } else {
-        ownerLines.push(`💬 Xabar: ${escapeHtml(dlg.field1 || '')}`)
-      }
-      ownerLines.push(`📞 Telefon: ${escapeHtml(dlg.customerPhone || '—')}`)
-
-      await sendTelegramMessage(shop.owner_telegram_id, ownerLines.join('\n'), shop.bot_token, {
-        inline_keyboard: [[
-          { text: '✅ Qabul qilish', callback_data: `approve_ad_${adOrder.id}` },
-          { text: '❌ Rad etish', callback_data: `reject_ad_${adOrder.id}` },
-        ]],
-      })
-    }
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Cancel dialog ────────────────────────────────────────────────────
-  if (data === 'ad_pay_cancel') {
-    clearDialog(fromId, shop.id)
-    await sendTelegramMessage(fromId, 'Ariza bekor qilindi.', shop.bot_token)
-    await answerCallbackQuery(callbackQuery.id, shop.bot_token)
-    return
-  }
-
-  // ── Owner: approve / reject ad ───────────────────────────────────────
-  const adActionMatch = data.match(/^(approve|reject)_ad_(\d+)$/)
-  if (adActionMatch) {
-    const [, action, adIdStr] = adActionMatch
-    const adId = Number(adIdStr)
-    const adResult = await query('SELECT * FROM ad_orders WHERE id = $1 AND shop_id = $2', [adId, shop.id])
-    const adOrder = adResult.rows[0]
-
-    if (!adOrder) {
-      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заявка не найдена')
-      return
-    }
-    if (adOrder.payment_status !== 'pending') {
-      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Заявка уже обработана')
-      return
-    }
-
-    if (action === 'approve') {
-      await query(`UPDATE ad_orders SET payment_status = 'approved' WHERE id = $1`, [adId])
-      const usernameMatch = (adOrder.ad_placement || '').match(/@[\w]+/)
-      const publishTarget = usernameMatch ? usernameMatch[0] : null
-      if (publishTarget) {
-        if (adOrder.ad_photo_file_id) {
-          await sendTelegramPhoto(publishTarget, adOrder.ad_photo_file_id, shop.bot_token, escapeHtml(adOrder.ad_text || ''))
-        } else {
-          await sendTelegramMessage(publishTarget, escapeHtml(adOrder.ad_text || ''), shop.bot_token)
-        }
-      }
-      await sendTelegramMessage(adOrder.customer_telegram_id, `✅ Reklamangiz <b>#${adId}</b> qabul qilindi va nashr etildi!`, shop.bot_token)
-      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Qabul qilindi')
-      await editMessageText(chatId, messageId, `${originalText}\n\n✅ Qabul qilindi`, shop.bot_token)
-    } else {
-      await query(`UPDATE ad_orders SET payment_status = 'rejected' WHERE id = $1`, [adId])
-      await sendTelegramMessage(adOrder.customer_telegram_id, `❌ Reklamangiz <b>#${adId}</b> rad etildi.`, shop.bot_token)
-      await answerCallbackQuery(callbackQuery.id, shop.bot_token, 'Rad etildi')
-      await editMessageText(chatId, messageId, `${originalText}\n\n❌ Rad etildi`, shop.bot_token)
-    }
     return
   }
 
@@ -313,40 +99,10 @@ export async function handleMessage(message, shop) {
 
   if (!fromId) return
 
-  // /cancel — clears any active dialog and shows welcome
-  if (/^\/cancel(?:@\w+)?$/.test(text)) {
-    const had = getDialog(fromId, shop.id)
-    clearDialog(fromId, shop.id)
-    await sendTelegramMessage(
-      fromId,
-      had ? 'Dialog bekor qilindi. /start — bosh menyu.' : '/start — bosh menyu.',
-      shop.bot_token
-    )
-    return
-  }
-
-  // /reklama
-  if (/^\/reklama(?:@\w+)?$/.test(text)) {
-    await showTypeMenu(fromId, shop)
-    return
-  }
-
   const isOwner = shop.owner_telegram_id != null && Number(fromId) === Number(shop.owner_telegram_id)
 
-  // Check active dialog FIRST — applies to ALL users including the owner
-  const dlg = getDialog(fromId, shop.id)
-
   if (message.photo?.length) {
-    // Dialog: waiting for photo (reklama step r_photo)
-    if (dlg && dlg.step === 'r_photo') {
-      dlg.adPhotoFileId = message.photo[message.photo.length - 1].file_id
-      dlg.step = 'phone'
-      setDialog(fromId, shop.id, dlg)
-      await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
-      return
-    }
-
-    // Owner photo → auto-product (only when NOT in dialog)
+    // Owner photo → auto-product
     if (isOwner) {
       await handleOwnerProductPhoto(message, shop)
       return
@@ -363,82 +119,6 @@ export async function handleMessage(message, shop) {
   }
 
   if (!text) return
-
-  // Dialog text steps — ALL users (owner included)
-  if (dlg) {
-    switch (dlg.step) {
-      case 'r_text':
-        dlg.field1 = text
-        dlg.step = 'r_photo'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, "Rasm yuborasizmi? (ixtiyoriy)\nRasm bo'lmasa /skip yozing", shop.bot_token)
-        return
-
-      case 'r_photo':
-        if (text === '/skip') {
-          dlg.step = 'phone'
-          setDialog(fromId, shop.id, dlg)
-          await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
-        }
-        // Any other text while waiting for photo — remind user
-        else {
-          await sendTelegramMessage(fromId, "Rasm yuboring yoki /skip yozing", shop.bot_token)
-        }
-        return
-
-      case 'h_company':
-        dlg.field1 = text
-        dlg.step = 'h_desc'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Hamkorlik haqida qisqacha yozing', shop.bot_token)
-        return
-
-      case 'h_desc':
-        dlg.field2 = text
-        dlg.step = 'phone'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
-        return
-
-      case 's_msg':
-      case 'b_msg':
-        dlg.field1 = text
-        dlg.step = 'phone'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
-        return
-
-      case 'o_product':
-        dlg.field1 = text
-        dlg.step = 'o_qty'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Taxminiy miqdori?', shop.bot_token)
-        return
-
-      case 'o_qty':
-        dlg.field2 = text
-        dlg.step = 'phone'
-        setDialog(fromId, shop.id, dlg)
-        await sendTelegramMessage(fromId, 'Telefon raqamingizni yuboring 📞', shop.bot_token)
-        return
-
-      case 'phone':
-        dlg.customerPhone = text
-        dlg.step = 'confirm'
-        setDialog(fromId, shop.id, dlg)
-        await sendAdSummary(fromId, dlg, shop)
-        return
-
-      case 'confirm':
-        // Waiting for inline button — remind
-        await sendTelegramMessage(fromId, "Yuqoridagi tugmalardan birini bosing yoki /cancel yozing.", shop.bot_token)
-        return
-
-      default:
-        // Unknown step — clear and restart
-        clearDialog(fromId, shop.id)
-    }
-  }
 
   // Non-owner free text → AI assistant
   if (!isOwner) {
@@ -543,7 +223,6 @@ async function sendWelcomeMessage(message, shop) {
   await sendTelegramMessage(fromId, text, shop.bot_token, {
     inline_keyboard: [
       [{ text: '🛍 Открыть каталог', web_app: { url: getMiniAppUrl(shop.id) } }],
-      [{ text: '🤝 Hamkorlik va aloqa', callback_data: 'start_contact' }],
     ],
   })
 }
@@ -585,59 +264,5 @@ async function forwardOrderContact(orderId, message, shop) {
     shopId: shop.id,
     orderId: order.id,
     expiresAt: Date.now() + PENDING_RECEIPT_TTL_MS,
-  })
-}
-
-async function showTypeMenu(fromId, shop) {
-  setDialog(fromId, shop.id, {
-    step: 'type_sel',
-    requestType: null,
-    channel: null,
-    field1: null,
-    field2: null,
-    adPhotoFileId: null,
-    customerPhone: null,
-  })
-
-  await sendTelegramMessage(fromId, 'Bizga murojaat qiling 👇', shop.bot_token, {
-    inline_keyboard: [
-      [{ text: '📢 Reklama berish', callback_data: 'ad_type_reklama' }],
-      [{ text: '🤝 Hamkorlik taklifi', callback_data: 'ad_type_hamkorlik' }],
-      [{ text: '💬 Savol va taklif', callback_data: 'ad_type_savol' }],
-    ],
-  })
-}
-
-async function sendAdSummary(fromId, dlg, shop) {
-  const type = dlg.requestType
-  const ch = dlg.channel
-  const lines = ['✅ <b>Sizning arizangiz:</b>', '']
-
-  if (type === 'reklama') {
-    if (ch) {
-      lines.push(`📍 Kanal: ${escapeHtml(`${ch.name} (${ch.username})`)}`)
-      lines.push(`👥 ${Number(ch.subscribers).toLocaleString('ru-RU')} obunachi`)
-      lines.push(`💰 Narx: ${formatPrice(ch.price)}`)
-    }
-    lines.push(`📝 Matn: ${escapeHtml(dlg.field1 || '')}`)
-    lines.push(`🖼 Rasm: ${dlg.adPhotoFileId ? 'Bor' : "Yo'q"}`)
-  } else if (type === 'hamkorlik') {
-    lines.push(`🏢 Kompaniya: ${escapeHtml(dlg.field1 || '')}`)
-    lines.push(`📝 Tavsif: ${escapeHtml(dlg.field2 || '')}`)
-  } else if (type === 'optom') {
-    lines.push(`📦 Mahsulot: ${escapeHtml(dlg.field1 || '')}`)
-    lines.push(`🔢 Miqdor: ${escapeHtml(dlg.field2 || '')}`)
-  } else {
-    lines.push(`💬 Xabar: ${escapeHtml(dlg.field1 || '')}`)
-  }
-
-  lines.push(`📞 Telefon: ${escapeHtml(dlg.customerPhone || '—')}`)
-  lines.push('', 'Ariza yuborilsinmi?')
-
-  await sendTelegramMessage(fromId, lines.join('\n'), shop.bot_token, {
-    inline_keyboard: [
-      [{ text: '✅ Ha, yuborish', callback_data: 'ad_pay_confirm' }],
-      [{ text: '❌ Bekor qilish', callback_data: 'ad_pay_cancel' }],
-    ],
   })
 }

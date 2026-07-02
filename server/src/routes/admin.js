@@ -473,33 +473,4 @@ router.delete(
   })
 )
 
-/* ----------------------------- Ad Orders ----------------------------- */
-
-router.get(
-  '/ad-orders',
-  asyncHandler(async (req, res) => {
-    const result = await query(
-      'SELECT * FROM ad_orders WHERE shop_id = $1 ORDER BY created_at DESC',
-      [req.shop.id]
-    )
-    res.json(result.rows)
-  })
-)
-
-router.put(
-  '/ad-orders/:id/status',
-  asyncHandler(async (req, res) => {
-    const { status } = req.body
-    const valid = ['pending', 'approved', 'rejected']
-    if (!valid.includes(status)) return res.status(400).json({ error: 'Недопустимый статус' })
-
-    const result = await query(
-      `UPDATE ad_orders SET payment_status = $1 WHERE id = $2 AND shop_id = $3 RETURNING *`,
-      [status, req.params.id, req.shop.id]
-    )
-    if (!result.rows.length) return res.status(404).json({ error: 'Заявка не найдена' })
-    res.json(result.rows[0])
-  })
-)
-
 export default router

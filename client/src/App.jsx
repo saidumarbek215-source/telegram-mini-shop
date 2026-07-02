@@ -21,7 +21,6 @@ const ManageCredits = lazy(() => import('./pages/manage/ManageCredits.jsx'))
 const ManageAI = lazy(() => import('./pages/manage/ManageAI.jsx'))
 const ManageHelp = lazy(() => import('./pages/manage/ManageHelp.jsx'))
 const ManageMap = lazy(() => import('./pages/manage/ManageMap.jsx'))
-const ManageAds = lazy(() => import('./pages/manage/ManageAds.jsx'))
 
 function Spinner() {
   return (
@@ -60,7 +59,6 @@ export default function App() {
             <Route path="ai" element={<ManageAI />} />
             <Route path="help" element={<ManageHelp />} />
             <Route path="map" element={<ManageMap />} />
-            <Route path="ads" element={<ManageAds />} />
           </Route>
         </Route>
 
