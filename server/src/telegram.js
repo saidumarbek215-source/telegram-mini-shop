@@ -1,4 +1,4 @@
-import { ORDER_STATUS_LABELS, formatPrice } from './constants.js'
+import { ORDER_STATUS_LABELS } from './constants.js'
 
 const API_BASE = 'https://api.telegram.org/bot'
 
@@ -121,14 +121,24 @@ export async function notifyOwnerNewOrder(order, items, shop) {
 
   const orderNum = order.shop_order_number || order.id
   const isCredit = order.payment_type === 'credit'
+  const currency = shop.currency || 'сум'
+
+  const unitLabel = {
+    weight: 'кг',
+    volume: 'л',
+    size: 'шт',
+    piece: 'шт',
+  }[shop.product_unit_type] || 'шт'
+
+  const fmt = (value) =>
+    Math.round(Number(value)).toLocaleString('ru-RU')
 
   const itemsText = items
     .map((item) => {
-      const parts = [escapeHtml(item.product_name)]
-      if (item.size) parts.push(`размер ${escapeHtml(item.size)}`)
-      if (item.color) parts.push(escapeHtml(item.color))
-      parts.push(`${item.quantity} шт.`)
-      return `• ${parts.join(', ')}`
+      const variant = item.size || item.color
+      const variantPart = variant ? ` (${escapeHtml(variant)})` : ''
+      const lineTotal = fmt(Number(item.price) * Number(item.quantity))
+      return `• ${escapeHtml(item.product_name)}${variantPart} x${item.quantity} ${unitLabel} = ${lineTotal} ${currency}`
     })
     .join('\n')
 
@@ -152,10 +162,10 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     })(),
     order.comment ? `💬 Комментарий: ${escapeHtml(order.comment)}` : null,
     '',
-    `🛒 Товары:`,
+    `📦 Товары:`,
     itemsText,
     '',
-    `💰 Итого: <b>${formatPrice(order.total)}</b>`,
+    `💰 Итого: <b>${fmt(order.total)} ${currency}</b>`,
     '',
     paymentLine,
   ]
