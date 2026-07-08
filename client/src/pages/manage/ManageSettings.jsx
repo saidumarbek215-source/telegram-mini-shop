@@ -226,6 +226,31 @@ export default function ManageSettings() {
         />
       </label>
 
+      <div className="rounded-xl bg-surface px-4 py-3 flex flex-col gap-3">
+        <h3 className="text-sm font-bold">🌐 Veb-sayt admin paneli</h3>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Login</label>
+          <input
+            name="web_admin_login"
+            value={form.web_admin_login || ''}
+            onChange={handleChange}
+            placeholder="Login"
+            className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Parol</label>
+          <input
+            name="web_admin_password"
+            type="password"
+            value={form.web_admin_password || ''}
+            onChange={handleChange}
+            placeholder="Yangi parol (o'zgartirmasangiz bo'sh qoldiring)"
+            className="w-full rounded-xl bg-bg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
+      </div>
+
       <button
         type="submit"
         disabled={saving}

@@ -10,13 +10,22 @@ export default function ManageLayout() {
   const { shop: publicShop, lang } = useShop()
   const navigate = useNavigate()
 
+  const isTelegram = !!window.Telegram?.WebApp?.initData
+  const webToken = localStorage.getItem('web_admin_token')
+
   useEffect(() => {
-    if (!loading && !isOwner) {
+    if (!isTelegram && !webToken) {
+      navigate('/admin-login', { replace: true })
+      return
+    }
+    if (isTelegram && !loading && !isOwner) {
       navigate('/', { replace: true })
     }
-  }, [loading, isOwner, navigate])
+  }, [loading, isOwner, navigate, isTelegram, webToken])
 
-  if (loading || !isOwner) {
+  if (!isTelegram && !webToken) return null
+
+  if (isTelegram && (loading || !isOwner)) {
     return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
   }
 
@@ -41,7 +50,7 @@ export default function ManageLayout() {
     <div>
       <header className="px-4 pb-3 pt-5">
         <h1 className="text-lg font-bold">
-          {t('storeManagement', lang)}{shop?.name ? ` «${shop.name}»` : ''}
+          {t('storeManagement', lang)}{(shop?.name || publicShop?.store_name) ? ` «${shop?.name || publicShop?.store_name}»` : ''}
         </h1>
       </header>
 

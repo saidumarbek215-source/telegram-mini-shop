@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useShop } from './context/ShopContext.jsx'
 import ShopNotFound from './pages/ShopNotFound.jsx'
 import Layout from './components/Layout.jsx'
+import WebAdminLogin from './pages/WebAdminLogin.jsx'
 
 const Home = lazy(() => import('./pages/Home.jsx'))
 const Catalog = lazy(() => import('./pages/Catalog.jsx'))
@@ -33,12 +34,13 @@ function Spinner() {
 export default function App() {
   const { status } = useShop()
 
-  if (status === 'loading') return null
-  if (status === 'not-found') return <ShopNotFound />
+  if (status === 'loading' && window.location.pathname !== '/admin-login') return null
+  if (status === 'not-found' && window.location.pathname !== '/admin-login') return <ShopNotFound />
 
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
+        <Route path="/admin-login" element={<WebAdminLogin />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />

@@ -284,6 +284,7 @@ function shopToSettings(shop) {
     ads_enabled: shop.ads_enabled || false,
     ad_channel_id: shop.ad_channel_id || '',
     ad_prices: shop.ad_prices || {},
+    web_admin_login: shop.web_admin_login || '',
   }
 }
 
@@ -309,6 +310,8 @@ router.put(
       language,
       ad_channel_id,
       ad_prices,
+      web_admin_login,
+      web_admin_password,
     } = req.body || {}
 
     const validUnitTypes = ['size', 'weight', 'volume', 'piece']
@@ -339,32 +342,39 @@ router.put(
       return {}
     })()
 
+    const updatePasswordSql = web_admin_password
+      ? ', web_admin_password = $17'
+      : ''
+    const params = [
+      store_name ?? '',
+      store_description ?? '',
+      card_number ?? '',
+      card_holder ?? '',
+      click_number ?? '',
+      currency ?? '',
+      admin_username ?? '',
+      unitType,
+      cancelMinutes,
+      credit_enabled === true || credit_enabled === 'true',
+      safeTheme,
+      safeLanguage,
+      req.shop.id,
+      ad_channel_id ?? '',
+      JSON.stringify(safePrices),
+      web_admin_login ?? '',
+    ]
+    if (web_admin_password) params.push(web_admin_password)
+
     const result = await query(
       `UPDATE shops
        SET name = $1, description = $2, card_number = $3, card_holder = $4, click_number = $5,
            currency = $6, admin_username = $7, product_unit_type = $8, auto_cancel_minutes = $9,
            credit_enabled = $10,
            features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($11::text)), '{language}', to_jsonb($12::text)),
-           ad_channel_id = $14, ad_prices = $15
+           ad_channel_id = $14, ad_prices = $15, web_admin_login = $16${updatePasswordSql}
        WHERE id = $13
        RETURNING *`,
-      [
-        store_name ?? '',
-        store_description ?? '',
-        card_number ?? '',
-        card_holder ?? '',
-        click_number ?? '',
-        currency ?? '',
-        admin_username ?? '',
-        unitType,
-        cancelMinutes,
-        credit_enabled === true || credit_enabled === 'true',
-        safeTheme,
-        safeLanguage,
-        req.shop.id,
-        ad_channel_id ?? '',
-        JSON.stringify(safePrices),
-      ]
+      params
     )
 
     res.json(shopToSettings(result.rows[0]))

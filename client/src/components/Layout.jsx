@@ -4,13 +4,17 @@ import BottomNav from './BottomNav.jsx'
 import Footer from './Footer.jsx'
 import { initTelegramApp, getTelegramWebApp } from '../telegram.js'
 import { useShop } from '../context/ShopContext.jsx'
+import { useCart } from '../context/CartContext.jsx'
 import { t } from '../i18n.js'
+
+const isTelegram = !!window.Telegram?.WebApp?.initData
 
 const HIDE_NAV = [/^\/product\//, /^\/checkout/]
 
 export default function Layout() {
   const location = useLocation()
   const { shop, lang } = useShop()
+  const { count: cartCount } = useCart()
   const [hideContact, setHideContact] = useState(false)
 
   useEffect(() => {
@@ -37,6 +41,18 @@ export default function Layout() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg text-white">
+      {!isTelegram && (
+        <header style={{
+          padding: '12px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          <span style={{ fontWeight: 'bold', fontSize: 18 }}>{shop?.store_name}</span>
+          <span>🛒 {cartCount}</span>
+        </header>
+      )}
       <div className={`flex-1 ${showNav ? 'pb-20' : 'pb-4'}`}>
         <Outlet context={{ setHideContact }} />
         <Footer />

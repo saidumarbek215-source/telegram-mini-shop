@@ -43,7 +43,13 @@ function withShopId(path) {
 async function request(path, { admin, ...options } = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
   if (admin) {
-    headers['X-Telegram-Init-Data'] = getTelegramInitData()
+    const initData = getTelegramInitData()
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    } else {
+      const webToken = localStorage.getItem('web_admin_token')
+      if (webToken) headers['X-Web-Admin-Token'] = webToken
+    }
   }
   const res = await fetch(`${API_URL}${withShopId(path)}`, { ...options, headers })
   if (!res.ok) {
