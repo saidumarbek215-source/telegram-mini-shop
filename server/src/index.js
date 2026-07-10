@@ -9,6 +9,7 @@ import ordersRouter from './routes/orders.js'
 import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
 import webAuthRouter from './routes/webAuth.js'
+import superAdminRouter from './routes/superAdmin.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
@@ -29,6 +30,7 @@ app.use('/api/orders', ordersRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/shops', shopsRouter)
 app.use('/api/web-auth', webAuthRouter)
+app.use('/api/super-admin', superAdminRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
