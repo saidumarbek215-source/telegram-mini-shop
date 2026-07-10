@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
@@ -25,10 +25,14 @@ export default function Product() {
   const [color, setColor] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [activePhoto, setActivePhoto] = useState(0)
+  const [selectedVariant, setSelectedVariant] = useState(null)
+  const touchStartX = useRef(null)
 
   useEffect(() => {
     setLoading(true)
     setAdded(false)
+    setActivePhoto(0)
     Promise.all([api.getProduct(id), api.getSettings()])
       .then(([p, s]) => {
         setProduct(p)
@@ -36,6 +40,8 @@ export default function Product() {
         const sizes = p.sizes || []
         setSize(sizes.find((sz) => isSizeAvailable(p, sz)) || sizes[0] || null)
         setColor(p.colors?.[0] || null)
+        const variants = p.variants || []
+        setSelectedVariant(variants.find((v) => v.in_stock !== false) || variants[0] || null)
       })
       .finally(() => setLoading(false))
   }, [id])
@@ -43,19 +49,44 @@ export default function Product() {
   if (loading) return <div className="py-20 text-center text-sm text-muted">{t('loading', lang)}</div>
   if (!product) return <div className="py-20 text-center text-sm text-muted">{t('productNotFound', lang)}</div>
 
-  const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
+  const allImages = [product.image_url, ...(product.images || [])].filter(Boolean)
+  const hasVariants = (product.variants?.length || 0) > 0
+
+  const displayPrice = hasVariants ? Number(selectedVariant?.price || 0) : Number(product.price)
+  const displayOldPrice = hasVariants ? selectedVariant?.old_price : product.old_price
+  const hasDiscount = displayOldPrice && Number(displayOldPrice) > displayPrice
   const discountPct = hasDiscount
-    ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
+    ? Math.round((1 - displayPrice / Number(displayOldPrice)) * 100)
     : 0
 
   const unitType = settings?.product_unit_type || 'size'
   const currency = shop?.currency || 'сум'
   const available = isProductAvailable(product)
-  const canAddToCart = available && (!size || isSizeAvailable(product, size))
+  const canAddToCart = hasVariants
+    ? selectedVariant?.in_stock !== false
+    : available && (!size || isSizeAvailable(product, size))
+
+  function handleTouchStart(e) {
+    touchStartX.current = e.touches[0].clientX
+  }
+  function handleTouchEnd(e) {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) setActivePhoto((i) => Math.min(i + 1, allImages.length - 1))
+      else setActivePhoto((i) => Math.max(i - 1, 0))
+    }
+    touchStartX.current = null
+  }
 
   function handleAddToCart() {
     const effectiveSize = unitType === 'piece' ? null : size
-    addItem(product, { size: effectiveSize, color, quantity: unitType === 'piece' ? quantity : 1 })
+    addItem(product, {
+      size: effectiveSize,
+      color,
+      quantity: unitType === 'piece' ? quantity : 1,
+      variant: selectedVariant,
+    })
     hapticFeedback('medium')
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -84,9 +115,15 @@ export default function Product() {
       >
         ←
       </button>
-      <div className="relative w-full">
+
+      {/* Photo gallery */}
+      <div
+        className="relative w-full"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
-          src={product.image_url}
+          src={allImages[activePhoto] || product.image_url}
           alt={product.name}
           style={{
             width: '100%',
@@ -107,18 +144,49 @@ export default function Product() {
         )}
       </div>
 
+      {/* Thumbnails */}
+      {allImages.length > 1 && (
+        <div
+          className="flex gap-2 overflow-x-auto px-4 py-3"
+          style={{ backgroundColor: 'white' }}
+        >
+          {allImages.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setActivePhoto(i)}
+              style={{
+                flexShrink: 0,
+                width: '60px',
+                height: '60px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: `2px solid ${activePhoto === i ? 'var(--color-accent, #00E5CC)' : 'transparent'}`,
+                padding: 0,
+                background: '#f5f5f5',
+              }}
+            >
+              <img
+                src={img}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="px-4 pt-4">
         <h1 className="text-xl font-bold leading-tight">{product.name}</h1>
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-accent">{formatPrice(product.price, currency)}</span>
+          <span className="text-xl font-bold text-accent">{formatPrice(displayPrice, currency)}</span>
           {hasDiscount && (
             <span className="text-sm text-muted line-through">
-              {formatPrice(product.old_price, currency)}
+              {formatPrice(displayOldPrice, currency)}
             </span>
           )}
         </div>
 
-        {!available && (
+        {!hasVariants && !available && (
           <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400">
             {t('outOfStock', lang)}
           </div>
@@ -131,7 +199,40 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'size' && product.sizes?.length > 0 && (
+        {/* Variants with prices */}
+        {hasVariants && (
+          <div className="mt-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted">Вариант</h2>
+            <div className="flex flex-wrap gap-2">
+              {product.variants.map((v) => {
+                const outOfStock = v.in_stock === false
+                return (
+                  <button
+                    key={v.label}
+                    onClick={() => !outOfStock && setSelectedVariant(v)}
+                    disabled={outOfStock}
+                    className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
+                      outOfStock
+                        ? 'cursor-not-allowed bg-surface text-muted line-through opacity-50'
+                        : selectedVariant?.label === v.label
+                          ? 'bg-accent text-bg'
+                          : 'bg-surface text-white'
+                    }`}
+                  >
+                    {v.label}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedVariant?.in_stock === false && (
+              <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                {t('outOfStock', lang)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!hasVariants && unitType === 'size' && product.sizes?.length > 0 && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">{t('size', lang)}</h2>
             <div className="flex flex-wrap gap-2">
@@ -158,7 +259,7 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'weight' && (
+        {!hasVariants && unitType === 'weight' && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">{t('packaging', lang)}</h2>
             <div className="flex flex-wrap gap-2">
@@ -177,7 +278,7 @@ export default function Product() {
           </div>
         )}
 
-        {unitType === 'volume' && (
+        {!hasVariants && unitType === 'volume' && (
           <div className="mt-4">
             <h2 className="mb-2 text-sm font-semibold text-muted">{t('volume', lang)}</h2>
             <div className="flex flex-wrap gap-2">

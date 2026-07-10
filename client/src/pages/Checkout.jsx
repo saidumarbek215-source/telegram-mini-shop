@@ -104,7 +104,7 @@ export default function Checkout() {
           image_url: i.image_url,
           price: i.price,
           quantity: i.quantity,
-          size: i.size,
+          size: i.variant_label || i.size,
           color: i.color,
         })),
       })

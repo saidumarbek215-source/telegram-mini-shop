@@ -51,16 +51,20 @@ export default function Cart() {
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-sm font-medium leading-tight">{item.product_name}</h3>
                   <button
-                    onClick={() => removeItem(item.product_id, item.size, item.color)}
+                    onClick={() => removeItem(item.product_id, item.size, item.color, item.variant_label)}
                     className="flex-shrink-0 text-muted"
                     aria-label="Удалить"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
-                {(item.size || item.color) && (
+                {(item.size || item.color || item.variant_label) && (
                   <p className="mt-0.5 text-xs text-muted">
-                    {[item.size && `${t('size', lang)}: ${item.size}`, item.color].filter(Boolean).join(' · ')}
+                    {[
+                      item.variant_label && `Вариант: ${item.variant_label}`,
+                      item.size && `${t('size', lang)}: ${item.size}`,
+                      item.color,
+                    ].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 <div className="mt-auto flex items-center justify-between pt-2">
@@ -70,7 +74,7 @@ export default function Cart() {
                   <div className="flex items-center gap-1 rounded-full bg-surface2 p-1">
                     <button
                       onClick={() =>
-                        updateQuantity(item.product_id, item.size, item.color, item.quantity - 1)
+                        updateQuantity(item.product_id, item.size, item.color, item.quantity - 1, item.variant_label)
                       }
                       className="flex h-6 w-6 items-center justify-center rounded-full text-white"
                       aria-label="Уменьшить количество"
@@ -80,7 +84,7 @@ export default function Cart() {
                     <span className="w-5 text-center text-sm font-medium">{item.quantity}</span>
                     <button
                       onClick={() =>
-                        updateQuantity(item.product_id, item.size, item.color, item.quantity + 1)
+                        updateQuantity(item.product_id, item.size, item.color, item.quantity + 1, item.variant_label)
                       }
                       className="flex h-6 w-6 items-center justify-center rounded-full text-white"
                       aria-label="Увеличить количество"

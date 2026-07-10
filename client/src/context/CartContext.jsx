@@ -5,8 +5,8 @@ const CartContext = createContext(null)
 const SHOP_ID = new URLSearchParams(window.location.search).get('shop')
 const STORAGE_KEY = SHOP_ID ? `cart_shop_${SHOP_ID}` : 'cart_shop_default'
 
-function cartKey(productId, size, color) {
-  return `${productId}__${size || ''}__${color || ''}`
+function cartKey(productId, size, color, variantLabel) {
+  return `${productId}__${size || ''}__${color || ''}__${variantLabel || ''}`
 }
 
 export function CartProvider({ children }) {
@@ -23,14 +23,14 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items])
 
-  function addItem(product, { size, color, quantity = 1 } = {}) {
+  function addItem(product, { size, color, quantity = 1, variant = null } = {}) {
     setItems((prev) => {
-      const key = cartKey(product.id, size, color)
-      const existing = prev.find((i) => cartKey(i.product_id, i.size, i.color) === key)
+      const key = cartKey(product.id, size, color, variant?.label)
+      const existing = prev.find((i) => cartKey(i.product_id, i.size, i.color, i.variant_label) === key)
 
       if (existing) {
         return prev.map((i) =>
-          cartKey(i.product_id, i.size, i.color) === key
+          cartKey(i.product_id, i.size, i.color, i.variant_label) === key
             ? { ...i, quantity: i.quantity + quantity }
             : i
         )
@@ -42,30 +42,31 @@ export function CartProvider({ children }) {
           product_id: product.id,
           product_name: product.name,
           image_url: product.image_url,
-          price: Number(product.price),
+          price: variant ? Number(variant.price) : Number(product.price),
           size: size || null,
           color: color || null,
+          variant_label: variant?.label || null,
           quantity,
         },
       ]
     })
   }
 
-  function updateQuantity(productId, size, color, quantity) {
-    const key = cartKey(productId, size, color)
+  function updateQuantity(productId, size, color, quantity, variantLabel) {
+    const key = cartKey(productId, size, color, variantLabel)
     setItems((prev) => {
       if (quantity <= 0) {
-        return prev.filter((i) => cartKey(i.product_id, i.size, i.color) !== key)
+        return prev.filter((i) => cartKey(i.product_id, i.size, i.color, i.variant_label) !== key)
       }
       return prev.map((i) =>
-        cartKey(i.product_id, i.size, i.color) === key ? { ...i, quantity } : i
+        cartKey(i.product_id, i.size, i.color, i.variant_label) === key ? { ...i, quantity } : i
       )
     })
   }
 
-  function removeItem(productId, size, color) {
-    const key = cartKey(productId, size, color)
-    setItems((prev) => prev.filter((i) => cartKey(i.product_id, i.size, i.color) !== key))
+  function removeItem(productId, size, color, variantLabel) {
+    const key = cartKey(productId, size, color, variantLabel)
+    setItems((prev) => prev.filter((i) => cartKey(i.product_id, i.size, i.color, i.variant_label) !== key))
   }
 
   function clearCart() {

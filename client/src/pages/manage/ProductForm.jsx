@@ -17,8 +17,12 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     sort_order: product?.sort_order ?? 0,
   })
   const [sizesStock, setSizesStock] = useState(product?.sizes_stock || {})
+  const [images, setImages] = useState(product?.images || [])
+  const [variants, setVariants] = useState(product?.variants || [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const hasVariants = variants.length > 0
 
   const sizesList = form.sizes
     .split(',')
@@ -34,20 +38,48 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     setSizesStock((s) => ({ ...s, [size]: value }))
   }
 
+  // Images
+  function addImage() {
+    if (images.length < 5) setImages((imgs) => [...imgs, ''])
+  }
+  function updateImage(i, value) {
+    setImages((imgs) => imgs.map((img, idx) => (idx === i ? value : img)))
+  }
+  function removeImage(i) {
+    setImages((imgs) => imgs.filter((_, idx) => idx !== i))
+  }
+
+  // Variants
+  function addVariant() {
+    setVariants((v) => [...v, { label: '', price: '', old_price: '', in_stock: true }])
+  }
+  function updateVariant(i, field, value) {
+    setVariants((v) => v.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)))
+  }
+  function removeVariant(i) {
+    setVariants((v) => v.filter((_, idx) => idx !== i))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.price || !form.image_url.trim()) {
+    if (!form.name.trim() || (!hasVariants && !form.price) || !form.image_url.trim()) {
       setError(t('fillNamePricePhoto', lang))
       return
     }
     setError('')
     setSaving(true)
     try {
+      const effectivePrice = hasVariants
+        ? Math.min(...variants.map((v) => Number(v.price) || 0))
+        : parseFloat(String(form.price).replace(',', '.'))
+
       await onSave({
         name: form.name.trim(),
         description: form.description.trim(),
-        price: parseFloat(String(form.price).replace(',', '.')),
-        old_price: form.old_price ? parseFloat(String(form.old_price).replace(',', '.')) : null,
+        price: effectivePrice,
+        old_price: !hasVariants && form.old_price
+          ? parseFloat(String(form.old_price).replace(',', '.'))
+          : null,
         image_url: form.image_url.trim(),
         category_id: form.category_id ? Number(form.category_id) : null,
         sizes: sizesList,
@@ -60,6 +92,13 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         ),
         in_stock: form.in_stock,
         sort_order: Number(form.sort_order) || 0,
+        images: images.filter(Boolean),
+        variants: variants.map((v) => ({
+          label: v.label,
+          price: Number(v.price) || 0,
+          old_price: v.old_price ? Number(v.old_price) : null,
+          in_stock: v.in_stock !== false,
+        })),
       })
     } catch (err) {
       setError(err.message)
@@ -100,41 +139,46 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           className="w-full resize-none rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted">{t('price', lang)} *</label>
-          <input
-            name="price"
-            type="text"
-            inputMode="decimal"
-            value={form.price}
-            onChange={(e) => {
-              const value = e.target.value.replace(',', '.')
-              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                setForm((f) => ({ ...f, price: value }))
-              }
-            }}
-            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-          />
+
+      {/* Main price — hidden when variants are used */}
+      {!hasVariants && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('price', lang)} *</label>
+            <input
+              name="price"
+              type="text"
+              inputMode="decimal"
+              value={form.price}
+              onChange={(e) => {
+                const value = e.target.value.replace(',', '.')
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  setForm((f) => ({ ...f, price: value }))
+                }
+              }}
+              className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('oldPrice', lang)}</label>
+            <input
+              name="old_price"
+              type="text"
+              inputMode="decimal"
+              value={form.old_price}
+              onChange={(e) => {
+                const value = e.target.value.replace(',', '.')
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  setForm((f) => ({ ...f, old_price: value }))
+                }
+              }}
+              placeholder={t('optional', lang)}
+              className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted">{t('oldPrice', lang)}</label>
-          <input
-            name="old_price"
-            type="text"
-            inputMode="decimal"
-            value={form.old_price}
-            onChange={(e) => {
-              const value = e.target.value.replace(',', '.')
-              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                setForm((f) => ({ ...f, old_price: value }))
-              }
-            }}
-            placeholder={t('optional', lang)}
-            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-          />
-        </div>
-      </div>
+      )}
+
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">{t('photoUrl', lang)} *</label>
         <input
@@ -151,16 +195,65 @@ export default function ProductForm({ product, categories, unitType = 'size', on
               src={form.image_url.trim()}
               alt={t('preview', lang)}
               className="h-full w-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-              onLoad={(e) => {
-                e.currentTarget.style.display = 'block'
-              }}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+              onLoad={(e) => { e.currentTarget.style.display = 'block' }}
             />
           </div>
         )}
       </div>
+
+      {/* Additional photos */}
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <label className="text-xs font-medium text-muted">Дополнительные фото</label>
+          {images.length < 5 && (
+            <button
+              type="button"
+              onClick={addImage}
+              className="text-xs font-medium text-accent"
+            >
+              + Добавить фото
+            </button>
+          )}
+        </div>
+        {images.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
+            {images.map((img, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={img}
+                  onChange={(e) => updateImage(i, e.target.value)}
+                  placeholder="https://..."
+                  className="min-w-0 flex-1 rounded-lg bg-surface px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+                {img.trim() && (
+                  <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg bg-surface">
+                    <img
+                      src={img.trim()}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      onLoad={(e) => { e.currentTarget.style.display = 'block' }}
+                    />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="flex-shrink-0 text-sm text-red-400"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {images.length === 0 && (
+          <p className="text-xs text-muted">До 5 дополнительных фото</p>
+        )}
+      </div>
+
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">{t('category', lang)}</label>
         <select
@@ -177,6 +270,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           ))}
         </select>
       </div>
+
       {unitType !== 'piece' && (
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
@@ -220,6 +314,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           <p className="mt-1 text-xs text-muted">{t('stockZeroHint', lang)}</p>
         </div>
       )}
+
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">
           {t('colorsLabel', lang)}
@@ -232,6 +327,86 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
+
+      {/* Variants with prices */}
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <label className="text-xs font-medium text-muted">Варианты с ценами</label>
+          <button
+            type="button"
+            onClick={addVariant}
+            className="text-xs font-medium text-accent"
+          >
+            + Добавить вариант
+          </button>
+        </div>
+        {hasVariants ? (
+          <div className="flex flex-col gap-2 rounded-xl bg-surface2 p-3">
+            {variants.map((v, i) => (
+              <div key={i} className="rounded-lg bg-surface p-2.5">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <input
+                    type="text"
+                    value={v.label}
+                    onChange={(e) => updateVariant(i, 'label', e.target.value)}
+                    placeholder="S, M, L или 1л, 5л..."
+                    className="flex-1 rounded-lg bg-surface2 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(i)}
+                    className="flex-shrink-0 text-sm text-red-400"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="mb-0.5 block text-xs text-muted">{t('price', lang)} *</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={v.price}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.')
+                        if (val === '' || /^\d*\.?\d*$/.test(val)) updateVariant(i, 'price', val)
+                      }}
+                      className="w-full rounded-lg bg-surface2 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-0.5 block text-xs text-muted">{t('oldPrice', lang)}</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={v.old_price}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.')
+                        if (val === '' || /^\d*\.?\d*$/.test(val)) updateVariant(i, 'old_price', val)
+                      }}
+                      placeholder={t('optional', lang)}
+                      className="w-full rounded-lg bg-surface2 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
+                <label className="mt-2 flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={v.in_stock !== false}
+                    onChange={(e) => updateVariant(i, 'in_stock', e.target.checked)}
+                    className="h-4 w-4 accent-accent"
+                  />
+                  {t('inStockToggle', lang)}
+                </label>
+              </div>
+            ))}
+            <p className="text-xs text-muted">Если заданы варианты, основная цена скрыта</p>
+          </div>
+        ) : (
+          <p className="text-xs text-muted">Варианты позволяют задать разные цены (S/M/L, 1л/5л и т.д.)</p>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">
