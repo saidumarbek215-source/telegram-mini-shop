@@ -81,7 +81,19 @@ export default function Cart() {
                     >
                       <MinusIcon className="h-3.5 w-3.5" />
                     </button>
-                    <span className="w-5 text-center text-sm font-medium">{item.quantity}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value)
+                        if (!isNaN(val) && val >= 1 && val <= 999) {
+                          updateQuantity(item.product_id, item.size, item.color, val, item.variant_label)
+                        }
+                      }}
+                      className="w-10 bg-transparent text-center text-sm font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
                     <button
                       onClick={() =>
                         updateQuantity(item.product_id, item.size, item.color, item.quantity + 1, item.variant_label)

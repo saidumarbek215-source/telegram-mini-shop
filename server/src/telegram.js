@@ -137,8 +137,9 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     .map((item) => {
       const variant = item.size || item.color
       const variantPart = variant ? ` (${escapeHtml(variant)})` : ''
-      const lineTotal = fmt(Number(item.price) * Number(item.quantity))
-      return `• ${escapeHtml(item.product_name)}${variantPart} x${item.quantity} ${unitLabel} = ${lineTotal} ${currency}`
+      const pricePerItem = Number(item.price)
+      const lineTotal = pricePerItem * Number(item.quantity)
+      return `• ${escapeHtml(item.product_name)}${variantPart} ${item.quantity}×${fmt(pricePerItem)}=${fmt(lineTotal)} ${currency}`
     })
     .join('\n')
 
