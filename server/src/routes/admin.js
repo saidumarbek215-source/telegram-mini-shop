@@ -136,7 +136,7 @@ router.get(
 router.post(
   '/categories',
   asyncHandler(async (req, res) => {
-    const { name, icon = '👟', sort_order = 0 } = req.body
+    const { name, icon = '', sort_order = 0 } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(
@@ -150,7 +150,7 @@ router.post(
 router.put(
   '/categories/:id',
   asyncHandler(async (req, res) => {
-    const { name, icon = '👟', sort_order = 0 } = req.body
+    const { name, icon = '', sort_order = 0 } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(

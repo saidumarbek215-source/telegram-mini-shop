@@ -8,7 +8,7 @@ import { t } from '../../i18n.js'
 function CategoryForm({ category, onSave, onCancel, lang }) {
   const [form, setForm] = useState({
     name: category?.name || '',
-    icon: category?.icon || '👟',
+    icon: category?.icon || '',
     sort_order: category?.sort_order ?? 0,
   })
   const [saving, setSaving] = useState(false)
@@ -29,7 +29,7 @@ function CategoryForm({ category, onSave, onCancel, lang }) {
     try {
       await onSave({
         name: form.name.trim(),
-        icon: form.icon.trim() || '👟',
+        icon: form.icon.trim(),
         sort_order: Number(form.sort_order) || 0,
       })
     } catch (err) {
@@ -145,9 +145,11 @@ export default function ManageCategories() {
       <div className="flex flex-col gap-2">
         {categories.map((cat) => (
           <div key={cat.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface2 text-2xl">
-              {cat.icon}
-            </div>
+            {cat.icon && (
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface2 text-2xl">
+                {cat.icon}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{cat.name}</p>
               <p className="text-xs text-muted">{t('sortOrder', lang)}: {cat.sort_order}</p>
