@@ -55,6 +55,13 @@ export async function migrate() {
   await pool.query(
     `ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB DEFAULT '[]'`
   )
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20) DEFAULT 'card'`)
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_transaction_id TEXT`)
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(20)`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_merchant_id TEXT`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_service_id TEXT`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_secret TEXT`)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ad_orders (
       id SERIAL PRIMARY KEY,

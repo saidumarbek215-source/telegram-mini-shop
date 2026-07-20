@@ -6,9 +6,10 @@ import { restartBotForShop } from '../services/botManager.js'
 const router = Router()
 
 // POST /api/shops/register { owner_telegram_id, name, bot_token }
-router.post(
-  '/register',
-  asyncHandler(async (req, res) => {
+router.post('/register', async (req, res) => {
+  try {
+    console.log('[REGISTER] Body:', req.body)
+
     const { owner_telegram_id, name, bot_token = null } = req.body || {}
 
     const ownerId = Number(owner_telegram_id)
@@ -36,8 +37,11 @@ router.post(
     }
 
     res.status(201).json({ shop_id: shopId, mini_app_url: `${baseUrl}?shop=${shopId}` })
-  })
-)
+  } catch (error) {
+    console.error('[REGISTER ERROR]', error.message, error.stack)
+    res.status(500).json({ error: error.message })
+  }
+})
 
 // GET /api/shops/:id
 router.get('/:id', async (req, res) => {

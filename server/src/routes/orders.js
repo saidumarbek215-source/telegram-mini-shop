@@ -22,6 +22,7 @@ router.post(
       items,
       payment_type = 'prepaid',
       payment_due_date = null,
+      payment_method = 'card',
     } = req.body
 
     if (!customer_name || !phone || !address || !Array.isArray(items) || items.length === 0) {
@@ -30,6 +31,9 @@ router.post(
 
     const safePaymentType = ['prepaid', 'credit'].includes(payment_type) ? payment_type : 'prepaid'
     const paymentStatus = safePaymentType === 'credit' ? 'pending' : 'paid'
+    const safePaymentMethod = ['cash', 'card', 'click', 'payme', 'uzum'].includes(payment_method)
+      ? payment_method
+      : 'card'
 
     const client = await pool.connect()
     try {
@@ -48,8 +52,8 @@ router.post(
 
       const orderResult = await client.query(
         `INSERT INTO orders
-          (shop_id, telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status, payment_type, payment_due_date, payment_status, shop_order_number)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'new', $9, $10, $11, $12)
+          (shop_id, telegram_user_id, telegram_username, customer_name, phone, address, comment, total, status, payment_type, payment_due_date, payment_status, shop_order_number, payment_method)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'new', $9, $10, $11, $12, $13)
          RETURNING *`,
         [
           req.shopId,
@@ -64,6 +68,7 @@ router.post(
           payment_due_date || null,
           paymentStatus,
           shopOrderNumber,
+          safePaymentMethod,
         ]
       )
       const order = orderResult.rows[0]

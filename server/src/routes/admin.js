@@ -290,6 +290,7 @@ function shopToSettings(shop) {
     ad_channel_id: shop.ad_channel_id || '',
     ad_prices: shop.ad_prices || {},
     web_admin_login: shop.web_admin_login || '',
+    payment_provider: shop.payment_provider || '',
   }
 }
 

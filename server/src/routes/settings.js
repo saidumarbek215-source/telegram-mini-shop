@@ -32,6 +32,7 @@ router.get(
       auto_cancel_minutes: shop.auto_cancel_minutes ?? 15,
       credit_enabled: shop.credit_enabled || false,
       ads_enabled: shop.ads_enabled || false,
+      payment_provider: shop.payment_provider || '',
     })
   })
 )

@@ -143,9 +143,16 @@ export async function notifyOwnerNewOrder(order, items, shop) {
     })
     .join('\n')
 
-  const paymentLine = isCredit
-    ? `📅 РАССРОЧКА! Оплата до: <b>${order.payment_due_date ? new Date(order.payment_due_date).toLocaleDateString('ru-RU') : '—'}</b>`
-    : `💳 Реквизиты отправлены клиенту`
+  const paymentMethodLine = (() => {
+    if (isCredit) return `📅 РАССРОЧКА! Oплата до: <b>${order.payment_due_date ? new Date(order.payment_due_date).toLocaleDateString('ru-RU') : '—'}</b>`
+    const method = order.payment_method || 'card'
+    if (method === 'cash') return `💵 To'lov: Nalichka (yetkazib berganda)`
+    if (method === 'click') return `📱 To'lov: Click orqali`
+    if (method === 'payme') return `📱 To'lov: Payme orqali`
+    if (method === 'uzum') return `🏦 To'lov: Uzum Bank orqali`
+    return `💳 To'lov: Karta (rekvizitlar yuborildi)`
+  })()
+  const paymentLine = paymentMethodLine
 
   const text = [
     `🛍 <b>Новый заказ #${orderNum}</b>`,
