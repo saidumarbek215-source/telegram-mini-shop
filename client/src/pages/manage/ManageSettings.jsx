@@ -34,7 +34,7 @@ function getFields(lang) {
 }
 
 export default function ManageSettings() {
-  const { lang } = useShop()
+  const { lang, shop } = useShop()
   const [form, setForm] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -251,35 +251,37 @@ export default function ManageSettings() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-surface px-4 py-3 flex flex-col gap-3">
-        <h3 className="text-sm font-bold">💳 To'lov tizimi</h3>
-        {form.payment_provider ? (
-          <p className="text-sm text-accent">
-            ✅{' '}
-            {form.payment_provider === 'click'
-              ? 'Click'
-              : form.payment_provider === 'payme'
-              ? 'Payme'
-              : 'Uzum Bank'}{' '}
-            ulangan
-          </p>
-        ) : (
-          <>
-            <p className="text-sm text-muted">To'lov tizimi ulanmagan</p>
-            <button
-              type="button"
-              onClick={() => {
-                const tg = window.Telegram?.WebApp
-                if (tg) tg.openLink('https://t.me/finexia_uz')
-                else window.open('https://t.me/finexia_uz', '_blank')
-              }}
-              className="rounded-xl bg-surface2 py-2.5 text-sm font-medium text-accent"
-            >
-              📩 To'lov tizimini ulash
-            </button>
-          </>
-        )}
-      </div>
+      {shop?.features?.payment_enabled === true && (
+        <div className="rounded-xl bg-surface px-4 py-3 flex flex-col gap-3">
+          <h3 className="text-sm font-bold">💳 To'lov tizimi</h3>
+          {form.payment_provider ? (
+            <p className="text-sm text-accent">
+              ✅{' '}
+              {form.payment_provider === 'click'
+                ? 'Click'
+                : form.payment_provider === 'payme'
+                ? 'Payme'
+                : 'Uzum Bank'}{' '}
+              ulangan
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-muted">To'lov tizimi ulanmagan</p>
+              <button
+                type="button"
+                onClick={() => {
+                  const tg = window.Telegram?.WebApp
+                  if (tg) tg.openLink('https://t.me/finexia_uz')
+                  else window.open('https://t.me/finexia_uz', '_blank')
+                }}
+                className="rounded-xl bg-surface2 py-2.5 text-sm font-medium text-accent"
+              >
+                📩 To'lov tizimini ulash
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <button
         type="submit"
