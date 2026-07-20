@@ -62,27 +62,6 @@ router.put(
   })
 )
 
-router.put(
-  '/shops/:id/payment-provider',
-  asyncHandler(async (req, res) => {
-    const { payment_provider, payment_merchant_id, payment_service_id, payment_secret, payment_enabled } = req.body
-    await query(
-      `UPDATE shops
-       SET features = COALESCE(features, '{}') ||
-         jsonb_build_object(
-           'payment_enabled', $1::boolean,
-           'payment_provider', $2,
-           'payment_merchant_id', $3,
-           'payment_service_id', $4,
-           'payment_secret', $5
-         )
-       WHERE id = $6`,
-      [payment_enabled ?? true, payment_provider, payment_merchant_id, payment_service_id, payment_secret, req.params.id]
-    )
-    res.json({ success: true })
-  })
-)
-
 router.post(
   '/shops/:id/remind',
   asyncHandler(async (req, res) => {
