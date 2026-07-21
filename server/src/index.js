@@ -10,6 +10,9 @@ import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
 import webAuthRouter from './routes/webAuth.js'
 import superAdminRouter from './routes/superAdmin.js'
+import clickRouter from './services/payments/click.js'
+import paymeRouter from './services/payments/payme.js'
+import uzumRouter from './services/payments/uzum.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
@@ -31,6 +34,9 @@ app.use('/api/admin', adminRouter)
 app.use('/api/shops', shopsRouter)
 app.use('/api/web-auth', webAuthRouter)
 app.use('/api/super-admin', superAdminRouter)
+app.use('/api/click', clickRouter)
+app.use('/api/payme', paymeRouter)
+app.use('/api/uzum', uzumRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
