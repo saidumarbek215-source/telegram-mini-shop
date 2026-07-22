@@ -47,12 +47,12 @@ const PORT = process.env.PORT || 3001
 
 async function start() {
   await migrate()
-  await startAllBots()
-  startAutoCancelJob()
-  startCreditReminderJob()
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
   })
+  startAllBots().catch((err) => console.error('Bots start error:', err))
+  startAutoCancelJob()
+  startCreditReminderJob()
 }
 
 start().catch((err) => {
