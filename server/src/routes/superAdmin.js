@@ -78,4 +78,23 @@ router.post(
   })
 )
 
+router.patch(
+  '/shops/:id/payment',
+  asyncHandler(async (req, res) => {
+    try {
+      const { id } = req.params
+      const { provider, merchant_id, service_id, secret, extra } = req.body
+      await query(
+        `UPDATE shops SET payment_provider=$1, payment_merchant_id=$2,
+         payment_service_id=$3, payment_secret=$4, payment_extra=$5 WHERE id=$6`,
+        [provider, merchant_id, service_id, secret, extra || {}, id]
+      )
+      res.json({ success: true })
+    } catch (e) {
+      console.error('Set payment error:', e)
+      res.status(500).json({ error: e.message })
+    }
+  })
+)
+
 export default router
