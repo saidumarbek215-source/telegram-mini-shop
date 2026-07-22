@@ -22,7 +22,6 @@ const ManageCredits = lazy(() => import('./pages/manage/ManageCredits.jsx'))
 const ManageAI = lazy(() => import('./pages/manage/ManageAI.jsx'))
 const ManageHelp = lazy(() => import('./pages/manage/ManageHelp.jsx'))
 const ManageMap = lazy(() => import('./pages/manage/ManageMap.jsx'))
-const SuperAdmin = lazy(() => import('./pages/SuperAdmin.jsx'))
 
 function Spinner() {
   return (
@@ -35,15 +34,13 @@ function Spinner() {
 export default function App() {
   const { status } = useShop()
 
-  const isStandalonePage = ['/admin-login', '/super-admin'].includes(window.location.pathname)
-  if (status === 'loading' && !isStandalonePage) return null
-  if (status === 'not-found' && !isStandalonePage) return <ShopNotFound />
+  if (status === 'loading' && window.location.pathname !== '/admin-login') return null
+  if (status === 'not-found' && window.location.pathname !== '/admin-login') return <ShopNotFound />
 
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
         <Route path="/admin-login" element={<WebAdminLogin />} />
-        <Route path="/super-admin" element={<SuperAdmin />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
