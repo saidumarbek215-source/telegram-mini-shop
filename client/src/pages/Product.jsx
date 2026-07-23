@@ -127,10 +127,8 @@ export default function Product() {
           alt={product.name}
           style={{
             width: '100%',
-            maxHeight: '350px',
-            objectFit: 'contain',
-            backgroundColor: 'var(--surface, #ffffff)',
-            padding: '16px',
+            height: '350px',
+            objectFit: 'cover',
           }}
           onError={(e) => {
             e.target.onerror = null
