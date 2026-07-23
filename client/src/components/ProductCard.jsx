@@ -18,7 +18,7 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/product/${product.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-surface"
+      className="group flex flex-col overflow-hidden rounded-2xl bg-surface shadow-sm"
     >
       <div className="relative overflow-hidden rounded-xl bg-surface2" style={{ aspectRatio: '1/1' }}>
         {imgError || (!product.image_url && !product.image) ? (

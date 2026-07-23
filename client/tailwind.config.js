@@ -4,11 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#0A0F1A',
-        surface: '#121826',
-        surface2: '#1A2236',
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        surface2: 'var(--surface2)',
         accent: '#00E5CC',
-        muted: '#8A93A6',
+        muted: 'var(--muted)',
       },
       boxShadow: {
         glow: '0 0 20px rgba(0, 229, 204, 0.25)',

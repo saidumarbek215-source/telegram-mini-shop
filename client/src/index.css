@@ -42,8 +42,18 @@ body {
   scrollbar-width: none;
 }
 
+:root {
+  --bg: #0A0F1A;
+  --surface: #121826;
+  --surface2: #1A2236;
+  --muted: #8A93A6;
+}
+
 .light-theme {
-  --bg: #f5f5f5;
+  --bg: #f0f0f2;
+  --surface: #ffffff;
+  --surface2: #f5f5f7;
+  --muted: #6b7280;
   --bg-card: #ffffff;
   --bg-input: #e8e8e8;
   --text: #0a0a0a;
@@ -52,23 +62,11 @@ body {
 }
 
 body.light-theme {
-  background-color: #f5f5f5 !important;
+  background-color: var(--bg) !important;
   color: #0a0a0a !important;
 }
 body.light-theme * {
   border-color: #e0e0e0 !important;
-}
-body.light-theme .bg-bg,
-body.light-theme [class*="bg-"] {
-  background-color: #f5f5f5 !important;
-}
-body.light-theme .bg-card,
-body.light-theme [class*="card"] {
-  background-color: #ffffff !important;
-}
-body.light-theme .text-white,
-body.light-theme [class*="text-"] {
-  color: #0a0a0a !important;
 }
 body.light-theme nav,
 body.light-theme header,
