@@ -174,7 +174,7 @@ export default function Product() {
       )}
 
       <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold leading-tight">{product.name}</h1>
+        <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text, #ffffff)' }}>{product.name}</h1>
         <div className="mt-1.5 flex items-baseline gap-2">
           <span className="text-xl font-bold text-accent">{formatPrice(displayPrice, currency)}</span>
           {hasDiscount && (

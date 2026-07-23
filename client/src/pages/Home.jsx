@@ -26,7 +26,7 @@ export default function Home() {
           {loading ? (
             <div className="h-6 w-40 animate-pulse rounded-lg bg-surface2" />
           ) : (
-            <h1 className="truncate text-lg font-bold leading-tight">
+            <h1 className="truncate text-lg font-bold leading-tight" style={{ color: 'var(--text, #ffffff)' }}>
               {shop?.store_name}
             </h1>
           )}
@@ -47,7 +47,7 @@ export default function Home() {
       {categories.length > 0 && (
         <div className="mt-5">
           <div className="mb-2 flex items-center justify-between px-4">
-            <h2 className="text-sm font-semibold">{t('categories', lang)}</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text, #ffffff)' }}>{t('categories', lang)}</h2>
             <Link to="/catalog" className="text-xs font-medium text-accent">
               {t('allProducts', lang)}
             </Link>
@@ -57,7 +57,7 @@ export default function Home() {
       )}
 
       <div className="mt-5 px-4">
-        <h2 className="mb-3 text-sm font-semibold">{t('popular', lang)}</h2>
+        <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--text, #ffffff)' }}>{t('popular', lang)}</h2>
         {loading ? (
           <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>
         ) : products.length === 0 ? (
