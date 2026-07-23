@@ -43,10 +43,10 @@ export default function BannerSlider({ banners }) {
               alt={banner.title}
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 via-black/10 to-transparent p-4">
-              {banner.title && <h3 className="text-base font-bold text-white">{banner.title}</h3>}
+            <div className="absolute inset-0 flex flex-col justify-end p-4" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.1), transparent)' }}>
+              {banner.title && <h3 className="text-base font-bold" style={{ color: '#ffffff' }}>{banner.title}</h3>}
               {banner.subtitle && (
-                <p className="text-xs text-white/80">{banner.subtitle}</p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{banner.subtitle}</p>
               )}
             </div>
           </div>
