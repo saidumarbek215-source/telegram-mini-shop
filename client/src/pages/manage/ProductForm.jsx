@@ -14,6 +14,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     sizes: (product?.sizes || []).join(', '),
     colors: (product?.colors || []).join(', '),
     in_stock: product?.in_stock ?? true,
+    is_bestseller: product?.is_bestseller ?? false,
     sort_order: product?.sort_order ?? 0,
   })
   const [sizesStock, setSizesStock] = useState(product?.sizes_stock || {})
@@ -91,6 +92,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
           sizesList.map((size) => [size, Math.max(0, Number(sizesStock[size]) || 0)])
         ),
         in_stock: form.in_stock,
+        is_bestseller: form.is_bestseller,
         sort_order: Number(form.sort_order) || 0,
         images: images.filter(Boolean),
         variants: variants.map((v) => ({
@@ -420,16 +422,28 @@ export default function ProductForm({ product, categories, unitType = 'size', on
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
-        <label className="flex items-center gap-2 self-end pb-2.5 text-sm">
-          <input
-            type="checkbox"
-            name="in_stock"
-            checked={form.in_stock}
-            onChange={handleChange}
-            className="h-4 w-4 accent-accent"
-          />
-          {t('inStockToggle', lang)}
-        </label>
+        <div className="flex flex-col gap-2 self-end pb-2.5">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="in_stock"
+              checked={form.in_stock}
+              onChange={handleChange}
+              className="h-4 w-4 accent-accent"
+            />
+            {t('inStockToggle', lang)}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="is_bestseller"
+              checked={form.is_bestseller}
+              onChange={handleChange}
+              className="h-4 w-4 accent-accent"
+            />
+            🔥 Топ продаж
+          </label>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}

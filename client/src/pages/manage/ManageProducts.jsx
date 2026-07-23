@@ -67,6 +67,7 @@ export default function ManageProducts() {
         colors: product.colors,
         sizes_stock: product.sizes_stock,
         in_stock: !product.in_stock,
+        is_bestseller: product.is_bestseller,
         sort_order: product.sort_order,
       })
       setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))

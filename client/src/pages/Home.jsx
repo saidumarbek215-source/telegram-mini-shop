@@ -56,6 +56,17 @@ export default function Home() {
         </div>
       )}
 
+      {products.filter((p) => p.is_bestseller).length > 0 && (
+        <div className="mt-5 px-4">
+          <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--text, #ffffff)' }}>{t('bestsellers', lang)}</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {products.filter((p) => p.is_bestseller).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-5 px-4">
         <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--text, #ffffff)' }}>{t('popular', lang)}</h2>
         {loading ? (
