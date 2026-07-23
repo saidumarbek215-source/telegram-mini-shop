@@ -9,8 +9,12 @@ export default function CategoryList({ categories }) {
           to={`/catalog?category=${cat.id}`}
           className="flex flex-shrink-0 flex-col items-center gap-1.5"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-2xl">
-            {cat.icon}
+          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
+            {cat.image_url ? (
+              <img src={cat.image_url} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              cat.icon
+            )}
           </div>
           <span className="max-w-[64px] truncate text-[11px] text-muted">{cat.name}</span>
         </Link>

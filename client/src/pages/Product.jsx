@@ -128,7 +128,8 @@ export default function Product() {
           style={{
             width: '100%',
             height: '350px',
-            objectFit: 'cover',
+            objectFit: 'contain',
+            backgroundColor: 'var(--surface, #121826)',
           }}
           onError={(e) => {
             e.target.onerror = null

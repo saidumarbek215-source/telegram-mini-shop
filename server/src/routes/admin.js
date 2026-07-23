@@ -136,12 +136,12 @@ router.get(
 router.post(
   '/categories',
   asyncHandler(async (req, res) => {
-    const { name, icon = '', sort_order = 0 } = req.body
+    const { name, icon = '', sort_order = 0, image_url = null } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(
-      'INSERT INTO categories (shop_id, name, icon, sort_order) VALUES ($1, $2, $3, $4) RETURNING *',
-      [req.shop.id, name, icon, sort_order]
+      'INSERT INTO categories (shop_id, name, icon, sort_order, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [req.shop.id, name, icon, sort_order, image_url]
     )
     res.status(201).json(result.rows[0])
   })
@@ -150,12 +150,12 @@ router.post(
 router.put(
   '/categories/:id',
   asyncHandler(async (req, res) => {
-    const { name, icon = '', sort_order = 0 } = req.body
+    const { name, icon = '', sort_order = 0, image_url = null } = req.body
     if (!name) return res.status(400).json({ error: 'name обязателен' })
 
     const result = await query(
-      'UPDATE categories SET name = $1, icon = $2, sort_order = $3 WHERE id = $4 AND shop_id = $5 RETURNING *',
-      [name, icon, sort_order, req.params.id, req.shop.id]
+      'UPDATE categories SET name = $1, icon = $2, sort_order = $3, image_url = $4 WHERE id = $5 AND shop_id = $6 RETURNING *',
+      [name, icon, sort_order, image_url, req.params.id, req.shop.id]
     )
     if (!result.rows.length) return res.status(404).json({ error: 'Категория не найдена' })
     res.json(result.rows[0])

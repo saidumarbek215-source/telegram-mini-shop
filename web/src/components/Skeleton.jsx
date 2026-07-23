@@ -12,5 +12,5 @@ export function ProductSkeleton() {
 }
 
 export function BannerSkeleton() {
-  return <div className="skeleton rounded-2xl aspect-[16/5]" />
+  return <div className="skeleton rounded-2xl aspect-[4/3] sm:aspect-[16/5]" />
 }

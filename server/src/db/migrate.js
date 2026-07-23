@@ -76,6 +76,7 @@ export async function migrate() {
       created_at TIMESTAMP DEFAULT NOW()
     )
   `)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT`)
   console.log('Migration applied successfully')
 }
 

@@ -1,13 +1,16 @@
 /** @type {import('tailwindcss').Config} */
+// Цвета меняй в src/config.js → SITE_CONFIG.colors
+// После изменения запусти: npm run build
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        primary: '#1a1a2e',
-        secondary: '#16213e',
-        accent: '#f5a623',
-        'accent-hover': '#e09000',
+        primary: '#000000',
+        secondary: '#111111',
+        accent: '#FFE000',
+        'accent-hover': '#e6cc00',
+        'brand-red': '#CC0000',
       },
     },
   },

@@ -9,6 +9,7 @@ function CategoryForm({ category, onSave, onCancel, lang }) {
   const [form, setForm] = useState({
     name: category?.name || '',
     icon: category?.icon || '',
+    image_url: category?.image_url || '',
     sort_order: category?.sort_order ?? 0,
   })
   const [saving, setSaving] = useState(false)
@@ -30,6 +31,7 @@ function CategoryForm({ category, onSave, onCancel, lang }) {
       await onSave({
         name: form.name.trim(),
         icon: form.icon.trim(),
+        image_url: form.image_url.trim() || null,
         sort_order: Number(form.sort_order) || 0,
       })
     } catch (err) {
@@ -69,6 +71,16 @@ function CategoryForm({ category, onSave, onCancel, lang }) {
             className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted">Фото категории (URL)</label>
+        <input
+          name="image_url"
+          value={form.image_url}
+          onChange={handleChange}
+          placeholder="https://..."
+          className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+        />
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
@@ -145,9 +157,13 @@ export default function ManageCategories() {
       <div className="flex flex-col gap-2">
         {categories.map((cat) => (
           <div key={cat.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3">
-            {cat.icon && (
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface2 text-2xl">
-                {cat.icon}
+            {(cat.image_url || cat.icon) && (
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface2 text-2xl">
+                {cat.image_url ? (
+                  <img src={cat.image_url} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  cat.icon
+                )}
               </div>
             )}
             <div className="min-w-0 flex-1">

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
+import { SITE_CONFIG } from '../config.js'
 
 export default function Checkout() {
   const { items, total, clearCart } = useCart()
@@ -127,13 +128,7 @@ export default function Checkout() {
           <div className="card p-6">
             <h2 className="font-semibold text-lg mb-4">To'lov usuli</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {[
-                { value: 'card', label: 'Karta' },
-                { value: 'cash', label: 'Naqd' },
-                { value: 'click', label: 'Click' },
-                { value: 'payme', label: 'Payme' },
-                { value: 'uzum', label: 'Uzum' },
-              ].map((m) => (
+              {SITE_CONFIG.paymentMethods.filter(m => m.enabled).map((m) => (
                 <label
                   key={m.value}
                   className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${

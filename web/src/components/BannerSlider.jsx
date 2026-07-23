@@ -14,7 +14,7 @@ export default function BannerSlider({ banners }) {
   if (!banners.length) return null
 
   return (
-    <div className="relative overflow-hidden rounded-2xl aspect-[16/5] bg-gray-200">
+    <div className="relative overflow-hidden rounded-2xl aspect-[4/3] sm:aspect-[16/5] bg-gray-200">
       {banners.map((b, i) => (
         <div
           key={b.id}
