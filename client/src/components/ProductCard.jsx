@@ -55,7 +55,7 @@ export default function ProductCard({ product }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <h3 className="line-clamp-2 text-sm font-medium leading-tight text-white">
+        <h3 className="line-clamp-2 text-sm font-medium leading-tight" style={{ color: 'var(--text, #ffffff)' }}>
           {product.name}
         </h3>
         <div className="mt-auto flex items-baseline gap-2">

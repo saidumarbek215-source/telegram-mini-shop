@@ -129,7 +129,7 @@ export default function Product() {
             width: '100%',
             maxHeight: '350px',
             objectFit: 'contain',
-            backgroundColor: 'white',
+            backgroundColor: 'var(--surface, #ffffff)',
             padding: '16px',
           }}
           onError={(e) => {
@@ -148,7 +148,7 @@ export default function Product() {
       {allImages.length > 1 && (
         <div
           className="flex gap-2 overflow-x-auto px-4 py-3"
-          style={{ backgroundColor: 'white' }}
+          style={{ backgroundColor: 'var(--surface, #ffffff)' }}
         >
           {allImages.map((img, i) => (
             <button
@@ -195,7 +195,7 @@ export default function Product() {
         {product.description && (
           <div className="mt-4">
             <h2 className="mb-1 text-sm font-semibold text-muted">{t('description', lang)}</h2>
-            <p className="text-sm leading-relaxed text-white/80">{product.description}</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary, rgba(255,255,255,0.8))' }}>{product.description}</p>
           </div>
         )}
 
@@ -213,11 +213,12 @@ export default function Product() {
                     disabled={outOfStock}
                     className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
                       outOfStock
-                        ? 'cursor-not-allowed bg-surface text-muted line-through opacity-50'
+                        ? 'cursor-not-allowed bg-surface line-through opacity-50'
                         : selectedVariant?.label === v.label
-                          ? 'bg-accent text-bg'
-                          : 'bg-surface text-white'
+                          ? 'bg-accent'
+                          : 'bg-surface'
                     }`}
+                    style={{ color: outOfStock ? 'var(--muted)' : selectedVariant?.label === v.label ? 'var(--bg)' : 'var(--text, #ffffff)' }}
                   >
                     {v.label}
                   </button>
@@ -245,11 +246,12 @@ export default function Product() {
                     disabled={!sizeAvailable}
                     className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
                       !sizeAvailable
-                        ? 'cursor-not-allowed bg-surface text-muted line-through opacity-50'
+                        ? 'cursor-not-allowed bg-surface line-through opacity-50'
                         : size === s
-                          ? 'bg-accent text-bg'
-                          : 'bg-surface text-white'
+                          ? 'bg-accent'
+                          : 'bg-surface'
                     }`}
+                    style={{ color: !sizeAvailable ? 'var(--muted)' : size === s ? 'var(--bg)' : 'var(--text, #ffffff)' }}
                   >
                     {s}
                   </button>
@@ -268,8 +270,9 @@ export default function Product() {
                   key={w}
                   onClick={() => setSize(w)}
                   className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
-                    size === w ? 'bg-accent text-bg' : 'bg-surface text-white'
+                    size === w ? 'bg-accent' : 'bg-surface'
                   }`}
+                  style={{ color: size === w ? 'var(--bg)' : 'var(--text, #ffffff)' }}
                 >
                   {w}
                 </button>
@@ -287,8 +290,9 @@ export default function Product() {
                   key={v}
                   onClick={() => setSize(v)}
                   className={`h-10 min-w-10 rounded-xl px-3 text-sm font-medium transition-colors ${
-                    size === v ? 'bg-accent text-bg' : 'bg-surface text-white'
+                    size === v ? 'bg-accent' : 'bg-surface'
                   }`}
+                  style={{ color: size === v ? 'var(--bg)' : 'var(--text, #ffffff)' }}
                 >
                   {v}
                 </button>
@@ -303,14 +307,16 @@ export default function Product() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold"
+                style={{ color: 'var(--text, #ffffff)' }}
               >
                 −
               </button>
               <span className="min-w-8 text-center text-sm font-bold">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => q + 1)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-lg font-bold"
+                style={{ color: 'var(--text, #ffffff)' }}
               >
                 +
               </button>
@@ -327,8 +333,9 @@ export default function Product() {
                   key={c}
                   onClick={() => setColor(c)}
                   className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                    color === c ? 'bg-accent text-bg' : 'bg-surface text-white'
+                    color === c ? 'bg-accent' : 'bg-surface'
                   }`}
+                  style={{ color: color === c ? 'var(--bg)' : 'var(--text, #ffffff)' }}
                 >
                   {c}
                 </button>
