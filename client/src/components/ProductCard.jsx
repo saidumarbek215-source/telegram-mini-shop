@@ -20,9 +20,9 @@ export default function ProductCard({ product }) {
       to={`/product/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl bg-surface shadow-sm"
     >
-      <div className="relative overflow-hidden rounded-xl bg-surface2" style={{ aspectRatio: '1/1' }}>
+      <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '1/1', backgroundColor: 'var(--surface2, #1A2236)' }}>
         {imgError || (!product.image_url && !product.image) ? (
-          <div className="flex h-full w-full items-center justify-center bg-surface2">
+          <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: 'var(--surface2, #1A2236)' }}>
             <span className="text-3xl text-muted/30">🖼</span>
           </div>
         ) : (
