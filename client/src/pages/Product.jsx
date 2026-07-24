@@ -119,7 +119,7 @@ export default function Product() {
       {/* Photo gallery */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ height: '58vh', minHeight: '400px', backgroundColor: 'var(--surface, #121826)' }}
+        style={{ height: '65vh', minHeight: '450px' }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -129,7 +129,7 @@ export default function Product() {
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
             objectPosition: 'center',
             display: 'block',
           }}

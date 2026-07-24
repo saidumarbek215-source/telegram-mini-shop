@@ -20,7 +20,7 @@ export default function ProductCard({ product }) {
       to={`/product/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl bg-surface shadow-sm"
     >
-      <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '1/1', backgroundColor: 'var(--surface2, #1A2236)' }}>
+      <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '1/1' }}>
         {imgError || (!product.image_url && !product.image) ? (
           <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: 'var(--surface2, #1A2236)' }}>
             <span className="text-3xl text-muted/30">🖼</span>
@@ -34,8 +34,8 @@ export default function ProductCard({ product }) {
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
-              backgroundColor: 'var(--surface2, #1A2236)',
+              objectFit: 'cover',
+              objectPosition: 'center',
             }}
             className="transition-transform duration-300 group-active:scale-95"
             onError={() => setImgError(true)}
