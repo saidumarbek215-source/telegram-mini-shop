@@ -58,6 +58,9 @@ export default function ProductCard({ product }) {
         <h3 className="line-clamp-2 text-sm font-medium leading-tight" style={{ color: 'var(--text, #ffffff)' }}>
           {product.name}
         </h3>
+        {product.rating != null && (
+          <p className="text-xs text-muted">⭐ {Number(product.rating).toFixed(1)}</p>
+        )}
         <div className="mt-auto flex items-baseline gap-2">
           <span className="text-sm font-bold text-accent">{formatPrice(product.price, currency)}</span>
           {hasDiscount && (

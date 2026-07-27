@@ -27,6 +27,7 @@ export default function Product() {
   const [added, setAdded] = useState(false)
   const [activePhoto, setActivePhoto] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState(null)
+  const [descExpanded, setDescExpanded] = useState(false)
   const touchStartX = useRef(null)
 
   useEffect(() => {
@@ -178,6 +179,17 @@ export default function Product() {
 
       <div className="px-4 pt-4">
         <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text, #ffffff)' }}>{product.name}</h1>
+
+        {product.rating != null && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className="text-sm">⭐</span>
+            <span className="text-sm font-semibold text-accent">{Number(product.rating).toFixed(1)}</span>
+            {product.review_count > 0 && (
+              <span className="text-xs text-muted">({product.review_count} отзывов)</span>
+            )}
+          </div>
+        )}
+
         <div className="mt-1.5 flex items-baseline gap-2">
           <span className="text-xl font-bold text-accent">{formatPrice(displayPrice, currency)}</span>
           {hasDiscount && (
@@ -187,18 +199,40 @@ export default function Product() {
           )}
         </div>
 
+        {Number(product.sold_this_week) > 0 && (
+          <div className="mt-3 rounded-xl bg-accent/10 px-3 py-2.5 text-sm">
+            <p className="font-medium text-accent">🔥 {product.sold_this_week} человек купили на этой неделе</p>
+          </div>
+        )}
+
         {!hasVariants && !available && (
           <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400">
             {t('outOfStock', lang)}
           </div>
         )}
 
-        {product.description && (
-          <div className="mt-4">
-            <h2 className="mb-1 text-sm font-semibold text-muted">{t('description', lang)}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary, rgba(255,255,255,0.8))' }}>{product.description}</p>
-          </div>
-        )}
+        {product.description && (() => {
+          const LIMIT = 150
+          const isLong = product.description.length > LIMIT
+          return (
+            <div className="mt-4">
+              <h2 className="mb-1 text-sm font-semibold text-muted">{t('description', lang)}</h2>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary, rgba(255,255,255,0.8))' }}>
+                {isLong && !descExpanded
+                  ? product.description.slice(0, LIMIT) + '…'
+                  : product.description}
+              </p>
+              {isLong && (
+                <button
+                  onClick={() => setDescExpanded((v) => !v)}
+                  className="mt-1 text-xs font-medium text-accent"
+                >
+                  {descExpanded ? 'Свернуть' : 'Показать полностью'}
+                </button>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Variants with prices */}
         {hasVariants && (
