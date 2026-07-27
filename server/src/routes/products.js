@@ -35,10 +35,21 @@ router.get(
 router.get(
   '/:id',
   asyncHandler(async (req, res) => {
-    const result = await query('SELECT * FROM products WHERE id = $1 AND shop_id = $2', [
-      req.params.id,
-      req.shopId,
-    ])
+    const result = await query(
+      `SELECT p.*,
+        COALESCE((
+          SELECT SUM(oi.quantity)
+          FROM order_items oi
+          JOIN orders o ON o.id = oi.order_id
+          WHERE oi.product_id = p.id
+            AND o.shop_id = p.shop_id
+            AND o.created_at >= NOW() - INTERVAL '7 days'
+            AND o.status NOT IN ('cancelled', 'expired')
+        ), 0) AS sold_this_week
+       FROM products p
+       WHERE p.id = $1 AND p.shop_id = $2`,
+      [req.params.id, req.shopId]
+    )
     if (!result.rows.length) return res.status(404).json({ error: 'Product not found' })
     res.json(result.rows[0])
   })

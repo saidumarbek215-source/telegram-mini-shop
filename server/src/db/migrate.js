@@ -78,6 +78,8 @@ export async function migrate() {
   `)
   await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT`)
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS is_bestseller BOOLEAN DEFAULT false`)
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS rating NUMERIC(2,1) DEFAULT NULL`)
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0`)
   console.log('Migration applied successfully')
 }
 

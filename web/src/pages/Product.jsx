@@ -16,6 +16,7 @@ export default function Product() {
   const [quantity, setQuantity] = useState(1)
   const [activeImg, setActiveImg] = useState(0)
   const [added, setAdded] = useState(false)
+  const [descExpanded, setDescExpanded] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -118,6 +119,17 @@ export default function Product() {
         <div className="space-y-5">
           <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
 
+          {/* Rating */}
+          {product.rating != null && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-yellow-400 text-lg">⭐</span>
+              <span className="font-semibold text-gray-800">{Number(product.rating).toFixed(1)}</span>
+              {product.review_count > 0 && (
+                <span className="text-sm text-gray-400">({product.review_count} отзывов)</span>
+              )}
+            </div>
+          )}
+
           {/* Price */}
           <div>
             <p className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</p>
@@ -126,10 +138,40 @@ export default function Product() {
             )}
           </div>
 
-          {/* Description */}
-          {product.description && (
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{product.description}</p>
+          {/* Social proof */}
+          {Number(product.sold_this_week) > 0 && (
+            <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-3 text-sm space-y-1">
+              <p className="text-gray-600">
+                ✅ <span className="font-medium">Есть в наличии</span>
+              </p>
+              <p className="text-orange-600 font-medium">
+                🔥 {product.sold_this_week} человек купили на этой неделе
+              </p>
+            </div>
           )}
+
+          {/* Description */}
+          {product.description && (() => {
+            const LIMIT = 150
+            const isLong = product.description.length > LIMIT
+            return (
+              <div>
+                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                  {isLong && !descExpanded
+                    ? product.description.slice(0, LIMIT) + '…'
+                    : product.description}
+                </p>
+                {isLong && (
+                  <button
+                    onClick={() => setDescExpanded((v) => !v)}
+                    className="mt-1 text-sm font-medium text-accent hover:underline"
+                  >
+                    {descExpanded ? 'Свернуть' : 'Показать полностью'}
+                  </button>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Sizes */}
           {hasSizes && (

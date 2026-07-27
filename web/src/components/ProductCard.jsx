@@ -22,7 +22,7 @@ export default function ProductCard({ product }) {
           <img
             src={image}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         ) : (
@@ -42,7 +42,10 @@ export default function ProductCard({ product }) {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
-        <p className="text-sm text-gray-700 line-clamp-2 flex-1 leading-snug">{product.name}</p>
+        <p className="text-sm text-gray-700 line-clamp-2 leading-snug">{product.name}</p>
+        {product.rating != null && (
+          <p className="mt-0.5 text-xs text-yellow-500 font-medium">⭐ {Number(product.rating).toFixed(1)}</p>
+        )}
 
         <div className="mt-2 flex items-center justify-between gap-2">
           <div>

@@ -16,6 +16,8 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     in_stock: product?.in_stock ?? true,
     is_bestseller: product?.is_bestseller ?? false,
     sort_order: product?.sort_order ?? 0,
+    rating: product?.rating ?? '',
+    review_count: product?.review_count ?? '',
   })
   const [sizesStock, setSizesStock] = useState(product?.sizes_stock || {})
   const [images, setImages] = useState(product?.images || [])
@@ -94,6 +96,8 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         in_stock: form.in_stock,
         is_bestseller: form.is_bestseller,
         sort_order: Number(form.sort_order) || 0,
+        rating: form.rating !== '' ? parseFloat(String(form.rating).replace(',', '.')) : null,
+        review_count: form.review_count !== '' ? Number(form.review_count) : 0,
         images: images.filter(Boolean),
         variants: variants.map((v) => ({
           label: v.label,
@@ -443,6 +447,36 @@ export default function ProductForm({ product, categories, unitType = 'size', on
             />
             🔥 Топ продаж
           </label>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">⭐ Рейтинг (1–5)</label>
+          <input
+            name="rating"
+            type="number"
+            min="1"
+            max="5"
+            step="0.1"
+            value={form.rating}
+            onChange={handleChange}
+            placeholder="4.8"
+            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Кол-во отзывов</label>
+          <input
+            name="review_count"
+            type="number"
+            min="0"
+            step="1"
+            value={form.review_count}
+            onChange={handleChange}
+            placeholder="128"
+            className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          />
         </div>
       </div>
 

@@ -54,6 +54,8 @@ router.post(
       images = [],
       variants = [],
       is_bestseller = false,
+      rating = null,
+      review_count = 0,
     } = req.body
 
     if (!name || price === undefined || !image_url) {
@@ -62,10 +64,10 @@ router.post(
 
     const result = await query(
       `INSERT INTO products
-        (shop_id, name, description, price, old_price, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, images, variants, is_bestseller)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        (shop_id, name, description, price, old_price, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, images, variants, is_bestseller, rating, review_count)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        RETURNING *`,
-      [req.shop.id, name, description, parseFloat(String(price).replace(',', '.')), old_price != null ? parseFloat(String(old_price).replace(',', '.')) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, JSON.stringify(images), JSON.stringify(variants), is_bestseller]
+      [req.shop.id, name, description, parseFloat(String(price).replace(',', '.')), old_price != null ? parseFloat(String(old_price).replace(',', '.')) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, JSON.stringify(images), JSON.stringify(variants), is_bestseller, rating != null ? parseFloat(rating) : null, Number(review_count) || 0]
     )
     res.status(201).json(result.rows[0])
   })
@@ -89,6 +91,8 @@ router.put(
       images = [],
       variants = [],
       is_bestseller = false,
+      rating = null,
+      review_count = 0,
     } = req.body
 
     if (!name || price === undefined || !image_url) {
@@ -99,10 +103,10 @@ router.put(
       `UPDATE products
        SET name = $1, description = $2, price = $3, old_price = $4, image_url = $5,
            category_id = $6, sizes = $7, colors = $8, sizes_stock = $9, in_stock = $10, sort_order = $11,
-           images = $12, variants = $13, is_bestseller = $14
-       WHERE id = $15 AND shop_id = $16
+           images = $12, variants = $13, is_bestseller = $14, rating = $15, review_count = $16
+       WHERE id = $17 AND shop_id = $18
        RETURNING *`,
-      [name, description, parseFloat(String(price).replace(',', '.')), old_price != null ? parseFloat(String(old_price).replace(',', '.')) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, JSON.stringify(images), JSON.stringify(variants), is_bestseller, req.params.id, req.shop.id]
+      [name, description, parseFloat(String(price).replace(',', '.')), old_price != null ? parseFloat(String(old_price).replace(',', '.')) : null, image_url, category_id, sizes, colors, sizes_stock, in_stock, sort_order, JSON.stringify(images), JSON.stringify(variants), is_bestseller, rating != null ? parseFloat(rating) : null, Number(review_count) || 0, req.params.id, req.shop.id]
     )
 
     if (!result.rows.length) return res.status(404).json({ error: 'Товар не найден' })
