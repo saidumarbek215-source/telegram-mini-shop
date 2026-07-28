@@ -35,8 +35,11 @@ function Spinner() {
 export default function App() {
   const { status } = useShop()
 
-  if (status === 'loading' && window.location.pathname !== '/admin-login') return null
-  if (status === 'not-found' && window.location.pathname !== '/admin-login') return <ShopNotFound />
+  const STANDALONE_PATHS = ['/admin-login', '/super-admin']
+  const isStandalone = STANDALONE_PATHS.includes(window.location.pathname)
+
+  if (status === 'loading' && !isStandalone) return null
+  if (status === 'not-found' && !isStandalone) return <ShopNotFound />
 
   return (
     <Suspense fallback={<Spinner />}>
