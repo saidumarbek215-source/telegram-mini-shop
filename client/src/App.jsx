@@ -13,6 +13,7 @@ const Checkout = lazy(() => import('./pages/Checkout.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const Faq = lazy(() => import('./pages/Faq.jsx'))
 const ManageLayout = lazy(() => import('./pages/manage/ManageLayout.jsx'))
+const SuperAdmin = lazy(() => import('./pages/SuperAdmin.jsx'))
 const ManageOrders = lazy(() => import('./pages/manage/ManageOrders.jsx'))
 const ManageProducts = lazy(() => import('./pages/manage/ManageProducts.jsx'))
 const ManageCategories = lazy(() => import('./pages/manage/ManageCategories.jsx'))
@@ -41,6 +42,7 @@ export default function App() {
     <Suspense fallback={<Spinner />}>
       <Routes>
         <Route path="/admin-login" element={<WebAdminLogin />} />
+        <Route path="/super-admin" element={<SuperAdmin />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />

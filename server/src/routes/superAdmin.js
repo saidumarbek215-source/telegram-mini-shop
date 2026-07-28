@@ -78,4 +78,24 @@ router.post(
   })
 )
 
+router.get(
+  '/analytics/gmv',
+  asyncHandler(async (req, res) => {
+    const result = await query(`
+      SELECT
+        COALESCE(SUM(CASE WHEN created_at >= CURRENT_DATE THEN total ELSE 0 END), 0)                            AS today,
+        COALESCE(SUM(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN total ELSE 0 END), 0)        AS week,
+        COALESCE(SUM(CASE WHEN created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN total ELSE 0 END), 0)       AS month,
+        COALESCE(SUM(CASE WHEN created_at >= DATE_TRUNC('year',  CURRENT_DATE) THEN total ELSE 0 END), 0)       AS year,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE THEN 1 END)                                                   AS orders_today,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END)                              AS orders_week,
+        COUNT(CASE WHEN created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN 1 END)                             AS orders_month,
+        COUNT(*)                                                                                                  AS orders_total
+      FROM orders
+      WHERE status NOT IN ('cancelled', 'expired')
+    `)
+    res.json(result.rows[0])
+  })
+)
+
 export default router
