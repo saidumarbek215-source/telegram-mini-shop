@@ -78,6 +78,26 @@ router.post(
   })
 )
 
+router.put(
+  '/shops/:id/payment-provider',
+  asyncHandler(async (req, res) => {
+    const { payment_provider, payment_merchant_id, payment_service_id, payment_secret } = req.body
+    await query(
+      `UPDATE shops
+       SET payment_provider = $1, payment_merchant_id = $2, payment_service_id = $3, payment_secret = $4
+       WHERE id = $5`,
+      [
+        payment_provider || null,
+        payment_merchant_id || null,
+        payment_service_id || null,
+        payment_secret || null,
+        req.params.id,
+      ]
+    )
+    res.json({ success: true })
+  })
+)
+
 router.get(
   '/analytics/gmv',
   asyncHandler(async (req, res) => {
