@@ -12,7 +12,8 @@ export default function Checkout() {
   const navigate = useNavigate()
   const { setHideContact } = useOutletContext() ?? {}
   const { items, total, clearCart } = useCart()
-  const { lang } = useShop()
+  const { shop, lang } = useShop()
+  const hidePaymentMethods = shop?.features?.hide_payment_methods === true
 
   const [settings, setSettings] = useState({})
   const [form, setForm] = useState({ name: '', phone: '', address: '', comment: '' })
@@ -99,7 +100,7 @@ export default function Checkout() {
         comment: form.comment.trim(),
         payment_type: paymentType,
         payment_due_date: paymentType === 'credit' ? paymentDueDate || null : null,
-        payment_method: paymentType === 'credit' ? 'card' : paymentMethod,
+        payment_method: hidePaymentMethods ? 'personal' : (paymentType === 'credit' ? 'card' : paymentMethod),
         items: items.map((i) => ({
           product_id: i.product_id,
           product_name: i.product_name,
@@ -347,7 +348,7 @@ export default function Checkout() {
           />
         </div>
 
-        {settings.credit_enabled && (
+        {!hidePaymentMethods && settings.credit_enabled && (
           <div className="rounded-2xl bg-surface p-4">
             <h3 className="mb-3 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
             <div className="flex flex-col gap-2">
@@ -387,7 +388,7 @@ export default function Checkout() {
           </div>
         )}
 
-        {paymentType === 'prepaid' && (
+        {!hidePaymentMethods && paymentType === 'prepaid' && (
           <div className="rounded-2xl bg-surface p-4">
             <h3 className="mb-3 text-sm font-semibold">To'lov usuli</h3>
             <div className="flex flex-col gap-2">
@@ -449,7 +450,7 @@ export default function Checkout() {
           </div>
         )}
 
-        {paymentType === 'prepaid' && paymentMethod === 'card' && (settings.card_number || settings.click_number) && (
+        {!hidePaymentMethods && paymentType === 'prepaid' && paymentMethod === 'card' && (settings.card_number || settings.click_number) && (
           <div className="rounded-2xl bg-surface p-4">
             <h3 className="mb-2 text-sm font-semibold">{t('paymentDetails', lang)}</h3>
             {settings.card_number && (
