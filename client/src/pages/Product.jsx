@@ -4,7 +4,7 @@ import { api } from '../api.js'
 import { formatPrice } from '../utils/format.js'
 import { useCart } from '../context/CartContext.jsx'
 import { useShop } from '../context/ShopContext.jsx'
-import { CheckIcon } from '../components/Icons.jsx'
+import { CheckIcon, BagIcon } from '../components/Icons.jsx'
 import { hapticFeedback } from '../telegram.js'
 import { isProductAvailable, isSizeAvailable } from '../utils/stock.js'
 import { t } from '../i18n.js'
@@ -380,22 +380,32 @@ export default function Product() {
         )}
       </div>
 
-      <div className="sticky bottom-0 mt-6 border-t border-white/5 bg-bg/95 px-4 py-3 backdrop-blur">
-        <button
-          onClick={handleAddToCart}
-          disabled={!canAddToCart}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
-        >
-          {added ? (
-            <>
-              <CheckIcon className="h-5 w-5" /> {t('added', lang)}
-            </>
-          ) : canAddToCart ? (
-            t('addToCart', lang)
-          ) : (
-            t('outOfStock', lang)
-          )}
-        </button>
+      <div className="sticky bottom-16 mt-6 border-t border-white/5 bg-bg/95 px-4 py-3 backdrop-blur">
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              if (!canAddToCart) return
+              handleAddToCart()
+              navigate('/checkout')
+            }}
+            disabled={!canAddToCart}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
+          >
+            {canAddToCart ? t('buyNow', lang) : t('outOfStock', lang)}
+          </button>
+          <button
+            onClick={handleAddToCart}
+            disabled={!canAddToCart}
+            className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-surface transition-transform active:scale-[0.98] disabled:opacity-40"
+            title={t('addToCart', lang)}
+          >
+            {added ? (
+              <CheckIcon className="h-6 w-6 text-accent" />
+            ) : (
+              <BagIcon className="h-6 w-6 text-accent" />
+            )}
+          </button>
+        </div>
       </div>
     </div>
   )

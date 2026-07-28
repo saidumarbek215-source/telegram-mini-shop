@@ -9,7 +9,7 @@ import { t } from '../i18n.js'
 
 const isTelegram = !!window.Telegram?.WebApp?.initData
 
-const HIDE_NAV = [/^\/product\//, /^\/checkout/]
+const HIDE_NAV = [/^\/checkout/]
 
 export default function Layout() {
   const location = useLocation()
