@@ -55,6 +55,13 @@ export function ShopProvider({ children }) {
       document.documentElement.lang = shop.features.language
       localStorage.setItem('lang', shop.features.language)
     }
+
+    if (shop.features?.custom_theme) {
+      const theme = shop.features.custom_theme
+      Object.entries(theme).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(`--${key}`, value)
+      })
+    }
   }, [state.shop])
 
   return <ShopContext.Provider value={state}>{children}</ShopContext.Provider>
