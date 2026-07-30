@@ -40,7 +40,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg text-white">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
       {!isTelegram && (
         <header style={{
           padding: '12px 16px',
