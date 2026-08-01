@@ -79,9 +79,12 @@ router.post(
     const shop = await query('SELECT * FROM shops WHERE id = $1', [req.params.id])
     const s = shop.rows[0]
     if (s && s.owner_telegram_id && s.bot_token) {
+      const amount = s.sale_price
+        ? `${Number(s.sale_price).toLocaleString('ru-RU')} so'm`
+        : 'aniqlanmagan'
       await sendTelegramMessage(
         s.owner_telegram_id,
-        `⚠️ Hurmatli do'kon egasi!\n\nFinexia xizmati uchun to'lov muddati keldi.\nMiqdor: 50,000 so'm\n\nTo'lov uchun: @finexia_uz`,
+        `⚠️ Hurmatli do'kon egasi!\n\nFinexia xizmati uchun to'lov muddati keldi.\nMiqdor: ${amount}\n\nTo'lov uchun: @finexia_uz`,
         s.bot_token
       )
     }
@@ -104,6 +107,21 @@ router.post(
     )
     await query('UPDATE shops SET payment_reminder_sent_at = NOW() WHERE id = $1', [s.id])
     res.json({ success: true })
+  })
+)
+
+router.patch(
+  '/shops/:id/subscription',
+  asyncHandler(async (req, res) => {
+    const { tariff, trial_ends_at, next_payment_due, sale_price } = req.body
+    const result = await query(
+      `UPDATE shops
+       SET tariff = $1, trial_ends_at = $2, next_payment_due = $3, sale_price = $4
+       WHERE id = $5 RETURNING *`,
+      [tariff, trial_ends_at || null, next_payment_due || null, sale_price || null, req.params.id]
+    )
+    if (!result.rows.length) return res.status(404).json({ error: 'Shop not found' })
+    res.json(result.rows[0])
   })
 )
 

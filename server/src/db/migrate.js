@@ -80,6 +80,7 @@ export async function migrate() {
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS is_bestseller BOOLEAN DEFAULT false`)
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS rating NUMERIC(2,1) DEFAULT NULL`)
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS tariff VARCHAR(30) DEFAULT 'trial'`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS trial_reminder_sent_at TIMESTAMP`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS next_payment_due DATE`)
