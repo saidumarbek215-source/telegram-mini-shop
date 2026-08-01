@@ -13,6 +13,7 @@ import superAdminRouter from './routes/superAdmin.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
+import { startSubscriptionReminderJob } from './jobs/subscriptionReminders.js'
 import { startAllBots } from './services/botManager.js'
 
 const app = express()
@@ -44,6 +45,7 @@ async function start() {
   await startAllBots()
   startAutoCancelJob()
   startCreditReminderJob()
+  startSubscriptionReminderJob()
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
   })

@@ -54,10 +54,21 @@ router.put(
   '/shops/:id/payment',
   asyncHandler(async (req, res) => {
     const { payment_status, payment_date } = req.body
-    await query(
-      'UPDATE shops SET payment_status = $1, payment_date = $2 WHERE id = $3',
-      [payment_status, payment_date, req.params.id]
-    )
+    if (payment_status === 'paid') {
+      await query(
+        `UPDATE shops
+         SET payment_status = $1, payment_date = $2,
+             next_payment_due = CURRENT_DATE + INTERVAL '30 days',
+             payment_reminder_sent_at = NULL
+         WHERE id = $3`,
+        [payment_status, payment_date, req.params.id]
+      )
+    } else {
+      await query(
+        'UPDATE shops SET payment_status = $1, payment_date = $2 WHERE id = $3',
+        [payment_status, payment_date, req.params.id]
+      )
+    }
     res.json({ success: true })
   })
 )
@@ -74,6 +85,24 @@ router.post(
         s.bot_token
       )
     }
+    res.json({ success: true })
+  })
+)
+
+router.post(
+  '/shops/:id/send-reminder',
+  asyncHandler(async (req, res) => {
+    const { rows } = await query('SELECT * FROM shops WHERE id = $1', [req.params.id])
+    const s = rows[0]
+    if (!s || !s.owner_telegram_id || !s.bot_token) {
+      return res.status(400).json({ error: 'Owner yoki bot topilmadi' })
+    }
+    await sendTelegramMessage(
+      s.owner_telegram_id,
+      `⏰ Hurmatli ${s.name}!\n\nObuna holatingizni tekshirish uchun @finexia_uz bilan bog'laning.`,
+      s.bot_token
+    )
+    await query('UPDATE shops SET payment_reminder_sent_at = NOW() WHERE id = $1', [s.id])
     res.json({ success: true })
   })
 )

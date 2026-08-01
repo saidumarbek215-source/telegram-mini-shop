@@ -21,8 +21,8 @@ router.post('/register', async (req, res) => {
     }
 
     const result = await query(
-      `INSERT INTO shops (name, owner_telegram_id, bot_token)
-       VALUES ($1, $2, $3)
+      `INSERT INTO shops (name, owner_telegram_id, bot_token, trial_ends_at)
+       VALUES ($1, $2, $3, NOW() + INTERVAL '7 days')
        RETURNING id`,
       [String(name).trim(), ownerId, bot_token]
     )
