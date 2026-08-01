@@ -73,6 +73,21 @@ export async function startAllBots() {
   }
 }
 
+// Stops all running bots — called on graceful shutdown so the new process
+// doesn't hit 409 Conflict from overlapping getUpdates polling sessions.
+export async function stopAllBots() {
+  console.log(`Stopping all bot polling (${bots.size} bots)...`)
+  await Promise.all(
+    [...bots.entries()].map(([shopId, { bot }]) =>
+      bot.stopPolling().catch(err =>
+        console.error(`Error stopping bot for shop ${shopId}:`, err.message)
+      )
+    )
+  )
+  bots.clear()
+  console.log('All bots stopped.')
+}
+
 // (Re)starts the bot for a single shop, e.g. after registration or a
 // bot_token change. Stops the bot if the shop has no token or is inactive.
 export async function restartBotForShop(shopId) {

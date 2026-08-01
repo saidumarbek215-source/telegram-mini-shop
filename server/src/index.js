@@ -14,7 +14,7 @@ import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
 import { startSubscriptionReminderJob } from './jobs/subscriptionReminders.js'
-import { startAllBots } from './services/botManager.js'
+import { startAllBots, stopAllBots } from './services/botManager.js'
 
 const app = express()
 
@@ -54,4 +54,23 @@ async function start() {
 start().catch((err) => {
   console.error('Failed to start server:', err)
   process.exit(1)
+})
+
+async function gracefulShutdown(signal) {
+  console.log(`${signal} received, shutting down gracefully...`)
+  await stopAllBots()
+  process.exit(0)
+}
+
+process.on('SIGTERM', () => {
+  const timeout = setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit.')
+    process.exit(1)
+  }, 8000)
+  timeout.unref()
+  gracefulShutdown('SIGTERM')
+})
+
+process.on('SIGINT', () => {
+  gracefulShutdown('SIGINT')
 })
