@@ -9,7 +9,8 @@ export default function ProductCard({ product }) {
   const { shop, lang } = useShop()
   const currency = shop?.currency || 'сум'
   const [imgError, setImgError] = useState(false)
-  const hasDiscount = product.old_price && Number(product.old_price) > Number(product.price)
+  const hasPrice = !!product.price
+  const hasDiscount = hasPrice && product.old_price && Number(product.old_price) > Number(product.price)
   const discountPct = hasDiscount
     ? Math.round((1 - Number(product.price) / Number(product.old_price)) * 100)
     : 0
@@ -62,11 +63,17 @@ export default function ProductCard({ product }) {
           <p className="text-xs text-muted">⭐ {Number(product.rating).toFixed(1)}</p>
         )}
         <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-sm font-bold text-accent">{formatPrice(product.price, currency)}</span>
-          {hasDiscount && (
-            <span className="text-xs text-muted line-through">
-              {formatPrice(product.old_price, currency)}
-            </span>
+          {hasPrice ? (
+            <>
+              <span className="text-sm font-bold text-accent">{formatPrice(product.price, currency)}</span>
+              {hasDiscount && (
+                <span className="text-xs text-muted line-through">
+                  {formatPrice(product.old_price, currency)}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm font-semibold italic text-muted">Narxi so'rov orqali</span>
           )}
         </div>
       </div>

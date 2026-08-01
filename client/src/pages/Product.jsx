@@ -53,9 +53,10 @@ export default function Product() {
   const allImages = [product.image_url, ...(product.images || [])].filter(Boolean)
   const hasVariants = (product.variants?.length || 0) > 0
 
-  const displayPrice = hasVariants ? Number(selectedVariant?.price || 0) : Number(product.price)
+  const hasPrice = hasVariants ? !!selectedVariant?.price : !!product.price
+  const displayPrice = hasVariants ? Number(selectedVariant?.price || 0) : Number(product.price || 0)
   const displayOldPrice = hasVariants ? selectedVariant?.old_price : product.old_price
-  const hasDiscount = displayOldPrice && Number(displayOldPrice) > displayPrice
+  const hasDiscount = hasPrice && displayOldPrice && Number(displayOldPrice) > displayPrice
   const discountPct = hasDiscount
     ? Math.round((1 - displayPrice / Number(displayOldPrice)) * 100)
     : 0
@@ -191,11 +192,17 @@ export default function Product() {
         )}
 
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-accent">{formatPrice(displayPrice, currency)}</span>
-          {hasDiscount && (
-            <span className="text-sm text-muted line-through">
-              {formatPrice(displayOldPrice, currency)}
-            </span>
+          {hasPrice ? (
+            <>
+              <span className="text-xl font-bold text-accent">{formatPrice(displayPrice, currency)}</span>
+              {hasDiscount && (
+                <span className="text-sm text-muted line-through">
+                  {formatPrice(displayOldPrice, currency)}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-lg font-semibold italic text-muted">Narxi so'rov orqali</span>
           )}
         </div>
 
@@ -381,31 +388,45 @@ export default function Product() {
       </div>
 
       <div className="sticky bottom-16 mt-6 border-t border-white/5 bg-bg/95 px-4 py-3 backdrop-blur">
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              if (!canAddToCart) return
-              handleAddToCart()
-              navigate('/checkout')
-            }}
-            disabled={!canAddToCart}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
+        {hasPrice ? (
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                if (!canAddToCart) return
+                handleAddToCart()
+                navigate('/checkout')
+              }}
+              disabled={!canAddToCart}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
+            >
+              {canAddToCart ? t('buyNow', lang) : t('outOfStock', lang)}
+            </button>
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddToCart}
+              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-surface transition-transform active:scale-[0.98] disabled:opacity-40"
+              title={t('addToCart', lang)}
+            >
+              {added ? (
+                <CheckIcon className="h-6 w-6 text-accent" />
+              ) : (
+                <BagIcon className="h-6 w-6 text-accent" />
+              )}
+            </button>
+          </div>
+        ) : (
+          <a
+            href={shop?.bot_username ? `https://t.me/${shop.bot_username}` : 'https://t.me/finexia_uz'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow"
           >
-            {canAddToCart ? t('buyNow', lang) : t('outOfStock', lang)}
-          </button>
-          <button
-            onClick={handleAddToCart}
-            disabled={!canAddToCart}
-            className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-surface transition-transform active:scale-[0.98] disabled:opacity-40"
-            title={t('addToCart', lang)}
-          >
-            {added ? (
-              <CheckIcon className="h-6 w-6 text-accent" />
-            ) : (
-              <BagIcon className="h-6 w-6 text-accent" />
-            )}
-          </button>
-        </div>
+            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+            Sotuvchi bilan bog'lanish
+          </a>
+        )}
       </div>
     </div>
   )
