@@ -46,7 +46,13 @@ export async function startBotForShop(shop) {
     })
 
     bot.on('polling_error', (err) => {
-      console.error(`[bot ${shop.id}] polling error:`, err.message)
+      const is409 = err.message?.includes('409') || (err.code === 'ETELEGRAM' && err.message?.includes('Conflict'))
+      if (is409) {
+        // Ожидаемо при деплое (старый/новый инстанс временно работают одновременно) — не шум для реальных ошибок
+        console.log(`[bot ${shop.id}] polling 409 (deploy overlap, ignorable)`)
+      } else {
+        console.error(`[bot ${shop.id}] polling error:`, err.message)
+      }
     })
 
     bots.set(shop.id, { bot, token: shop.bot_token })
