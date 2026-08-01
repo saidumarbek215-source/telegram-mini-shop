@@ -65,8 +65,8 @@ export default function ProductForm({ product, categories, unitType = 'size', on
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || (!hasVariants && !form.price) || !form.image_url.trim()) {
-      setError(t('fillNamePricePhoto', lang))
+    if (!form.name.trim() || !form.image_url.trim()) {
+      setError(t('fillNamePhoto', lang))
       return
     }
     setError('')
@@ -74,7 +74,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     try {
       const effectivePrice = hasVariants
         ? Math.min(...variants.map((v) => Number(v.price) || 0))
-        : parseFloat(String(form.price).replace(',', '.'))
+        : form.price !== '' ? parseFloat(String(form.price).replace(',', '.')) : null
 
       await onSave({
         name: form.name.trim(),
@@ -150,7 +150,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
       {!hasVariants && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">{t('price', lang)} *</label>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('price', lang)}</label>
             <input
               name="price"
               type="text"
