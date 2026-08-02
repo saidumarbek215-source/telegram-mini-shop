@@ -62,7 +62,7 @@ router.post(
       return res.status(400).json({ error: 'name и image_url обязательны' })
     }
 
-    const parsedPrice = price != null && price !== '' ? parseFloat(String(price).replace(',', '.')) : null
+    const parsedPrice = (() => { const n = parseFloat(String(price ?? '').replace(',', '.')); return isNaN(n) ? null : n })()
 
     const result = await query(
       `INSERT INTO products
@@ -101,7 +101,7 @@ router.put(
       return res.status(400).json({ error: 'name и image_url обязательны' })
     }
 
-    const parsedPrice = price != null && price !== '' ? parseFloat(String(price).replace(',', '.')) : null
+    const parsedPrice = (() => { const n = parseFloat(String(price ?? '').replace(',', '.')); return isNaN(n) ? null : n })()
 
     const result = await query(
       `UPDATE products

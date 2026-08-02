@@ -74,7 +74,7 @@ export default function ProductForm({ product, categories, unitType = 'size', on
     try {
       const effectivePrice = hasVariants
         ? Math.min(...variants.map((v) => Number(v.price) || 0))
-        : form.price !== '' ? parseFloat(String(form.price).replace(',', '.')) : null
+        : (() => { const n = parseFloat(String(form.price ?? '').replace(',', '.')); return isNaN(n) ? null : n })()
 
       await onSave({
         name: form.name.trim(),
