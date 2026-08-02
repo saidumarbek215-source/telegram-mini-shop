@@ -85,6 +85,7 @@ export async function migrate() {
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS trial_reminder_sent_at TIMESTAMP`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS next_payment_due DATE`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_reminder_sent_at TIMESTAMP`)
+  await pool.query(`ALTER TABLE products ALTER COLUMN price DROP NOT NULL`)
   console.log('Migration applied successfully')
 }
 
