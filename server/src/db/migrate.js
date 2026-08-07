@@ -86,6 +86,11 @@ export async function migrate() {
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS next_payment_due DATE`)
   await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_reminder_sent_at TIMESTAMP`)
   await pool.query(`ALTER TABLE products ALTER COLUMN price DROP NOT NULL`)
+  // Safety net: prevents duplicate shop_order_number under any remaining race condition
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS uniq_orders_shop_order_number
+    ON orders(shop_id, shop_order_number)
+  `)
   console.log('Migration applied successfully')
 }
 
