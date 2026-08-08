@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
-import BannerSlider from '../components/BannerSlider.jsx'
 import ProductCard from '../components/ProductCard.jsx'
-import { BannerSkeleton, ProductSkeleton } from '../components/Skeleton.jsx'
+import { ProductSkeleton } from '../components/Skeleton.jsx'
 import { formatPrice } from '../utils/format.js'
 import { useCart } from '../context/CartContext.jsx'
-
+import BannerSlider from '../components/BannerSlider.jsx'
 // Emoji icons for categories without images
 const CAT_ICON_MAP = [
   { keys: ['iphone', 'apple'], icon: '🍎' },
@@ -30,17 +29,6 @@ function getCatIcon(name) {
   }
   return null
 }
-
-const CAT_GRADIENTS = [
-  'from-yellow-400 to-orange-500',
-  'from-blue-500 to-indigo-600',
-  'from-emerald-400 to-teal-600',
-  'from-purple-500 to-pink-600',
-  'from-red-500 to-rose-600',
-  'from-cyan-400 to-blue-500',
-  'from-amber-400 to-yellow-500',
-  'from-green-400 to-emerald-500',
-]
 
 function DealOfDay({ product }) {
   const { addItem } = useCart()
@@ -101,22 +89,178 @@ function DealOfDay({ product }) {
   )
 }
 
+
+function StoreCard({ shop, newProducts }) {
+  const newest = (newProducts || []).slice(0, 3)
+  return (
+    <div style={{
+      background: 'linear-gradient(160deg, #0d0d0d 0%, #181818 100%)',
+      borderRadius: 16, overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', height: '100%',
+      border: '1px solid rgba(255,224,0,0.12)',
+    }}>
+      {/* Logo area */}
+      <div style={{ padding: '20px 16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ padding: 2, borderRadius: 12, background: 'linear-gradient(135deg, #FFE000, #b8860b)' }}>
+          <div style={{ background: '#111', borderRadius: 10, padding: '8px 10px' }}>
+            <img src="https://i.postimg.cc/63GkxmFs/Bez-imeni-3.jpg" alt="Boston"
+              style={{ width: 80, height: 'auto', maxHeight: 50, objectFit: 'contain', display: 'block' }} />
+          </div>
+        </div>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', margin: 0 }}>Telefon Bozor</p>
+      </div>
+
+      {/* New arrivals */}
+      <div style={{ flex: 1, padding: '12px 12px 0' }}>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 8, letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 8px', fontWeight: 700 }}>
+          Yangi keldi
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {newest.map(p => {
+            const img = p.image_url || p.images?.[0]
+            return (
+              <Link key={p.id} to={`/product/${p.id}`} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(255,255,255,0.05)', borderRadius: 10,
+                padding: 8, textDecoration: 'none',
+                border: '1px solid rgba(255,255,255,0.08)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,224,0,0.4)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: '#222', flexShrink: 0, overflow: 'hidden' }}>
+                  {img
+                    ? <img src={img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 3 }} />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📱</div>
+                  }
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ color: '#fff', fontSize: 10, fontWeight: 600, margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                  <p style={{ color: '#FFE000', fontSize: 10, fontWeight: 800, margin: 0 }}>{formatPrice(p.price)}</p>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+
+      <div style={{ padding: '0 0 14px' }} />
+    </div>
+  )
+}
+
+
+function HeroSection({ discounted, allProducts }) {
+  const items = [
+    ...discounted,
+    ...allProducts.filter(p => !discounted.find(d => d.id === p.id))
+  ].slice(0, 8)
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #0d0d0d 0%, #1c1c1c 100%)',
+      position: 'relative', overflow: 'hidden', height: '100%',
+    }}>
+      <style>{`
+        @keyframes hFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+        @keyframes hShimmer { 0%{transform:translateX(-200%)} 100%{transform:translateX(400%)} }
+        @keyframes hPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,224,0,0.35)} 50%{box-shadow:0 0 0 14px rgba(255,224,0,0)} }
+        @keyframes hItemIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .hprod { transition: all 0.2s ease; text-decoration: none; display:flex; flex-direction:column; }
+        .hprod:hover { transform: translateY(-2px) !important; border-color: rgba(255,224,0,0.5) !important; }
+
+        /* MOBILE: только товары, лого скрыто */
+        .hero-inner { display:flex; flex-direction:column; }
+        .hero-logo-row { display:none; }
+        .hero-badge { background:#cc0000; color:#fff; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:1px; }
+        .hero-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; padding:12px; }
+
+        /* DESKTOP: лого слева + 4 колонки */
+        @media(min-width:640px){
+          .hero-inner { flex-direction:row; align-items:stretch; min-height:260px; }
+          .hero-logo-row {
+            display:flex; flex-direction:column; justify-content:center; align-items:center;
+            width:150px; flex-shrink:0; gap:12px;
+            padding:24px 16px;
+            border-right:1px solid rgba(255,255,255,0.07);
+            animation: hFloat 4s ease-in-out infinite;
+          }
+          .hero-logo-img { width:100px; max-height:65px; }
+          .hero-grid { flex:1; grid-template-columns:repeat(4,1fr); gap:8px; padding:16px; align-content:center; }
+        }
+      `}</style>
+
+      <div className="hero-inner">
+        {/* Logo row (mobile: horizontal top bar; desktop: left column) */}
+        <div className="hero-logo-row">
+          <div style={{
+            padding: 2, borderRadius: 12,
+            background: 'linear-gradient(135deg, #FFE000 0%, #b8860b 100%)',
+            animation: 'hPulse 3s ease-in-out infinite', flexShrink: 0,
+          }}>
+            <div style={{ background: '#111', borderRadius: 10, padding: '7px 9px' }}>
+              <img src="https://i.postimg.cc/63GkxmFs/Bez-imeni-3.jpg" alt="Boston" className="hero-logo-img" />
+            </div>
+          </div>
+          <div>
+            <span className="hero-badge">🔥 AKSIYA</span>
+            <p style={{color:'rgba(255,255,255,0.35)',fontSize:8,letterSpacing:3,textTransform:'uppercase',margin:'4px 0 0',fontWeight:700}}>Kun takliflari</p>
+          </div>
+        </div>
+
+        {/* Products grid */}
+        <div className="hero-grid">
+          {items.map((p, i) => {
+            const img = p.image_url || p.images?.[0]
+            const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0
+            return (
+              <Link key={p.id} to={`/product/${p.id}`} className="hprod" style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10, overflow: 'hidden',
+                animation: `hItemIn 0.3s ease ${i * 0.05}s both`,
+              }}>
+                <div style={{ background: '#1a1a1a', aspectRatio: '1', position: 'relative', overflow: 'hidden' }}>
+                  {img
+                    ? <img src={img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 5 }} />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>📱</div>
+                  }
+                  {disc > 0 && (
+                    <div style={{ position: 'absolute', top: 3, left: 3, background: '#cc0000', color: '#fff', fontSize: 8, fontWeight: 800, padding: '1px 4px', borderRadius: 3 }}>
+                      -{disc}%
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '5px 7px' }}>
+                  <p style={{ color: '#fff', fontSize: 9, fontWeight: 600, margin: '0 0 2px', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.name}</p>
+                  <p style={{ color: '#FFE000', fontSize: 10, fontWeight: 800, margin: 0 }}>{formatPrice(p.price)}</p>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
-  const [banners, setBanners] = useState([])
   const [categories, setCategories] = useState([])
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [products,   setProducts]   = useState([])
+  const [banners,    setBanners]    = useState([])
+  const [loading,    setLoading]    = useState(true)
   const catRef = useRef(null)
 
   useEffect(() => {
-    Promise.all([api.getBanners(), api.getCategories(), api.getProducts()])
-      .then(([b, c, p]) => { setBanners(b); setCategories(c); setProducts(p) })
+    Promise.all([api.getCategories(), api.getProducts(), api.getBanners()])
+      .then(([c, p, b]) => { setCategories(c); setProducts(p); setBanners(b) })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   const dealProduct = products.find(p => p.old_price && Number(p.old_price) > Number(p.price)) || products[0]
-  const discounted = products.filter(p => p.old_price && Number(p.old_price) > Number(p.price))
+  const discounted  = products.filter(p => p.old_price && Number(p.old_price) > Number(p.price))
 
   function scrollCats(dir) {
     if (catRef.current) catRef.current.scrollBy({ left: dir * 240, behavior: 'smooth' })
@@ -125,42 +269,19 @@ export default function Home() {
   return (
     <div>
 
-      {/* ── TOP SECTION — dark background, no grey gap ── */}
-      <div className="bg-primary">
-        {/* Banner + Deal of day */}
-        <div className="container-web pt-3 pb-3">
-          <div className="flex gap-3 items-stretch">
-            <div className="flex-1 min-w-0">
-              {loading ? <BannerSkeleton /> : <BannerSlider banners={banners} />}
-            </div>
-            <div className="hidden lg:flex w-60 flex-shrink-0">
-              {loading
-                ? <div className="skeleton rounded-2xl w-full min-h-64 flex-1" />
-                : <DealOfDay product={dealProduct} />
-              }
-            </div>
-          </div>
-        </div>
-
-        {/* Features strip */}
-        <div className="border-t border-white/10 py-2.5">
-          <div className="container-web">
-            <div className="flex justify-around gap-2">
-              {[
-                { icon: '🚚', text: 'Tez yetkazib berish' },
-                { icon: '✅', text: 'Kafolat bilan' },
-                { icon: '🔄', text: '14 kun qaytarish' },
-                { icon: '💳', text: "Bo'lib to'lash" },
-              ].map((f, i) => (
-                <div key={i} className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-base">{f.icon}</span>
-                  <span className="text-xs text-white/70 hidden sm:block whitespace-nowrap">{f.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Баннер — полный экран */}
+      <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', aspectRatio: '16/7', overflow: 'hidden' }}>
+          {loading
+            ? <div className="skeleton w-full h-full" style={{ minHeight: 260 }} />
+            : banners.length > 0
+              ? <BannerSlider banners={banners} />
+              : <HeroSection discounted={discounted} allProducts={products} />
+          }
         </div>
       </div>
+
+
 
       {/* ── MAIN CONTENT ── */}
       <div className="container-web pt-5 pb-8 space-y-8">
@@ -189,31 +310,27 @@ export default function Home() {
             <div ref={catRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth">
               {loading
                 ? Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="skeleton flex-shrink-0 w-28 h-28 rounded-2xl" />
+                    <div key={i} className="skeleton flex-shrink-0 w-28 h-32 rounded-xl" />
                   ))
-                : categories.map((cat, idx) => {
+                : categories.map((cat) => {
                     const icon = getCatIcon(cat.name)
-                    const grad = CAT_GRADIENTS[idx % CAT_GRADIENTS.length]
                     return (
                       <Link key={cat.id} to={`/catalog?category=${cat.id}`}
-                        className="flex-shrink-0 w-28 h-28 rounded-2xl overflow-hidden relative group shadow-sm hover:shadow-md transition-shadow"
+                        className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md hover:border-accent transition-all group"
                       >
-                        {cat.image_url ? (
-                          <>
+                        {/* Grey image area */}
+                        <div className="bg-gray-100 h-32 flex items-center justify-center overflow-hidden">
+                          {cat.image_url ? (
                             <img src={cat.image_url} alt={cat.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                            <p className="absolute bottom-2 left-0 right-0 text-center text-white text-xs font-bold px-1 drop-shadow">{cat.name}</p>
-                          </>
-                        ) : (
-                          <div className={`w-full h-full bg-gradient-to-br ${grad} flex flex-col items-center justify-center gap-1.5 p-2`}>
-                            {icon
-                              ? <span className="text-3xl drop-shadow">{icon}</span>
-                              : <span className="text-3xl font-black text-white drop-shadow">{cat.name[0]}</span>
-                            }
-                            <p className="text-center text-xs font-bold text-white leading-tight drop-shadow-sm px-1">{cat.name}</p>
-                          </div>
-                        )}
+                              className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <span className="text-5xl">{icon || '📦'}</span>
+                          )}
+                        </div>
+                        {/* Name */}
+                        <div className="px-3 py-2">
+                          <p className="text-sm font-semibold text-gray-800 text-center leading-tight line-clamp-2">{cat.name}</p>
+                        </div>
                       </Link>
                     )
                   })
@@ -222,24 +339,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Promo strip */}
-        {!loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { bg: 'bg-yellow-400', icon: '⚡', title: "Bo'lib to'lash", sub: '0% foiz bilan' },
-              { bg: 'bg-black', icon: '🚚', title: 'Tez yetkazish', sub: 'Toshkent bo\'ylab' },
-              { bg: 'bg-red-600', icon: '🛡️', title: '1 yil kafolat', sub: 'Barcha mahsulotga' },
-            ].map((p, i) => (
-              <div key={i} className={`${p.bg} rounded-2xl p-4 flex items-center gap-3`}>
-                <span className="text-3xl">{p.icon}</span>
-                <div>
-                  <p className={`font-bold text-sm ${p.bg === 'bg-yellow-400' ? 'text-black' : 'text-white'}`}>{p.title}</p>
-                  <p className={`text-xs ${p.bg === 'bg-yellow-400' ? 'text-black/70' : 'text-white/70'}`}>{p.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Discounted */}
         {!loading && discounted.length > 0 && (

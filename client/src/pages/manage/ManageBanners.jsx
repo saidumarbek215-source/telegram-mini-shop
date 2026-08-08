@@ -15,10 +15,28 @@ function BannerForm({ banner, onSave, onCancel, lang }) {
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
     setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  async function handleUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadError('')
+    try {
+      const { full_url } = await adminApi.uploadImage(file)
+      setForm((f) => ({ ...f, image_url: full_url }))
+    } catch (err) {
+      setUploadError(err.message)
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
   }
 
   async function handleSubmit(e) {
@@ -49,13 +67,38 @@ function BannerForm({ banner, onSave, onCancel, lang }) {
         <label className="mb-1 block text-xs font-medium text-muted">
           {t('imageUrlRequired', lang)}
         </label>
-        <input
-          name="image_url"
-          value={form.image_url}
-          onChange={handleChange}
-          placeholder="https://..."
-          className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-        />
+        <div className="flex gap-2">
+          <input
+            name="image_url"
+            value={form.image_url}
+            onChange={handleChange}
+            placeholder="https://..."
+            disabled={uploading}
+            className="min-w-0 flex-1 rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+          />
+          <label className={`flex cursor-pointer items-center whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-medium transition-opacity ${uploading ? 'cursor-not-allowed bg-surface2 text-muted opacity-60' : 'bg-accent text-bg'}`}>
+            {uploading ? '...' : 'Загрузить'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUpload}
+              disabled={uploading}
+            />
+          </label>
+        </div>
+        {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
+        {form.image_url.trim() && (
+          <div className="mt-2 h-20 w-32 overflow-hidden rounded-xl bg-surface2">
+            <img
+              src={form.image_url.trim()}
+              alt=""
+              className="h-full w-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+              onLoad={(e) => { e.currentTarget.style.display = 'block' }}
+            />
+          </div>
+        )}
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">{t('bannerTitle', lang)}</label>

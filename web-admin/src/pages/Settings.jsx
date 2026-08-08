@@ -94,6 +94,50 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Appearance */}
+        <div className="card p-5 space-y-4">
+          <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Ko'rinish va til</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Til</label>
+              <select className="input" value={form.features?.language || 'ru'} onChange={e => set('features', { ...(form.features||{}), language: e.target.value })}>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="uz">🇺🇿 O'zbekcha</option>
+                <option value="en">🇬🇧 English</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Tema</label>
+              <select className="input" value={form.features?.theme || 'dark'} onChange={e => set('features', { ...(form.features||{}), theme: e.target.value })}>
+                <option value="dark">🌙 Qora</option>
+                <option value="light">☀️ Oq</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label">O'lchov turi</label>
+            <select className="input" value={form.product_unit_type || 'size'} onChange={e => set('product_unit_type', e.target.value)}>
+              <option value="size">O'lcham (S, M, L, XL, 40, 41...)</option>
+              <option value="weight">Og'irlik (1kg, 5kg, 10kg...)</option>
+              <option value="volume">Hajm (1l, 5l, 10l...)</option>
+              <option value="piece">Dona (shtuka)</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Valyuta</label>
+            <select className="input" value={form.currency || "so'm"} onChange={e => set('currency', e.target.value)}>
+              <option value="so'm">🇺🇿 So'm (UZS)</option>
+              <option value="$">🇺🇸 Dollar ($)</option>
+              <option value="€">🇪🇺 Yevro (€)</option>
+              <option value="₽">🇷🇺 Rubl (₽)</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Telegram admin username</label>
+            <input className="input" value={form.admin_username || ''} onChange={e => set('admin_username', e.target.value)} placeholder="example: boston_admin" />
+          </div>
+        </div>
+
         {/* Order settings */}
         <div className="card p-5 space-y-4">
           <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Buyurtma sozlamalari</h2>

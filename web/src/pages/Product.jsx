@@ -9,6 +9,7 @@ export default function Product() {
   const navigate = useNavigate()
   const { addItem } = useCart()
   const [product, setProduct] = useState(null)
+  const [shop, setShop] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedSize, setSelectedSize] = useState('')
@@ -17,6 +18,10 @@ export default function Product() {
   const [activeImg, setActiveImg] = useState(0)
   const [added, setAdded] = useState(false)
   const [descExpanded, setDescExpanded] = useState(false)
+
+  useEffect(() => {
+    api.getSettings().then(setShop).catch(() => {})
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -132,9 +137,15 @@ export default function Product() {
 
           {/* Price */}
           <div>
-            <p className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</p>
-            {product.old_price && Number(product.old_price) > Number(product.price) && (
-              <p className="text-gray-400 line-through text-lg">{formatPrice(product.old_price)}</p>
+            {product.price ? (
+              <>
+                <p className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</p>
+                {product.old_price && Number(product.old_price) > Number(product.price) && (
+                  <p className="text-gray-400 line-through text-lg">{formatPrice(product.old_price)}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl font-semibold text-gray-400 italic">Narxi so'rov orqali</p>
             )}
           </div>
 
@@ -222,42 +233,62 @@ export default function Product() {
             </div>
           )}
 
-          {/* Quantity */}
-          <div>
-            <p className="font-semibold mb-2 text-sm">Miqdor:</p>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-accent transition-colors text-lg font-medium"
-              >−</button>
-              <span className="w-10 text-center font-semibold text-lg">{quantity}</span>
-              <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-accent transition-colors text-lg font-medium"
-              >+</button>
+          {/* Quantity — only relevant when ordering */}
+          {product.price && (
+            <div>
+              <p className="font-semibold mb-2 text-sm">Miqdor:</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-accent transition-colors text-lg font-medium"
+                >−</button>
+                <span className="w-10 text-center font-semibold text-lg">{quantity}</span>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-accent transition-colors text-lg font-medium"
+                >+</button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Add to cart */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleAddToCart}
-              className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all ${
-                added
-                  ? 'bg-green-500 text-white'
-                  : 'bg-accent hover:bg-accent-hover text-white'
-              }`}
-            >
-              {added ? '✓ Savatga qo\'shildi' : 'Savatga qo\'shish'}
-            </button>
-          </div>
+          {/* Add to cart / contact seller */}
+          {product.price ? (
+            <>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleAddToCart}
+                  className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all ${
+                    added
+                      ? 'bg-green-500 text-white'
+                      : 'bg-accent hover:bg-accent-hover text-white'
+                  }`}
+                >
+                  {added ? '✓ Savatga qo\'shildi' : 'Savatga qo\'shish'}
+                </button>
+              </div>
 
-          <button
-            onClick={() => { handleAddToCart(); navigate('/cart') }}
-            className="w-full py-4 rounded-xl font-bold text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
-          >
-            Hozir sotib olish
-          </button>
+              <button
+                onClick={() => { handleAddToCart(); navigate('/cart') }}
+                className="w-full py-4 rounded-xl font-bold text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+              >
+                Hozir sotib olish
+              </button>
+            </>
+          ) : (
+            <div className="pt-2">
+              <a
+                href={shop?.bot_username ? `https://t.me/${shop.bot_username}` : 'https://t.me/finexia_uz'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-lg bg-accent hover:bg-accent-hover text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                Sotuvchi bilan bog'lanish
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

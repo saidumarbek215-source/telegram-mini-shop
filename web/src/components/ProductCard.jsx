@@ -33,7 +33,7 @@ export default function ProductCard({ product }) {
             </svg>
           </div>
         )}
-        {product.old_price && Number(product.old_price) > Number(product.price) && (
+        {product.price && product.old_price && Number(product.old_price) > Number(product.price) && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
             -{Math.round((1 - product.price / product.old_price) * 100)}%
           </span>
@@ -49,13 +49,19 @@ export default function ProductCard({ product }) {
 
         <div className="mt-2 flex items-center justify-between gap-2">
           <div>
-            <p className="font-bold text-gray-900 text-base">{formatPrice(product.price)}</p>
-            {product.old_price && Number(product.old_price) > Number(product.price) && (
-              <p className="text-xs text-gray-400 line-through">{formatPrice(product.old_price)}</p>
+            {product.price ? (
+              <>
+                <p className="font-bold text-gray-900 text-base">{formatPrice(product.price)}</p>
+                {product.old_price && Number(product.old_price) > Number(product.price) && (
+                  <p className="text-xs text-gray-400 line-through">{formatPrice(product.old_price)}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-gray-400 italic">Narxi so'rov orqali</p>
             )}
           </div>
 
-          {!hasSizes && (
+          {product.price && !hasSizes && (
             <button
               onClick={handleAddToCart}
               className="flex-shrink-0 w-9 h-9 bg-accent hover:bg-accent-hover text-white rounded-full flex items-center justify-center transition-colors shadow-sm"

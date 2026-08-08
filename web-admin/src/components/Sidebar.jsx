@@ -8,6 +8,7 @@ const NAV = [
   { to: '/orders',    label: 'Buyurtmalar',  icon: '🛒' },
   { to: '/banners',   label: 'Bannerlar',    icon: '🖼️' },
   { to: '/credits',   label: 'Nasiyalar',    icon: '💳' },
+  { to: '/customers', label: 'Mijozlar',     icon: '👥' },
   { to: '/map',       label: 'Xarita',       icon: '🗺️' },
   { to: '/ai',        label: 'AI Assistant', icon: '🤖' },
   { to: '/settings',  label: 'Sozlamalar',   icon: '⚙️' },

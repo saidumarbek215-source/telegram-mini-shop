@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useShop } from '../../context/ShopContext.jsx'
 import { t } from '../../i18n.js'
+import { adminApi } from '../../api.js'
 
 export default function ProductForm({ product, categories, unitType = 'size', onSave, onCancel }) {
   const { lang } = useShop()
@@ -24,6 +25,9 @@ export default function ProductForm({ product, categories, unitType = 'size', on
   const [variants, setVariants] = useState(product?.variants || [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploadingMain, setUploadingMain] = useState(false)
+  const [uploadingImageIdx, setUploadingImageIdx] = useState(null)
+  const [uploadError, setUploadError] = useState('')
 
   const hasVariants = variants.length > 0
 
@@ -50,6 +54,57 @@ export default function ProductForm({ product, categories, unitType = 'size', on
   }
   function removeImage(i) {
     setImages((imgs) => imgs.filter((_, idx) => idx !== i))
+  }
+
+  async function handleMainImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingMain(true)
+    setUploadError('')
+    try {
+      const { full_url } = await adminApi.uploadImage(file)
+      setForm((f) => ({ ...f, image_url: full_url }))
+    } catch (err) {
+      setUploadError(err.message)
+    } finally {
+      setUploadingMain(false)
+      e.target.value = ''
+    }
+  }
+
+  async function handleImageUpload(e, idx) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingImageIdx(idx)
+    setUploadError('')
+    try {
+      const { full_url } = await adminApi.uploadImage(file)
+      updateImage(idx, full_url)
+    } catch (err) {
+      setUploadError(err.message)
+    } finally {
+      setUploadingImageIdx(null)
+      e.target.value = ''
+    }
+  }
+
+  async function handleAddImageFromFile(e) {
+    const file = e.target.files?.[0]
+    if (!file || images.length >= 5) return
+    const newIdx = images.length
+    setImages((imgs) => [...imgs, ''])
+    setUploadingImageIdx(newIdx)
+    setUploadError('')
+    try {
+      const { full_url } = await adminApi.uploadImage(file)
+      setImages((imgs) => imgs.map((img, i) => (i === newIdx ? full_url : img)))
+    } catch (err) {
+      setImages((imgs) => imgs.filter((_, i) => i !== newIdx))
+      setUploadError(err.message)
+    } finally {
+      setUploadingImageIdx(null)
+      e.target.value = ''
+    }
   }
 
   // Variants
@@ -187,13 +242,27 @@ export default function ProductForm({ product, categories, unitType = 'size', on
 
       <div>
         <label className="mb-1 block text-xs font-medium text-muted">{t('photoUrl', lang)} *</label>
-        <input
-          name="image_url"
-          value={form.image_url}
-          onChange={handleChange}
-          placeholder="https://..."
-          className="w-full rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
-        />
+        <div className="flex gap-2">
+          <input
+            name="image_url"
+            value={form.image_url}
+            onChange={handleChange}
+            placeholder="https://..."
+            disabled={uploadingMain}
+            className="min-w-0 flex-1 rounded-xl bg-surface2 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+          />
+          <label className={`flex cursor-pointer items-center whitespace-nowrap rounded-xl px-3 py-2.5 text-xs font-medium transition-opacity ${uploadingMain ? 'cursor-not-allowed bg-surface2 text-muted opacity-60' : 'bg-accent text-bg'}`}>
+            {uploadingMain ? '...' : 'Загрузить'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleMainImageUpload}
+              disabled={uploadingMain}
+            />
+          </label>
+        </div>
+        {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
         <p className="mt-1 text-xs text-muted">{t('photoHint', lang)}</p>
         {form.image_url.trim() && (
           <div className="mt-2 h-32 w-32 overflow-hidden rounded-xl bg-surface2">
@@ -213,13 +282,25 @@ export default function ProductForm({ product, categories, unitType = 'size', on
         <div className="mb-1 flex items-center justify-between">
           <label className="text-xs font-medium text-muted">Дополнительные фото</label>
           {images.length < 5 && (
-            <button
-              type="button"
-              onClick={addImage}
-              className="text-xs font-medium text-accent"
-            >
-              + Добавить фото
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={addImage}
+                className="text-xs font-medium text-accent"
+              >
+                + URL
+              </button>
+              <label className="cursor-pointer text-xs font-medium text-accent">
+                + Файл
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAddImageFromFile}
+                  disabled={uploadingImageIdx !== null}
+                />
+              </label>
+            </div>
           )}
         </div>
         {images.length > 0 && (
@@ -231,9 +312,10 @@ export default function ProductForm({ product, categories, unitType = 'size', on
                   value={img}
                   onChange={(e) => updateImage(i, e.target.value)}
                   placeholder="https://..."
-                  className="min-w-0 flex-1 rounded-lg bg-surface px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                  disabled={uploadingImageIdx === i}
+                  className="min-w-0 flex-1 rounded-lg bg-surface px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
                 />
-                {img.trim() && (
+                {img.trim() && uploadingImageIdx !== i && (
                   <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg bg-surface">
                     <img
                       src={img.trim()}
@@ -244,6 +326,19 @@ export default function ProductForm({ product, categories, unitType = 'size', on
                     />
                   </div>
                 )}
+                {uploadingImageIdx === i && (
+                  <div className="h-9 w-9 flex-shrink-0 rounded-lg bg-surface" />
+                )}
+                <label className={`flex-shrink-0 cursor-pointer text-xs ${uploadingImageIdx === i ? 'text-muted' : 'text-accent'}`}>
+                  {uploadingImageIdx === i ? '...' : '↑'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, i)}
+                    disabled={uploadingImageIdx !== null}
+                  />
+                </label>
                 <button
                   type="button"
                   onClick={() => removeImage(i)}

@@ -116,4 +116,26 @@ export const adminApi = {
   updatePartner: (id, data) =>
     request(`/admin/partners/${id}`, { method: 'PUT', body: JSON.stringify(data), admin: true }),
   deletePartner: (id) => request(`/admin/partners/${id}`, { method: 'DELETE', admin: true }),
+  uploadImage: async (file) => {
+    const headers = {}
+    const initData = getTelegramInitData()
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    } else {
+      const webToken = localStorage.getItem('web_admin_token')
+      if (webToken) headers['X-Web-Admin-Token'] = webToken
+    }
+    const formData = new FormData()
+    formData.append('image', file)
+    const res = await fetch(`${API_URL}${withShopId('/upload-image')}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error || `Не удалось загрузить фото (${res.status})`)
+    }
+    return res.json()
+  },
 }
