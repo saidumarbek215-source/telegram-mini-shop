@@ -10,16 +10,20 @@ import adminRouter from './routes/admin.js'
 import shopsRouter from './routes/shops.js'
 import webAuthRouter from './routes/webAuth.js'
 import superAdminRouter from './routes/superAdmin.js'
+import uploadRouter from './routes/upload.js'
 import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
 import { startSubscriptionReminderJob } from './jobs/subscriptionReminders.js'
 import { startAllBots, stopAllBots } from './services/botManager.js'
 
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '/var/www/uploads'
+
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+app.use('/uploads', express.static(UPLOAD_DIR))
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 
@@ -32,6 +36,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/shops', shopsRouter)
 app.use('/api/web-auth', webAuthRouter)
 app.use('/api/super-admin', superAdminRouter)
+app.use('/api/upload-image', uploadRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
