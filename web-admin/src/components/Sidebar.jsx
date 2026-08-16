@@ -2,17 +2,18 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
 const NAV = [
-  { to: '/',          label: 'Dashboard',    icon: '📊', end: true },
-  { to: '/products',  label: 'Mahsulotlar',  icon: '📦' },
-  { to: '/categories',label: 'Kategoriyalar',icon: '🗂️' },
-  { to: '/orders',    label: 'Buyurtmalar',  icon: '🛒' },
-  { to: '/banners',   label: 'Bannerlar',    icon: '🖼️' },
-  { to: '/credits',   label: 'Nasiyalar',    icon: '💳' },
-  { to: '/customers', label: 'Mijozlar',     icon: '👥' },
-  { to: '/map',       label: 'Xarita',       icon: '🗺️' },
-  { to: '/ai',        label: 'AI Assistant', icon: '🤖' },
-  { to: '/settings',  label: 'Sozlamalar',   icon: '⚙️' },
-  { to: '/help',      label: 'Yordam',       icon: '❓' },
+  { to: '/',           label: 'Dashboard',    icon: '📊', end: true },
+  { to: '/orders',     label: 'Buyurtmalar',  icon: '🛒' },
+  { to: '/products',   label: 'Mahsulotlar',  icon: '📦' },
+  { to: '/categories', label: 'Kategoriyalar',icon: '🗂️' },
+  { to: '/banners',    label: 'Bannerlar',    icon: '🖼️' },
+  { to: '/customers',  label: 'Mijozlar',     icon: '👥' },
+  { to: '/analytics',  label: 'Tahlil',       icon: '📈' },
+  { to: '/credits',    label: 'Nasiyalar',    icon: '💳' },
+  { to: '/map',        label: 'Xarita',       icon: '🗺️' },
+  { to: '/ai',         label: 'AI Assistant', icon: '🤖' },
+  { to: '/settings',   label: 'Sozlamalar',   icon: '⚙️' },
+  { to: '/help',       label: 'Yordam',       icon: '❓' },
 ]
 
 export default function Sidebar({ onClose }) {
@@ -29,10 +30,10 @@ export default function Sidebar({ onClose }) {
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-700">
         <div className="w-9 h-9 bg-yellow-400 rounded-lg flex items-center justify-center text-black font-black text-sm">
-          B
+          F
         </div>
         <div>
-          <p className="font-bold text-sm leading-tight">Boston Admin</p>
+          <p className="font-bold text-sm leading-tight">Finexia Admin</p>
           <p className="text-xs text-gray-400">Shop #{shopId}</p>
         </div>
         <button onClick={onClose} className="ml-auto lg:hidden p-1 hover:bg-gray-700 rounded">

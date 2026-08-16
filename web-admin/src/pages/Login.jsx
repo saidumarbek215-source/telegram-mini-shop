@@ -35,9 +35,9 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center text-black font-black text-2xl mx-auto mb-4">
-            B
+            F
           </div>
-          <h1 className="text-white text-xl font-bold">Boston Admin Panel</h1>
+          <h1 className="text-white text-xl font-bold">Finexia Admin Panel</h1>
           <p className="text-gray-400 text-sm mt-1">Boshqaruv tizimiga kiring</p>
         </div>
 

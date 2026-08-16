@@ -88,6 +88,19 @@ function RevenueChart({ orders }) {
   )
 }
 
+function gmv(orders, fromDate) {
+  return orders
+    .filter(o => o.status === 'delivered' && new Date(o.created_at) >= fromDate)
+    .reduce((s, o) => s + Number(o.total_price || 0), 0)
+}
+
+function startOf(unit) {
+  const d = new Date()
+  if (unit === 'day')  { d.setHours(0, 0, 0, 0); return d }
+  if (unit === 'week') { d.setDate(d.getDate() - 6); d.setHours(0, 0, 0, 0); return d }
+  if (unit === 'month'){ d.setDate(d.getDate() - 29); d.setHours(0, 0, 0, 0); return d }
+}
+
 export default function Dashboard() {
   const [products,   setProducts]   = useState([])
   const [orders,     setOrders]     = useState([])
@@ -102,11 +115,20 @@ export default function Dashboard() {
   }, [])
 
   const newOrders    = orders.filter(o => o.status === 'pending')
-  const totalRevenue = orders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.total_price || 0), 0)
   const discounted   = products.filter(p => p.old_price && Number(p.old_price) > Number(p.price))
 
-  // Unique customers
-  const uniqueCustomers = new Set(orders.map(o => o.phone || o.user_id)).size
+  // GMV by period (delivered only)
+  const gmvToday = gmv(orders, startOf('day'))
+  const gmvWeek  = gmv(orders, startOf('week'))
+  const gmvMonth = gmv(orders, startOf('month'))
+
+  // New buyers in last 7 days
+  const weekAgo = startOf('week')
+  const recentBuyers = new Set(
+    orders
+      .filter(o => new Date(o.created_at) >= weekAgo)
+      .map(o => o.phone || o.user_id)
+  ).size
 
   // Top products by order count
   const productCount = {}
@@ -138,12 +160,18 @@ export default function Dashboard() {
         <p className="text-sm text-gray-500">Umumiy ko'rsatkichlar</p>
       </div>
 
+      {/* GMV cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard icon="📅" label="GMV bugun"  value={fmt(gmvToday)} sub="yetkazilgan"  color="bg-emerald-50" />
+        <StatCard icon="📆" label="GMV hafta"  value={fmt(gmvWeek)}  sub="so'nggi 7 kun" color="bg-blue-50"   />
+        <StatCard icon="🗓️" label="GMV oy"    value={fmt(gmvMonth)} sub="so'nggi 30 kun" color="bg-violet-50" />
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="📦" label="Mahsulotlar"  value={products.length}   sub={`${discounted.length} aksiyada`}         color="bg-blue-50"   to="/products" />
-        <StatCard icon="🛒" label="Buyurtmalar"  value={orders.length}     sub={`${newOrders.length} yangi`}              color="bg-yellow-50" to="/orders" />
-        <StatCard icon="👥" label="Mijozlar"      value={uniqueCustomers}   sub="noyob xaridorlar"                         color="bg-purple-50" to="/customers" />
-        <StatCard icon="💰" label="Daromad"       value={fmt(totalRevenue)} sub="yetkazilgan buyurtmalar"                  color="bg-green-50" />
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard icon="📦" label="Mahsulotlar"      value={products.length}  sub={`${discounted.length} aksiyada`} color="bg-yellow-50" to="/products" />
+        <StatCard icon="🛒" label="Buyurtmalar"      value={orders.length}    sub={`${newOrders.length} yangi`}     color="bg-orange-50" to="/orders" />
+        <StatCard icon="👥" label="Yangi mijozlar"   value={recentBuyers}     sub="so'nggi 7 kunda"                 color="bg-pink-50"   to="/customers" />
       </div>
 
       {/* New orders alert */}

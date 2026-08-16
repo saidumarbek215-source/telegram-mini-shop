@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api.js'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 const EMPTY = { name: '', icon: '', image_url: '', sort_order: 0 }
 
@@ -128,10 +129,11 @@ export default function Categories() {
             </div>
             <div>
               <label className="label">Rasm URL</label>
-              <input className="input" value={form.image_url} onChange={e => set('image_url', e.target.value)} placeholder="https://..." />
-              {form.image_url && (
-                <img src={form.image_url} alt="" className="mt-2 w-16 h-16 object-contain rounded-lg border bg-gray-50" onError={e => e.target.style.display='none'} />
-              )}
+              <ImageUpload
+                value={form.image_url}
+                onChange={v => set('image_url', v)}
+                placeholder="https://..."
+              />
             </div>
             <div>
               <label className="label">Tartib raqami</label>

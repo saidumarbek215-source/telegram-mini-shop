@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '../api.js'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 const EMPTY = {
   name: '', description: '', price: '', old_price: '',
@@ -152,21 +153,23 @@ function ProductForm({ initial, categories, onSave, onCancel, loading }) {
 
       {/* Main photo */}
       <SectionTitle>Asosiy rasm *</SectionTitle>
-      <div>
-        <input className="input" value={form.image_url} onChange={e => set('image_url', e.target.value)} required placeholder="https://..." />
-        {form.image_url && (
-          <img src={form.image_url} alt="" className="mt-2 w-16 h-16 object-contain rounded-lg border border-gray-200 bg-gray-50" onError={e => e.target.style.display='none'} />
-        )}
-      </div>
+      <ImageUpload
+        value={form.image_url}
+        onChange={v => set('image_url', v)}
+        placeholder="https://..."
+      />
 
       {/* Extra images */}
       <SectionTitle>Qo'shimcha rasmlar (max 5)</SectionTitle>
       <div className="space-y-2">
         {form.images.map((img, i) => (
           <div key={i} className="flex items-center gap-2">
-            <input className="input flex-1 text-sm" value={img} onChange={e => updateImage(i, e.target.value)} placeholder="https://..." />
-            {img && <img src={img} alt="" className="w-8 h-8 object-contain rounded border bg-gray-50" onError={e => e.target.style.display='none'} />}
-            <button type="button" onClick={() => removeImage(i)} className="text-red-500 hover:text-red-700 p-1 flex-shrink-0">✕</button>
+            <ImageUpload
+              value={img}
+              onChange={v => updateImage(i, v)}
+              placeholder="https://..."
+            />
+            <button type="button" onClick={() => removeImage(i)} className="text-red-500 hover:text-red-700 p-1 flex-shrink-0 self-start mt-2">✕</button>
           </div>
         ))}
         {form.images.length < 5 && (

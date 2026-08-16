@@ -17,9 +17,76 @@ const STATUS_COLORS = {
   cancelled:  'bg-red-100 text-red-800 border-red-200',
 }
 
-function OrderDetail({ order, onClose, onStatusChange }) {
-  const [newStatus, setNewStatus] = useState(order.status)
-  const [saving, setSaving]       = useState(false)
+function CustomerHistory({ orders, customerKey, onClose }) {
+  const customerOrders = orders.filter(o => {
+    const key = o.phone || o.customer_name || `user_${o.user_id}`
+    return key === customerKey
+  })
+  const totalSpent = customerOrders
+    .filter(o => o.status === 'delivered')
+    .reduce((s, o) => s + Number(o.total_price || 0), 0)
+  const first = customerOrders[customerOrders.length - 1]
+  const last  = customerOrders[0]
+  function fmt(n) { return Number(n).toLocaleString('ru-RU') + " so'm" }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="font-bold text-gray-900">Mijoz tarixi</h2>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-3 gap-3 text-center bg-yellow-50 rounded-xl p-3 border border-yellow-200">
+            <div>
+              <p className="text-xl font-black text-gray-900">{customerOrders.length}</p>
+              <p className="text-xs text-gray-500">Buyurtmalar</p>
+            </div>
+            <div>
+              <p className="text-xl font-black text-green-600">{customerOrders.filter(o => o.status === 'delivered').length}</p>
+              <p className="text-xs text-gray-500">Yetkazildi</p>
+            </div>
+            <div>
+              <p className="text-base font-black text-yellow-600">{fmt(totalSpent)}</p>
+              <p className="text-xs text-gray-500">Jami xarid</p>
+            </div>
+          </div>
+          {first && (
+            <div className="text-xs text-gray-500 flex justify-between">
+              <span>Birinchi: {new Date(first.created_at).toLocaleDateString('ru-RU')}</span>
+              <span>Oxirgi: {new Date(last.created_at).toLocaleDateString('ru-RU')}</span>
+            </div>
+          )}
+          <div className="space-y-2">
+            {customerOrders.map(o => (
+              <div key={o.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <span className="font-mono text-gray-400 text-xs w-10">#{o.id}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold">{fmt(o.total_price)}</p>
+                  <p className="text-xs text-gray-400">{new Date(o.created_at).toLocaleDateString('ru-RU')}</p>
+                </div>
+                <span className={`badge ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                  {STATUS_LABELS[o.status] || o.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function OrderDetail({ order, orders, onClose, onStatusChange }) {
+  const [newStatus,    setNewStatus]    = useState(order.status)
+  const [saving,       setSaving]       = useState(false)
+  const [showCustomer, setShowCustomer] = useState(false)
+
+  const customerKey = order.phone || order.customer_name || `user_${order.user_id}`
 
   async function save() {
     if (newStatus === order.status) return
@@ -45,11 +112,27 @@ function OrderDetail({ order, onClose, onStatusChange }) {
         <div className="p-5 space-y-4">
           {/* Customer info */}
           <div className="bg-gray-50 rounded-xl p-4 space-y-1.5">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Mijoz</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Mijoz</p>
+              <button
+                onClick={() => setShowCustomer(true)}
+                className="text-xs text-yellow-600 font-semibold hover:underline"
+              >
+                Tarixi →
+              </button>
+            </div>
             <p className="text-sm font-semibold">{order.customer_name || '—'}</p>
             {order.customer_phone && <p className="text-sm text-gray-600">📞 {order.customer_phone}</p>}
             {order.delivery_address && <p className="text-sm text-gray-600">📍 {order.delivery_address}</p>}
           </div>
+
+          {showCustomer && (
+            <CustomerHistory
+              orders={orders}
+              customerKey={customerKey}
+              onClose={() => setShowCustomer(false)}
+            />
+          )}
 
           {/* Items */}
           <div>
@@ -206,6 +289,7 @@ export default function Orders() {
       {selected && (
         <OrderDetail
           order={selected}
+          orders={orders}
           onClose={() => setSelected(null)}
           onStatusChange={handleStatusChange}
         />

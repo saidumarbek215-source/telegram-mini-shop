@@ -397,6 +397,28 @@ router.put(
   })
 )
 
+/* ---------------------------- Analytics ------------------------------ */
+
+router.get(
+  '/analytics',
+  asyncHandler(async (req, res) => {
+    const days = Math.min(Math.max(Number(req.query.days) || 30, 7), 90)
+    const result = await query(
+      `SELECT
+         (created_at::date)::text AS date,
+         COUNT(*)::int            AS orders,
+         COALESCE(SUM(CASE WHEN status = 'delivered' THEN total_price ELSE 0 END), 0)::numeric AS revenue
+       FROM orders
+       WHERE shop_id = $1
+         AND created_at >= NOW() - ($2 * INTERVAL '1 day')
+       GROUP BY 1
+       ORDER BY 1 ASC`,
+      [req.shop.id, days]
+    )
+    res.json(result.rows)
+  })
+)
+
 /* ----------------------------- Credits ------------------------------- */
 
 router.get(

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getBanners, createBanner, updateBanner, deleteBanner } from '../api.js'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 const EMPTY = { image_url: '', title: '', subtitle: '', sort_order: 0, active: true }
 
@@ -113,10 +114,11 @@ export default function Banners() {
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label className="label">Rasm URL *</label>
-              <input className="input" value={form.image_url} onChange={e => set('image_url', e.target.value)} required placeholder="https://..." />
-              {form.image_url && (
-                <img src={form.image_url} alt="" className="mt-2 w-full aspect-[3/1] object-cover rounded-lg border bg-gray-50" onError={e => e.target.style.display='none'} />
-              )}
+              <ImageUpload
+                value={form.image_url}
+                onChange={v => set('image_url', v)}
+                placeholder="https://..."
+              />
             </div>
             <div>
               <label className="label">Sarlavha</label>

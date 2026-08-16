@@ -81,6 +81,33 @@ export const checkAdmin = () => req('GET', '/admin/check')
 export const getCredits    = ()      => req('GET', '/admin/credits')
 export const markCreditPaid = (id)   => req('PUT', `/admin/credits/${id}/paid`)
 
+// Analytics
+export async function getAnalytics(days = 30) {
+  const { token, shopId } = getAuth()
+  const res = await fetch(`${BASE}/admin/analytics?shop_id=${shopId}&days=${days}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'x-web-admin-token': token } : {}),
+    },
+  })
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || res.statusText) }
+  return res.json()
+}
+
+// Image upload
+export async function uploadImage(file) {
+  const { token, shopId } = getAuth()
+  const form = new FormData()
+  form.append('image', file)
+  const res = await fetch(`${BASE}/upload-image?shop_id=${shopId}`, {
+    method: 'POST',
+    headers: token ? { 'x-web-admin-token': token } : {},
+    body: form,
+  })
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Upload failed') }
+  return res.json()
+}
+
 // Partners (map)
 export const getPartners    = ()          => req('GET',    '/admin/partners')
 export const createPartner  = (data)      => req('POST',   '/admin/partners', data)

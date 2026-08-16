@@ -13,6 +13,7 @@ import Map from './pages/Map.jsx'
 import AI from './pages/AI.jsx'
 import Help from './pages/Help.jsx'
 import Customers from './pages/Customers.jsx'
+import Analytics from './pages/Analytics.jsx'
 
 function PrivateRoute({ children }) {
   const { isAuth } = useAuth()
@@ -32,8 +33,9 @@ export default function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="banners" element={<Banners />} />
             <Route path="credits" element={<Credits />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="map" element={<Map />} />
+            <Route path="customers"  element={<Customers />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="map"       element={<Map />} />
             <Route path="ai" element={<AI />} />
             <Route path="settings" element={<Settings />} />
             <Route path="help" element={<Help />} />
