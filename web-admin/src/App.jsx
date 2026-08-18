@@ -14,6 +14,7 @@ import AI from './pages/AI.jsx'
 import Help from './pages/Help.jsx'
 import Customers from './pages/Customers.jsx'
 import Analytics from './pages/Analytics.jsx'
+import Subscription from './pages/Subscription.jsx'
 
 function PrivateRoute({ children }) {
   const { isAuth } = useAuth()
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="map"       element={<Map />} />
             <Route path="ai" element={<AI />} />
+            <Route path="subscription" element={<Subscription />} />
             <Route path="settings" element={<Settings />} />
             <Route path="help" element={<Help />} />
           </Route>

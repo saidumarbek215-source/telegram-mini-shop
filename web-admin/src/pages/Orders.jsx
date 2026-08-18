@@ -1,20 +1,44 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getOrders, updateOrderStatus } from '../api.js'
 
-const STATUSES = ['pending', 'confirmed', 'delivering', 'delivered', 'cancelled']
+const PAYMENT_LABELS = {
+  cash:  '💵 Naqd',
+  card:  '💳 Karta',
+  click: '💳 Click',
+  payme: '💳 Payme',
+  uzum:  '💳 Uzum',
+}
+const PAYMENT_COLORS = {
+  cash:  'bg-green-100 text-green-800 border-green-200',
+  card:  'bg-blue-100 text-blue-800 border-blue-200',
+  click: 'bg-sky-100 text-sky-800 border-sky-200',
+  payme: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  uzum:  'bg-orange-100 text-orange-800 border-orange-200',
+}
+
+function PaymentBadge({ method }) {
+  if (!method) return null
+  return (
+    <span className={`badge border text-xs ${PAYMENT_COLORS[method] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+      {PAYMENT_LABELS[method] || method}
+    </span>
+  )
+}
+
+const STATUSES = ['new', 'accepted', 'shipped', 'expired', 'cancelled']
 const STATUS_LABELS = {
-  pending:    'Yangi',
-  confirmed:  'Tasdiqlangan',
-  delivering: 'Yetkazilmoqda',
-  delivered:  'Yetkazildi',
-  cancelled:  'Bekor',
+  new:       'Yangi',
+  accepted:  'Qabul qilindi',
+  shipped:   'Yetkazilmoqda',
+  expired:   "Muddati o'tgan",
+  cancelled: 'Bekor qilindi',
 }
 const STATUS_COLORS = {
-  pending:    'bg-yellow-100 text-yellow-800 border-yellow-200',
-  confirmed:  'bg-blue-100 text-blue-800 border-blue-200',
-  delivering: 'bg-purple-100 text-purple-800 border-purple-200',
-  delivered:  'bg-green-100 text-green-800 border-green-200',
-  cancelled:  'bg-red-100 text-red-800 border-red-200',
+  new:       'bg-yellow-100 text-yellow-800 border-yellow-200',
+  accepted:  'bg-blue-100 text-blue-800 border-blue-200',
+  shipped:   'bg-purple-100 text-purple-800 border-purple-200',
+  expired:   'bg-gray-100 text-gray-600 border-gray-200',
+  cancelled: 'bg-red-100 text-red-800 border-red-200',
 }
 
 function CustomerHistory({ orders, customerKey, onClose }) {
@@ -23,8 +47,8 @@ function CustomerHistory({ orders, customerKey, onClose }) {
     return key === customerKey
   })
   const totalSpent = customerOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((s, o) => s + Number(o.total_price || 0), 0)
+    .filter(o => o.status === 'shipped')
+    .reduce((s, o) => s + Number(o.total || 0), 0)
   const first = customerOrders[customerOrders.length - 1]
   const last  = customerOrders[0]
   function fmt(n) { return Number(n).toLocaleString('ru-RU') + " so'm" }
@@ -47,8 +71,8 @@ function CustomerHistory({ orders, customerKey, onClose }) {
               <p className="text-xs text-gray-500">Buyurtmalar</p>
             </div>
             <div>
-              <p className="text-xl font-black text-green-600">{customerOrders.filter(o => o.status === 'delivered').length}</p>
-              <p className="text-xs text-gray-500">Yetkazildi</p>
+              <p className="text-xl font-black text-green-600">{customerOrders.filter(o => o.status === 'shipped').length}</p>
+              <p className="text-xs text-gray-500">Yetkazilmoqda</p>
             </div>
             <div>
               <p className="text-base font-black text-yellow-600">{fmt(totalSpent)}</p>
@@ -66,7 +90,7 @@ function CustomerHistory({ orders, customerKey, onClose }) {
               <div key={o.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                 <span className="font-mono text-gray-400 text-xs w-10">#{o.id}</span>
                 <div className="flex-1">
-                  <p className="text-sm font-bold">{fmt(o.total_price)}</p>
+                  <p className="text-sm font-bold">{fmt(o.total)}</p>
                   <p className="text-xs text-gray-400">{new Date(o.created_at).toLocaleDateString('ru-RU')}</p>
                 </div>
                 <span className={`badge ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
@@ -150,9 +174,17 @@ function OrderDetail({ order, orders, onClose, onStatusChange }) {
             </div>
             <div className="flex justify-between mt-3 pt-2">
               <p className="font-bold">Jami:</p>
-              <p className="font-black text-lg">{fmt(order.total_price)}</p>
+              <p className="font-black text-lg">{fmt(order.total)}</p>
             </div>
           </div>
+
+          {/* Payment method */}
+          {order.payment_method && (
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">To'lov usuli:</p>
+              <PaymentBadge method={order.payment_method} />
+            </div>
+          )}
 
           {/* Status change */}
           <div>
@@ -265,11 +297,14 @@ export default function Orders() {
                     <p className="font-semibold">{o.customer_name || '—'}</p>
                     {o.customer_phone && <p className="text-xs text-gray-400">{o.customer_phone}</p>}
                   </td>
-                  <td className="px-4 py-3 font-bold">{fmt(o.total_price)}</td>
+                  <td className="px-4 py-3 font-bold">{fmt(o.total)}</td>
                   <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className={`badge border ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                      {STATUS_LABELS[o.status] || o.status}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`badge border ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        {STATUS_LABELS[o.status] || o.status}
+                      </span>
+                      {o.payment_method && <PaymentBadge method={o.payment_method} />}
+                    </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-gray-400 text-xs">
                     {new Date(o.created_at).toLocaleDateString('ru-RU')}

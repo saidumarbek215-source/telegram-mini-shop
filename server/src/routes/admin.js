@@ -301,6 +301,9 @@ function shopToSettings(shop) {
     ad_prices: shop.ad_prices || {},
     web_admin_login: shop.web_admin_login || '',
     payment_provider: shop.payment_provider || '',
+    tariff: shop.tariff || 'trial',
+    trial_ends_at: shop.trial_ends_at || null,
+    next_payment_due: shop.next_payment_due || null,
   }
 }
 
@@ -328,6 +331,7 @@ router.put(
       ad_prices,
       web_admin_login,
       web_admin_password,
+      payment_provider,
     } = req.body || {}
 
     const validUnitTypes = ['size', 'weight', 'volume', 'piece']
@@ -358,8 +362,11 @@ router.put(
       return {}
     })()
 
+    const validProviders = ['', 'payme', 'click', 'uzum']
+    const safeProvider = validProviders.includes(payment_provider) ? (payment_provider ?? '') : ''
+
     const updatePasswordSql = web_admin_password
-      ? ', web_admin_password = $17'
+      ? ', web_admin_password = $18'
       : ''
     const params = [
       store_name ?? '',
@@ -378,6 +385,7 @@ router.put(
       ad_channel_id ?? '',
       JSON.stringify(safePrices),
       web_admin_login ?? '',
+      safeProvider,
     ]
     if (web_admin_password) params.push(web_admin_password)
 
@@ -387,7 +395,7 @@ router.put(
            currency = $6, admin_username = $7, product_unit_type = $8, auto_cancel_minutes = $9,
            credit_enabled = $10,
            features = jsonb_set(jsonb_set(COALESCE(features, '{}'::jsonb), '{theme}', to_jsonb($11::text)), '{language}', to_jsonb($12::text)),
-           ad_channel_id = $14, ad_prices = $15, web_admin_login = $16${updatePasswordSql}
+           ad_channel_id = $14, ad_prices = $15, web_admin_login = $16, payment_provider = $17${updatePasswordSql}
        WHERE id = $13
        RETURNING *`,
       params

@@ -3,15 +3,15 @@ import { getProducts, getOrders, getCategories } from '../api.js'
 import { Link } from 'react-router-dom'
 
 const STATUS_COLORS = {
-  pending:    'bg-yellow-100 text-yellow-800',
-  confirmed:  'bg-blue-100 text-blue-800',
-  delivering: 'bg-purple-100 text-purple-800',
-  delivered:  'bg-green-100 text-green-800',
-  cancelled:  'bg-red-100 text-red-800',
+  new:       'bg-yellow-100 text-yellow-800',
+  accepted:  'bg-blue-100 text-blue-800',
+  shipped:   'bg-purple-100 text-purple-800',
+  expired:   'bg-gray-100 text-gray-600',
+  cancelled: 'bg-red-100 text-red-800',
 }
 const STATUS_LABELS = {
-  pending: 'Yangi', confirmed: 'Tasdiqlangan',
-  delivering: 'Yetkazilmoqda', delivered: 'Yetkazildi', cancelled: 'Bekor',
+  new: 'Yangi', accepted: 'Qabul qilindi',
+  shipped: 'Yetkazilmoqda', expired: "Muddati o'tgan", cancelled: 'Bekor qilindi',
 }
 
 function StatCard({ icon, label, value, sub, color, to }) {
@@ -38,8 +38,8 @@ function RevenueChart({ orders }) {
     const dateStr = d.toISOString().slice(0, 10)
     const label = d.toLocaleDateString('ru-RU', { weekday: 'short' })
     const revenue = orders
-      .filter(o => o.status === 'delivered' && o.created_at?.slice(0, 10) === dateStr)
-      .reduce((s, o) => s + Number(o.total_price || 0), 0)
+      .filter(o => o.status === 'shipped' && o.created_at?.slice(0, 10) === dateStr)
+      .reduce((s, o) => s + Number(o.total || 0), 0)
     const count = orders.filter(o => o.created_at?.slice(0, 10) === dateStr).length
     days.push({ label, revenue, count })
   }
@@ -90,8 +90,8 @@ function RevenueChart({ orders }) {
 
 function gmv(orders, fromDate) {
   return orders
-    .filter(o => o.status === 'delivered' && new Date(o.created_at) >= fromDate)
-    .reduce((s, o) => s + Number(o.total_price || 0), 0)
+    .filter(o => o.status === 'shipped' && new Date(o.created_at) >= fromDate)
+    .reduce((s, o) => s + Number(o.total || 0), 0)
 }
 
 function startOf(unit) {
@@ -114,7 +114,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
-  const newOrders    = orders.filter(o => o.status === 'pending')
+  const newOrders    = orders.filter(o => o.status === 'new')
   const discounted   = products.filter(p => p.old_price && Number(p.old_price) > Number(p.price))
 
   // GMV by period (delivered only)
@@ -205,7 +205,7 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">{new Date(o.created_at).toLocaleDateString('ru-RU')}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold">{fmt(o.total_price)}</p>
+                  <p className="text-sm font-bold">{fmt(o.total)}</p>
                   <span className={`badge text-xs ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600'}`}>
                     {STATUS_LABELS[o.status] || o.status}
                   </span>

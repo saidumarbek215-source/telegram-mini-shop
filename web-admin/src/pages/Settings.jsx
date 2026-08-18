@@ -78,6 +78,15 @@ export default function Settings() {
             <label className="label">Click raqami</label>
             <input className="input" value={form.click_number || ''} onChange={e => set('click_number', e.target.value)} placeholder="+998 90 000 00 00" />
           </div>
+          <div>
+            <label className="label">Online to'lov tizimi</label>
+            <select className="input" value={form.payment_provider || ''} onChange={e => set('payment_provider', e.target.value)}>
+              <option value="">— Yo'q —</option>
+              <option value="payme">Payme</option>
+              <option value="click">Click</option>
+              <option value="uzum">Uzum</option>
+            </select>
+          </div>
         </div>
 
         {/* Web admin credentials */}

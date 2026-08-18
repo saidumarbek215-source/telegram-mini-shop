@@ -10,9 +10,9 @@ const NAV = [
   { to: '/customers',  label: 'Mijozlar',     icon: '👥' },
   { to: '/analytics',  label: 'Tahlil',       icon: '📈' },
   { to: '/credits',    label: 'Nasiyalar',    icon: '💳' },
-  { to: '/map',        label: 'Xarita',       icon: '🗺️' },
-  { to: '/ai',         label: 'AI Assistant', icon: '🤖' },
-  { to: '/settings',   label: 'Sozlamalar',   icon: '⚙️' },
+  { to: '/ai',           label: 'AI Assistant', icon: '🤖' },
+  { to: '/subscription', label: 'Obuna',        icon: '💳' },
+  { to: '/settings',     label: 'Sozlamalar',   icon: '⚙️' },
   { to: '/help',       label: 'Yordam',       icon: '❓' },
 ]
 

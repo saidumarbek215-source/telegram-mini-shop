@@ -28,8 +28,8 @@ export default function Customers() {
       }
     }
     customersMap[key].orders.push(o)
-    if (o.status === 'delivered') {
-      customersMap[key].totalSpent += Number(o.total_price || 0)
+    if (o.status === 'shipped') {
+      customersMap[key].totalSpent += Number(o.total || 0)
     }
   }
   const customers = Object.values(customersMap)
@@ -44,15 +44,15 @@ export default function Customers() {
   function fmt(n) { return Number(n).toLocaleString('ru-RU') + " so'm" }
 
   const STATUS_COLORS = {
-    pending:    'bg-yellow-100 text-yellow-800',
-    confirmed:  'bg-blue-100 text-blue-800',
-    delivering: 'bg-purple-100 text-purple-800',
-    delivered:  'bg-green-100 text-green-800',
-    cancelled:  'bg-red-100 text-red-800',
+    new:       'bg-yellow-100 text-yellow-800',
+    accepted:  'bg-blue-100 text-blue-800',
+    shipped:   'bg-purple-100 text-purple-800',
+    expired:   'bg-gray-100 text-gray-600',
+    cancelled: 'bg-red-100 text-red-800',
   }
   const STATUS_LABELS = {
-    pending: 'Yangi', confirmed: 'Tasdiqlangan',
-    delivering: 'Yetkazilmoqda', delivered: 'Yetkazildi', cancelled: 'Bekor',
+    new: 'Yangi', accepted: 'Qabul qilindi',
+    shipped: 'Yetkazilmoqda', expired: "Muddati o'tgan", cancelled: 'Bekor qilindi',
   }
 
   return (
@@ -108,7 +108,7 @@ export default function Customers() {
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-gray-900">{c.orders.length}</span>
                           <span className="text-xs text-gray-400">
-                            ({c.orders.filter(o => o.status === 'delivered').length} yetkazildi)
+                            ({c.orders.filter(o => o.status === 'shipped').length} yetkazilmoqda)
                           </span>
                         </div>
                       </td>
@@ -146,7 +146,7 @@ export default function Customers() {
               <div key={o.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                 <span className="font-mono text-gray-400 text-xs w-12">#{o.id}</span>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold">{fmt(o.total_price)}</p>
+                  <p className="text-sm font-semibold">{fmt(o.total)}</p>
                   <p className="text-xs text-gray-400">{new Date(o.created_at).toLocaleDateString('ru-RU')}</p>
                 </div>
                 <span className={`badge ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -161,8 +161,8 @@ export default function Customers() {
               <p className="text-xs text-gray-500">Jami buyurtma</p>
             </div>
             <div>
-              <p className="text-2xl font-black text-green-600">{selected.orders.filter(o => o.status === 'delivered').length}</p>
-              <p className="text-xs text-gray-500">Yetkazildi</p>
+              <p className="text-2xl font-black text-green-600">{selected.orders.filter(o => o.status === 'shipped').length}</p>
+              <p className="text-xs text-gray-500">Yetkazilmoqda</p>
             </div>
             <div>
               <p className="text-lg font-black text-yellow-600">{fmt(selected.totalSpent)}</p>

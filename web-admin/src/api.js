@@ -1,4 +1,4 @@
-const BASE = 'https://telegram-mini-shop-xt98.onrender.com/api'
+const BASE = 'https://api.finexia.uz/api'
 
 function getAuth() {
   return {
