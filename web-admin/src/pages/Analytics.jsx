@@ -87,7 +87,7 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="card p-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Daromad</p>
           <p className="text-xl font-black text-gray-900">{fmt(totalRevenue)} so'm</p>

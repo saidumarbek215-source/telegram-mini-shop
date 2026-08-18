@@ -161,17 +161,17 @@ export default function Dashboard() {
       </div>
 
       {/* GMV cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard icon="📅" label="GMV bugun"  value={fmt(gmvToday)} sub="yetkazilgan"  color="bg-emerald-50" />
-        <StatCard icon="📆" label="GMV hafta"  value={fmt(gmvWeek)}  sub="so'nggi 7 kun" color="bg-blue-50"   />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StatCard icon="📅" label="GMV bugun"  value={fmt(gmvToday)} sub="yetkazilgan"    color="bg-emerald-50" />
+        <StatCard icon="📆" label="GMV hafta"  value={fmt(gmvWeek)}  sub="so'nggi 7 kun"  color="bg-blue-50"   />
         <StatCard icon="🗓️" label="GMV oy"    value={fmt(gmvMonth)} sub="so'nggi 30 kun" color="bg-violet-50" />
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard icon="📦" label="Mahsulotlar"      value={products.length}  sub={`${discounted.length} aksiyada`} color="bg-yellow-50" to="/products" />
-        <StatCard icon="🛒" label="Buyurtmalar"      value={orders.length}    sub={`${newOrders.length} yangi`}     color="bg-orange-50" to="/orders" />
-        <StatCard icon="👥" label="Yangi mijozlar"   value={recentBuyers}     sub="so'nggi 7 kunda"                 color="bg-pink-50"   to="/customers" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StatCard icon="📦" label="Mahsulotlar"    value={products.length} sub={`${discounted.length} aksiyada`} color="bg-yellow-50" to="/products" />
+        <StatCard icon="🛒" label="Buyurtmalar"    value={orders.length}   sub={`${newOrders.length} yangi`}     color="bg-orange-50" to="/orders" />
+        <StatCard icon="👥" label="Yangi mijozlar" value={recentBuyers}    sub="so'nggi 7 kunda"                 color="bg-pink-50"   to="/customers" />
       </div>
 
       {/* New orders alert */}

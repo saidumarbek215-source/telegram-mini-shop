@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { getSettings, updateSettings } from '../api.js'
 
+const PAYMENT_METHODS = [
+  { key: 'cash',      label: 'Naqd pul (Cash)',  locked: false },
+  { key: 'card',      label: 'Karta',             locked: false },
+  { key: 'uzum',      label: 'Uzum Bank',         locked: true  },
+  { key: 'payme',     label: 'Payme',             locked: true  },
+  { key: 'nasiya',    label: 'Nasiya',            locked: true  },
+]
+
 export default function Settings() {
   const [form,    setForm]    = useState(null)
   const [loading, setLoading] = useState(true)
@@ -146,6 +154,58 @@ export default function Settings() {
             <input className="input" value={form.admin_username || ''} onChange={e => set('admin_username', e.target.value)} placeholder="example: boston_admin" />
           </div>
         </div>
+
+        {/* Payment methods */}
+        {form && (() => {
+          const tariff = form.tariff || 'trial'
+          const businessUnlocked = tariff === 'business' || tariff === 'max'
+          const enabledMethods = form.enabled_payment_methods || []
+          const toggleMethod = (key) => {
+            const next = enabledMethods.includes(key)
+              ? enabledMethods.filter(m => m !== key)
+              : [...enabledMethods, key]
+            set('enabled_payment_methods', next)
+          }
+          return (
+            <div className="card p-5 space-y-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wide">To'lov usullari</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Mijozlarga ko'rsatiladigan to'lov usullari</p>
+                </div>
+                {!businessUnlocked && (
+                  <span className="text-xs bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-semibold shrink-0">Business</span>
+                )}
+              </div>
+              <div className="space-y-3">
+                {PAYMENT_METHODS.map(({ key, label, locked }) => {
+                  const isLocked = locked && !businessUnlocked
+                  const checked  = !isLocked && enabledMethods.includes(key)
+                  return (
+                    <label
+                      key={key}
+                      className={`flex items-center gap-3 cursor-pointer ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 accent-yellow-400"
+                        checked={checked}
+                        disabled={isLocked}
+                        onChange={() => !isLocked && toggleMethod(key)}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{label}</p>
+                        {isLocked && (
+                          <p className="text-xs text-purple-600 font-semibold">Business tarifida ochiladi</p>
+                        )}
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Order settings */}
         <div className="card p-5 space-y-4">

@@ -6,7 +6,7 @@ import { t } from '../../i18n.js'
 import { BagIcon, TagIcon, ImageIcon, SettingsIcon, BoxIcon, SparkleIcon, HelpIcon } from '../../components/Icons.jsx'
 
 export default function ManageLayout() {
-  const { isOwner, loading, shop } = useOwner()
+  const { isOwner, loading, shop, debugError } = useOwner()
   const { shop: publicShop, lang } = useShop()
   const navigate = useNavigate()
 
@@ -24,6 +24,15 @@ export default function ManageLayout() {
   }, [loading, isOwner, navigate, isTelegram, webToken])
 
   if (!isTelegram && !webToken) return null
+
+  if (isTelegram && debugError) {
+    return (
+      <div className="py-10 px-4 text-center">
+        <p style={{ color: 'red', fontSize: '18px', fontWeight: 'bold' }}>DEBUG ERROR</p>
+        <p style={{ color: 'red', fontSize: '14px', marginTop: '8px', wordBreak: 'break-all' }}>{debugError}</p>
+      </div>
+    )
+  }
 
   if (isTelegram && (loading || !isOwner)) {
     return <div className="py-10 text-center text-sm text-muted">{t('loading', lang)}</div>

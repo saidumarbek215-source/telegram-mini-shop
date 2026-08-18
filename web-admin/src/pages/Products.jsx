@@ -298,8 +298,8 @@ export default function Products() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <input className="input flex-1 min-w-48" placeholder="🔍 Qidirish..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="input w-48" value={catFilter} onChange={e => setCatFilter(e.target.value)}>
+        <input className="input flex-1 min-w-0" placeholder="🔍 Qidirish..." value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="input w-full sm:w-48" value={catFilter} onChange={e => setCatFilter(e.target.value)}>
           <option value="">Barcha kategoriyalar</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
