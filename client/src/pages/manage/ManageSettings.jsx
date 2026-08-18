@@ -88,6 +88,8 @@ export default function ManageSettings() {
 
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      console.error('updateSettings error:', err)
     } finally {
       setSaving(false)
     }

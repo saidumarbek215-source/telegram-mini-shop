@@ -28,7 +28,6 @@ export async function requireOwner(req, res, next) {
   // Telegram initData auth
   if (!shop.bot_token) return res.status(401).json({ error: 'Unauthorized' })
   const initData = req.headers['x-telegram-init-data']
-  console.log('[requireOwner] shopId:', shopId, '| bot_token present:', !!shop.bot_token, '| initData length:', initData ? initData.length : 'missing')
   const user = parseInitData(initData, shop.bot_token)
   if (!user) return res.status(401).json({ error: 'Unauthorized' })
 
