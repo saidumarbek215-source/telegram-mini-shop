@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import bcrypt from 'bcrypt'
 import { query } from '../db/index.js'
 import { requireOwner } from '../middleware/auth.js'
 import { ORDER_STATUSES } from '../constants.js'
@@ -387,7 +388,7 @@ router.put(
       web_admin_login ?? '',
       safeProvider,
     ]
-    if (web_admin_password) params.push(web_admin_password)
+    if (web_admin_password) params.push(await bcrypt.hash(web_admin_password, 10))
 
     const result = await query(
       `UPDATE shops

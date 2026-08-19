@@ -1,6 +1,6 @@
 import { query } from '../db/index.js'
 import { parseInitData } from '../utils/telegramAuth.js'
-import { activeTokens } from '../services/webTokens.js'
+import { activeTokens, TOKEN_TTL } from '../services/webTokens.js'
 
 // Authorizes the store owner via Telegram WebApp initData OR a web admin token.
 export async function requireOwner(req, res, next) {
@@ -19,6 +19,10 @@ export async function requireOwner(req, res, next) {
     const tokenData = activeTokens.get(webToken)
     if (!tokenData || tokenData.shopId !== shopId) {
       return res.status(401).json({ error: 'Unauthorized' })
+    }
+    if (Date.now() - tokenData.createdAt > TOKEN_TTL) {
+      activeTokens.delete(webToken)
+      return res.status(401).json({ error: 'Token expired' })
     }
     req.shop = shop
     req.owner = { web: true }

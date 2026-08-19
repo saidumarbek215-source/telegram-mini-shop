@@ -1,13 +1,24 @@
+import { randomBytes } from 'crypto'
 import { Router } from 'express'
+import rateLimit from 'express-rate-limit'
+import bcrypt from 'bcrypt'
 import { query } from '../db/index.js'
 import { activeTokens } from '../services/webTokens.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
 // POST /api/web-auth/login
 router.post(
   '/login',
+  loginLimiter,
   asyncHandler(async (req, res) => {
     const { login, password, shop_id } = req.body || {}
     if (!login || !password || !shop_id) {
@@ -22,11 +33,13 @@ router.post(
       return res.status(401).json({ error: 'Veb-sayt kirishi sozlanmagan' })
     }
 
-    if (shop.web_admin_login !== login || shop.web_admin_password !== password) {
+    const loginMatch = shop.web_admin_login === login
+    const passwordMatch = await bcrypt.compare(password, shop.web_admin_password)
+    if (!loginMatch || !passwordMatch) {
       return res.status(401).json({ error: "Login yoki parol noto'g'ri" })
     }
 
-    const token = `${shop.id}_${Date.now()}`
+    const token = randomBytes(32).toString('hex')
     activeTokens.set(token, { shopId: shop.id, createdAt: Date.now() })
 
     res.json({ token, shop_id: shop.id })

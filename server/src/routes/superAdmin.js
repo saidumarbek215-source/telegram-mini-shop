@@ -1,19 +1,30 @@
 import { Router } from 'express'
+import rateLimit from 'express-rate-limit'
 import { query } from '../db/index.js'
 import { sendTelegramMessage } from '../telegram.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
+if (!process.env.SUPER_ADMIN_KEY) {
+  throw new Error('SUPER_ADMIN_KEY environment variable is not set')
+}
+
 const router = Router()
 
-const SUPER_ADMIN_KEY = 'finexia2026'
+const superAdminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+})
 
 function superAdminAuth(req, res, next) {
-  if (req.headers['x-super-admin'] !== SUPER_ADMIN_KEY) {
+  if (req.headers['x-super-admin'] !== process.env.SUPER_ADMIN_KEY) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
   next()
 }
 
+router.use(superAdminLimiter)
 router.use(superAdminAuth)
 
 router.get(
