@@ -391,15 +391,15 @@ export default function Product() {
         {hasPrice ? (
           <div className="flex gap-3">
             <button
-              onClick={() => {
-                if (!canAddToCart) return
-                handleAddToCart()
-                navigate('/checkout')
-              }}
+              onClick={handleAddToCart}
               disabled={!canAddToCart}
               className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-accent py-3.5 text-sm font-bold text-bg shadow-glow transition-transform active:scale-[0.98] disabled:bg-surface disabled:text-muted disabled:shadow-none"
             >
-              {canAddToCart ? t('buyNow', lang) : t('outOfStock', lang)}
+              {added ? (
+                <><CheckIcon className="h-5 w-5" />{t('added', lang)}</>
+              ) : (
+                canAddToCart ? t('addToCart', lang) : t('outOfStock', lang)
+              )}
             </button>
             <button
               onClick={handleAddToCart}
