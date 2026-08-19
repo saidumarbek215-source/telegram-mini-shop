@@ -88,12 +88,28 @@ export default function Settings() {
           </div>
           <div>
             <label className="label">Online to'lov tizimi</label>
-            <select className="input" value={form.payment_provider || ''} onChange={e => set('payment_provider', e.target.value)}>
-              <option value="">— Yo'q —</option>
-              <option value="payme">Payme</option>
-              <option value="click">Click</option>
-              <option value="uzum">Uzum</option>
-            </select>
+            {(() => {
+              const tariff = form.tariff || 'trial'
+              const businessUnlocked = tariff === 'business' || tariff === 'max'
+              return (
+                <>
+                  <select
+                    className="input disabled:opacity-50 disabled:cursor-not-allowed"
+                    value={form.payment_provider || ''}
+                    onChange={e => set('payment_provider', e.target.value)}
+                    disabled={!businessUnlocked}
+                  >
+                    <option value="">— Yo'q —</option>
+                    <option value="payme">Payme</option>
+                    <option value="click">Click</option>
+                    <option value="uzum">Uzum</option>
+                  </select>
+                  {!businessUnlocked && (
+                    <p className="text-xs text-purple-600 font-semibold mt-1">Business tarifida ochiladi</p>
+                  )}
+                </>
+              )
+            })()}
           </div>
         </div>
 

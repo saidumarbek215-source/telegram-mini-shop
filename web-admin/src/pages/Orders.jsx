@@ -25,11 +25,12 @@ function PaymentBadge({ method }) {
   )
 }
 
-const STATUSES = ['new', 'accepted', 'shipped', 'expired', 'cancelled']
+const STATUSES = ['new', 'accepted', 'shipped', 'delivered', 'expired', 'cancelled']
 const STATUS_LABELS = {
   new:       'Yangi',
   accepted:  'Qabul qilindi',
   shipped:   'Yetkazilmoqda',
+  delivered: 'Yetkazildi',
   expired:   "Muddati o'tgan",
   cancelled: 'Bekor qilindi',
 }
@@ -37,6 +38,7 @@ const STATUS_COLORS = {
   new:       'bg-yellow-100 text-yellow-800 border-yellow-200',
   accepted:  'bg-blue-100 text-blue-800 border-blue-200',
   shipped:   'bg-purple-100 text-purple-800 border-purple-200',
+  delivered: 'bg-green-100 text-green-800 border-green-200',
   expired:   'bg-gray-100 text-gray-600 border-gray-200',
   cancelled: 'bg-red-100 text-red-800 border-red-200',
 }
@@ -209,9 +211,7 @@ function OrderRow({ order, orders, onStatusChange }) {
                 {order.customer_phone && (
                   <p className="text-sm text-gray-700">📞 {order.customer_phone}</p>
                 )}
-                {order.delivery_address && (
-                  <p className="text-sm text-gray-700">📍 {order.delivery_address}</p>
-                )}
+                <p className="text-sm text-gray-700">📍 {order.address || "Manzil ko'rsatilmagan"}</p>
                 {order.comment && (
                   <p className="text-sm text-gray-600 italic">💬 {order.comment}</p>
                 )}
