@@ -21,6 +21,7 @@ import { startAllBots, stopAllBots } from './services/botManager.js'
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/var/www/uploads'
 
 const app = express()
+app.set('trust proxy', 1)
 
 app.use(cors())
 app.use(express.json())
