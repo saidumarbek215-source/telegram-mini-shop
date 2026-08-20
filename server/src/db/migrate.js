@@ -91,6 +91,9 @@ export async function migrate() {
     CREATE UNIQUE INDEX IF NOT EXISTS uniq_orders_shop_order_number
     ON orders(shop_id, shop_order_number)
   `)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS blocked BOOLEAN DEFAULT false`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'trial'`)
+  await pool.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS sale_price DECIMAL(12,2)`)
   console.log('Migration applied successfully')
 }
 

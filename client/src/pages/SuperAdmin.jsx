@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatPrice } from '../utils/format.js'
 
 const API = import.meta.env.VITE_API_URL || '/api'
-const SA_KEY = 'finexia2026'
+const SA_KEY = '7af70a9f2cfb95f563f9a884cca5241d18617f642edb546e '
 
 function saFetch(path) {
   return fetch(`${API}${path}`, { headers: { 'x-super-admin': SA_KEY } }).then((r) => r.json())

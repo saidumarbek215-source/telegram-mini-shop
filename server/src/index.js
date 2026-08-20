@@ -15,6 +15,7 @@ import { migrate } from './db/migrate.js'
 import { startAutoCancelJob } from './jobs/autoCancelOrders.js'
 import { startCreditReminderJob } from './jobs/creditReminder.js'
 import { startSubscriptionReminderJob } from './jobs/subscriptionReminders.js'
+import { startCheckExpiredSubscriptionsJob } from './jobs/checkExpiredSubscriptions.js'
 import { startAllBots, stopAllBots } from './services/botManager.js'
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/var/www/uploads'
@@ -51,6 +52,7 @@ async function start() {
   startAutoCancelJob()
   startCreditReminderJob()
   startSubscriptionReminderJob()
+  startCheckExpiredSubscriptionsJob()
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
   })

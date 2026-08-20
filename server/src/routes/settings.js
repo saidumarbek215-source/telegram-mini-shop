@@ -16,6 +16,8 @@ router.get(
     const shop = result.rows[0]
     if (!shop) return res.status(404).json({ error: 'Магазин не найден' })
 
+    if (shop.blocked) return res.json({ blocked: true })
+
     res.json({
       shop_id: shop.id,
       store_name: shop.name || '',

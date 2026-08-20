@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useShop } from './context/ShopContext.jsx'
 import ShopNotFound from './pages/ShopNotFound.jsx'
+import ShopBlocked from './pages/ShopBlocked.jsx'
 import Layout from './components/Layout.jsx'
 import WebAdminLogin from './pages/WebAdminLogin.jsx'
 

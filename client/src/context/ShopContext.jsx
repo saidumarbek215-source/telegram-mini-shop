@@ -27,15 +27,22 @@ export function ShopProvider({ children }) {
       return
     }
 
-    Promise.all([
-      api.getSettings(),
-      api.getCategories().catch(() => []),
-      api.getBanners().catch(() => []),
-      api.getProducts().catch(() => []),
-    ])
-      .then(([shop, categories, banners, products]) =>
-        setState({ status: 'ready', shop, categories, banners, products })
-      )
+    api
+      .getSettings()
+      .then((shop) => {
+        if (shop?.blocked) {
+          setState({ status: 'blocked', shop: null, categories: [], banners: [], products: [] })
+          return
+        }
+        return Promise.all([
+          shop,
+          api.getCategories().catch(() => []),
+          api.getBanners().catch(() => []),
+          api.getProducts().catch(() => []),
+        ]).then(([s, categories, banners, products]) =>
+          setState({ status: 'ready', shop: s, categories, banners, products })
+        )
+      })
       .catch(() =>
         setState({ status: 'not-found', shop: null, categories: [], banners: [], products: [] })
       )
